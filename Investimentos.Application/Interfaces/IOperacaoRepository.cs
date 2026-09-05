@@ -8,6 +8,13 @@ namespace Investimentos.Application.Interfaces
             Operacao operacao,
             CancellationToken cancellationToken = default);
 
+        Task<Operacao?> ObterPorIdAsync(
+            Guid id,
+            CancellationToken cancellationToken = default);
+
+        Task SalvarAsync(
+            CancellationToken cancellationToken = default);
+
         Task<Investidor?> ObterInvestidorPorIdAsync(
             Guid investidorId,
             CancellationToken cancellationToken = default);

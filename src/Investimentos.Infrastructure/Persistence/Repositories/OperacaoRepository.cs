@@ -27,6 +27,20 @@ namespace Investimentos.Infrastructure.Persistence.Repositories
                 cancellationToken);
         }
 
+        public async Task<Operacao?> ObterPorIdAsync(
+            Guid id,
+            CancellationToken cancellationToken = default)
+        {
+            return await _context.Operacoes
+                .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+        }
+
+        public Task SalvarAsync(
+            CancellationToken cancellationToken = default)
+        {
+            return _context.SaveChangesAsync(cancellationToken);
+        }
+
         public async Task<Investidor?> ObterInvestidorPorIdAsync(
             Guid investidorId,
             CancellationToken cancellationToken = default)

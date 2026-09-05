@@ -3,10 +3,12 @@ import {
   obterDashboardConsolidado,
   obterDashboardPorInvestidor,
   obterEvolucaoConsolidada,
+  obterOperacoes,
+  atualizarOperacao,
 } from './api/dashboardApi'
 import { listarInvestidores } from './api/investidoresApi'
 import { dashboardSnapshot } from './data/dashboardSnapshot'
-import type { Dashboard, EvolucaoInvestidor } from './types/dashboard'
+import type { Dashboard, EvolucaoInvestidor, OperacaoCarteira } from './types/dashboard'
 import type { Investidor } from './types/investidor'
 import './App.css'
 
@@ -19,6 +21,21 @@ function formatarMoeda(valor: number | null | undefined) {
     style: 'currency',
     currency: 'BRL',
   })
+}
+
+function formatarDataCurta(data: string) {
+  return new Date(`${data.slice(0, 10)}T00:00:00`).toLocaleDateString(
+    'pt-BR',
+    { day: '2-digit', month: '2-digit', year: 'numeric' },
+  )
+}
+
+function formatarNumeroInteiro(valor: number) {
+  return valor.toLocaleString('pt-BR', { maximumFractionDigits: 2 })
+}
+
+function normalizarDataEvolucao(data: string) {
+  return data.slice(0, 10)
 }
 
 function formatarPercentual(valor: number | null | undefined) {
@@ -42,6 +59,14 @@ function formatarMilhares(valor: number) {
   return `${(valor / 1000).toLocaleString('pt-BR', {
     maximumFractionDigits: 1,
   })}K`
+}
+
+function formatarMilharesInteiros(valor: number) {
+  if (Math.abs(valor) < 1000) {
+    return valor.toLocaleString('pt-BR', { maximumFractionDigits: 0 })
+  }
+
+  return `${Math.round(valor / 1000).toLocaleString('pt-BR')}K`
 }
 
 function formatarMesCurto(data: string) {
@@ -184,13 +209,78 @@ function InvestorAppliedBars({
     <div className="investor-applied-bars">
       {itensOrdenados.map((item) => (
         <div className="investor-applied-item" key={item.nome}>
-          <strong>{formatarMilhares(item.valor)}</strong>
+          <strong>{formatarMilharesInteiros(item.valor)}</strong>
           <div className="investor-applied-track">
             <i style={{ height: `${Math.max((item.valor / max) * 100, 3)}%` }} />
           </div>
           <span>{item.nome}</span>
         </div>
       ))}
+    </div>
+  )
+}
+
+function DistributionPieChart({
+  items,
+}: {
+  items: readonly SimpleMetric[]
+}) {
+  const cores = ['#63e6c8', '#ffbf69', '#8da7ff', '#f783ac', '#b197fc', '#74c0fc']
+  const total = items.reduce((sum, item) => sum + Math.max(item.value, 0), 0)
+  let acumulado = 0
+
+  const fatias = items.map((item, index) => {
+    const valor = Math.max(item.value, 0)
+    const inicio = total > 0 ? acumulado / total : 0
+    acumulado += valor
+    const fim = total > 0 ? acumulado / total : 0
+    const inicioAngulo = inicio * Math.PI * 2 - Math.PI / 2
+    const fimAngulo = fim * Math.PI * 2 - Math.PI / 2
+    const raio = 78
+    const x1 = 100 + raio * Math.cos(inicioAngulo)
+    const y1 = 100 + raio * Math.sin(inicioAngulo)
+    const x2 = 100 + raio * Math.cos(fimAngulo)
+    const y2 = 100 + raio * Math.sin(fimAngulo)
+    const grandeArco = fim - inicio > 0.5 ? 1 : 0
+    const caminho = total === 0
+      ? ''
+      : `M 100 100 L ${x1} ${y1} A ${raio} ${raio} 0 ${grandeArco} 1 ${x2} ${y2} Z`
+
+    return {
+      ...item,
+      percentual: total > 0 ? (valor / total) * 100 : 0,
+      caminho,
+      cor: cores[index % cores.length],
+    }
+  })
+
+  return (
+    <div className="distribution-chart">
+      <div className="distribution-pie-wrap">
+        <svg viewBox="0 0 200 200" className="distribution-pie" role="img" aria-label="Distribuição do patrimônio por investidor">
+          {fatias.map((fatia) => (
+            <path key={fatia.label} d={fatia.caminho} fill={fatia.cor} stroke="var(--panel)" strokeWidth="1.5" />
+          ))}
+          <circle cx="100" cy="100" r="42" fill="var(--panel-strong)" />
+          <text x="100" y="96" textAnchor="middle" className="distribution-pie-total-label">Total</text>
+          <text x="100" y="112" textAnchor="middle" className="distribution-pie-total">{formatarMoeda(total)}</text>
+        </svg>
+      </div>
+
+      <div className="distribution-legend">
+        {fatias.map((fatia) => (
+          <div className="distribution-legend-row" key={fatia.label}>
+            <span className="distribution-legend-name">
+              <i style={{ backgroundColor: fatia.cor }} />
+              {fatia.label}
+            </span>
+            <span className="distribution-legend-value">
+              {fatia.percentual.toLocaleString('pt-BR', { maximumFractionDigits: 1 })}%
+              <small>{formatarMoeda(fatia.value)}</small>
+            </span>
+          </div>
+        ))}
+      </div>
     </div>
   )
 }
@@ -315,7 +405,11 @@ function MultiTrendChart({
   const paddingRight = 18
   const paddingBottom = 18
   const datas = Array.from(
-    new Set(series.flatMap((item) => item.pontos.map((ponto) => ponto.data))),
+    new Set(
+      series.flatMap((item) =>
+        item.pontos.map((ponto) => normalizarDataEvolucao(ponto.data)),
+      ),
+    ),
   ).sort()
   const valores = series.flatMap((item) => item.pontos.map((ponto) => ponto.carteira))
   const { min, max } = calculateSeriesBounds(valores)
@@ -347,15 +441,24 @@ function MultiTrendChart({
         ))}
 
         {series.map((serie, serieIndex) => {
-          const pontos = datas.map((data, index) => {
-            const valor = serie.pontos.find((item) => item.data === data)?.carteira ?? 0
+          const pontos = serie.pontos
+            .map((ponto) => ({
+              data: normalizarDataEvolucao(ponto.data),
+              carteira: ponto.carteira,
+            }))
+            .sort((a, b) => a.data.localeCompare(b.data))
+            .map((ponto) => {
+            const valor = ponto.carteira
             const valorNormalizado = (valor - min) / range
 
             return {
-              x: paddingLeft + index * step,
+              x:
+                datas.length > 1
+                  ? paddingLeft + datas.indexOf(ponto.data) * step
+                    : paddingLeft,
               y: height - paddingBottom - chartHeight * valorNormalizado,
             }
-          })
+            })
           const linePath = pontos
             .map((point, index) => `${index === 0 ? 'M' : 'L'} ${point.x} ${point.y}`)
             .join(' ')
@@ -458,17 +561,263 @@ function PatrimonioGauge({
   )
 }
 
+function OperacoesView({
+  investidores,
+  selectedInvestor,
+  onSelectInvestor,
+  operacoes = [],
+  onSaveOperation,
+}: {
+  investidores: readonly Investidor[]
+  selectedInvestor: string
+  onSelectInvestor: (nome: string) => void
+  operacoes?: readonly OperacaoCarteira[]
+  onSaveOperation: (operacao: Pick<OperacaoCarteira, 'id' | 'data' | 'quantidade' | 'precoUnitario' | 'taxas'>) => Promise<void>
+}) {
+  const [operacaoEmEdicao, setOperacaoEmEdicao] = useState<string | null>(null)
+  const [salvandoOperacao, setSalvandoOperacao] = useState(false)
+
+  return (
+    <section className="portfolio-view">
+      <div className="portfolio-toolbar">
+        <div>
+          <span className="eyebrow">Operações</span>
+          <h1>Posições e operações</h1>
+          <p>Edite os dados da posição e atualize a carteira online.</p>
+        </div>
+
+        <label className="investor-select-label">
+          <span>Investidor</span>
+          <select value={selectedInvestor} onChange={(event) => onSelectInvestor(event.target.value)}>
+            {investidores.map((investidor) => (
+              <option key={investidor.id} value={investidor.nome}>{investidor.nome}</option>
+            ))}
+          </select>
+        </label>
+      </div>
+
+      <article className="panel portfolio-operations">
+        <SectionTitle
+          title={`Posições de ${selectedInvestor}`}
+          subtitle="Edite data, quantidade, preço e taxas da operação de origem"
+          badge={`${operacoes.length} operações`}
+        />
+
+        {operacoes.length > 0 ? (
+          <div className="table-wrap compact">
+            <table className="data-table positions-table">
+              <thead>
+                <tr>
+                  <th>Data</th>
+                  <th>Ativo</th>
+                  <th>Tipo</th>
+                  <th className="align-right">Quantidade</th>
+                  <th className="align-right">Preço</th>
+                  <th className="align-right">Taxas</th>
+                  <th>Ação</th>
+                </tr>
+              </thead>
+              <tbody>
+                {operacoes.map((operacao) => {
+                  const editando = operacaoEmEdicao === operacao.id
+
+                  return (
+                    <tr key={operacao.id}>
+                      {editando ? (
+                        <>
+                          <td><input name="data" type="date" defaultValue={operacao.data.slice(0, 10)} /></td>
+                          <td><span className="ticker">{operacao.ticker}</span></td>
+                          <td>{operacao.tipoOperacao}</td>
+                          <td className="align-right"><input name="quantidade" type="number" min="0.0001" step="any" defaultValue={operacao.quantidade} /></td>
+                          <td className="align-right"><input name="precoUnitario" type="number" min="0" step="0.01" defaultValue={operacao.precoUnitario} /></td>
+                          <td className="align-right"><input name="taxas" type="number" min="0" step="0.01" defaultValue={operacao.taxas} /></td>
+                          <td className="operation-actions">
+                            <button className="table-action primary" type="button" disabled={salvandoOperacao} onClick={async (event) => {
+                              const row = (event.currentTarget as HTMLElement).closest('tr')
+                              const formData = new FormData()
+                              row?.querySelectorAll<HTMLInputElement>('input').forEach((input) => formData.set(input.name, input.value))
+                              setSalvandoOperacao(true)
+                              try {
+                                await onSaveOperation({
+                                  id: operacao.id,
+                                  data: String(formData.get('data')),
+                                  quantidade: Number(formData.get('quantidade')),
+                                  precoUnitario: Number(formData.get('precoUnitario')),
+                                  taxas: Number(formData.get('taxas')),
+                                })
+                                setOperacaoEmEdicao(null)
+                              } finally {
+                                setSalvandoOperacao(false)
+                              }
+                            }}>Salvar</button>
+                            <button className="table-action" type="button" onClick={() => setOperacaoEmEdicao(null)}>Cancelar</button>
+                          </td>
+                        </>
+                      ) : (
+                        <>
+                          <td>{formatarDataCurta(operacao.data)}</td>
+                          <td><span className="ticker">{operacao.ticker}</span></td>
+                          <td>{operacao.tipoOperacao}</td>
+                          <td className="align-right">{formatarNumeroInteiro(operacao.quantidade)}</td>
+                          <td className="align-right">{formatarMoeda(operacao.precoUnitario)}</td>
+                          <td className="align-right">{formatarMoeda(operacao.taxas)}</td>
+                          <td><button className="table-action" type="button" onClick={() => setOperacaoEmEdicao(operacao.id)}>Editar</button></td>
+                        </>
+                      )}
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div className="empty-state"><strong>Nenhuma operação disponível para edição</strong></div>
+        )}
+      </article>
+    </section>
+  )
+}
+
+function CarteiraView({
+  investidores,
+  carteiras,
+  selectedInvestor,
+  onSelectInvestor,
+  snapshotSeries,
+  saldosDisponiveis = [],
+}: {
+  investidores: readonly Investidor[]
+  carteiras: ReadonlyArray<{ nome: string; dashboard: Dashboard }>
+  selectedInvestor: string
+  onSelectInvestor: (nome: string) => void
+  snapshotSeries: Record<string, { data: string; carteira: number }[]>
+  saldosDisponiveis?: ReadonlyArray<{ investidor: string; valor: number }>
+}) {
+  const carteira = carteiras.find((item) => item.nome === selectedInvestor)?.dashboard
+  const pontos = snapshotSeries[selectedInvestor] ?? []
+  const patrimonioBaseSnapshot = pontos
+    .slice()
+    .sort((a, b) => a.data.localeCompare(b.data))
+    .at(-1)?.carteira ?? 0
+  const patrimonioApi = carteira?.patrimonioEstimado ?? 0
+  const patrimonioBase = patrimonioApi > 0 ? patrimonioApi : patrimonioBaseSnapshot
+  const valorAplicado = carteira?.valorAplicado ?? 0
+  const saldoConsolidado = saldosDisponiveis.find(
+    (item) => item.investidor === selectedInvestor,
+  )?.valor ?? 0
+  const valorDisponivel = carteira
+    ? carteira.posicoes.length > 0
+      ? (carteira.caixaDisponivel ?? 0) || saldoConsolidado
+      : patrimonioBaseSnapshot
+    : saldoConsolidado || patrimonioBaseSnapshot
+  const patrimonio = patrimonioBase
+  const resultado = carteira?.resultadoRealizado ?? 0
+  const totalProventos = carteira?.totalProventos ?? 0
+  const posicoes = carteira?.posicoes ?? []
+  const posicoesOrdenadas = posicoes
+    .slice()
+    .sort((a, b) => b.quantidade - a.quantidade)
+
+  return (
+    <section className="portfolio-view carteira-page">
+      <div className="portfolio-toolbar carteira-toolbar">
+        <div>
+          <h1>Carteira por Investidor</h1>
+        </div>
+
+        <label className="investor-select-label">
+          <span>Investidor</span>
+          <select value={selectedInvestor} onChange={(event) => onSelectInvestor(event.target.value)}>
+            {investidores.map((investidor) => (
+              <option key={investidor.id} value={investidor.nome}>{investidor.nome}</option>
+            ))}
+          </select>
+        </label>
+      </div>
+
+      <div className="portfolio-metrics">
+        <article className="portfolio-metric accent">
+          <span>Patrimônio Atual</span>
+          <strong>{formatarMoeda(patrimonio)}</strong>
+        </article>
+        <article className="portfolio-metric">
+          <span>Valor Aplicado</span>
+          <strong>{formatarMoeda(valorAplicado)}</strong>
+        </article>
+        <article className="portfolio-metric">
+          <span>Disponível</span>
+          <strong>{formatarMoeda(valorDisponivel)}</strong>
+        </article>
+      </div>
+
+      <article className="panel portfolio-positions">
+        <SectionTitle
+          title={`Posições de ${selectedInvestor}`}
+          subtitle="Ativos líquidos da carteira selecionada"
+          badge={`${posicoesOrdenadas.length} ativos`}
+        />
+
+        {posicoesOrdenadas.length > 0 ? (
+          <div className="table-wrap compact">
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>Ativo</th>
+                  <th className="align-right">Quantidade</th>
+                  <th className="align-right">Preço médio</th>
+                  <th className="align-right">Custo total</th>
+                </tr>
+              </thead>
+              <tbody>
+                {posicoesOrdenadas.map((posicao) => (
+                  <tr key={posicao.ticker}>
+                    <td>
+                      <span className="ticker">{posicao.ticker}</span>
+                      {posicao.nome.trim().toUpperCase() !== posicao.ticker.trim().toUpperCase() ? (
+                        <span className="subtle-inline"> {posicao.nome}</span>
+                      ) : null}
+                    </td>
+                    <td className="align-right">{formatarNumeroInteiro(posicao.quantidade)}</td>
+                    <td className="align-right">{formatarMoeda(posicao.precoMedio)}</td>
+                    <td className="align-right strong">{formatarMoeda(posicao.custoTotal)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div className="empty-state"><strong>Posições detalhadas indisponíveis no snapshot local</strong></div>
+        )}
+      </article>
+
+      <div className="portfolio-secondary-metrics">
+        <article className="portfolio-metric">
+          <span>Resultado</span>
+          <strong className={resultado >= 0 ? 'positive' : 'negative'}>{formatarMoeda(resultado)}</strong>
+        </article>
+        <article className="portfolio-metric">
+          <span>Proventos</span>
+          <strong>{formatarMoeda(totalProventos)}</strong>
+        </article>
+      </div>
+    </section>
+  )
+}
+
 function App() {
+  const [telaAtual, setTelaAtual] = useState<'painel' | 'carteira' | 'operacoes'>('painel')
   const [investidores, setInvestidores] = useState<Investidor[]>([])
   const [dashboard, setDashboard] = useState<Dashboard | null>(null)
   const [carteirasPorInvestidor, setCarteirasPorInvestidor] = useState<
     Array<{ nome: string; dashboard: Dashboard }>
   >([])
+  const [operacoes, setOperacoes] = useState<OperacaoCarteira[]>([])
   const [evolucao, setEvolucao] = useState<EvolucaoInvestidor[]>([])
   const [carregandoInvestidores, setCarregandoInvestidores] =
     useState(true)
   const [apiDisponivel, setApiDisponivel] = useState(true)
   const [erro, setErro] = useState<string | null>(null)
+  const [investidorSelecionado, setInvestidorSelecionado] = useState('')
 
   useEffect(() => {
     async function carregarInvestidores() {
@@ -503,6 +852,32 @@ function App() {
 
     carregarInvestidores()
   }, [])
+
+  useEffect(() => {
+    if (investidores.length > 0 && !investidores.some((item) => item.nome === investidorSelecionado)) {
+      setInvestidorSelecionado(investidores[0].nome)
+    }
+  }, [investidores, investidorSelecionado])
+
+  useEffect(() => {
+    if (!apiDisponivel || !investidorSelecionado) {
+      setOperacoes([])
+      return
+    }
+
+    const investidor = investidores.find((item) => item.nome === investidorSelecionado)
+
+    if (!investidor) {
+      return
+    }
+
+    obterOperacoes(investidor.id)
+      .then(setOperacoes)
+      .catch((error) => {
+        console.error(error)
+        setOperacoes([])
+      })
+  }, [apiDisponivel, investidorSelecionado, investidores])
 
   useEffect(() => {
     if (!apiDisponivel) {
@@ -617,23 +992,48 @@ function App() {
   const patrimonioEstimado = dashboard?.patrimonioEstimado ?? patrimonioConsolidado
   const valorAplicadoBackend = dashboard?.valorAplicado ?? valorAplicado
 
-  const distribuicaoTipos = useMemo(() => {
-    const mapa = new Map<string, number>()
-
-    dashboardSnapshot.quotes.forEach((quote) => {
-      mapa.set(
-        quote.tipo,
-        (mapa.get(quote.tipo) ?? 0) + quote.precoAtual,
-      )
-    })
-
-    return Array.from(mapa.entries())
-      .map(([label, value]) => ({ label, value }))
-      .sort(ordenarDecrescente)
-  }, [])
+  const distribuicaoInvestidores = useMemo(
+    () =>
+      seriesEvolucao
+        .map((serie) => ({
+          label: serie.investidor,
+          value: serie.pontos
+            .slice()
+            .sort((a, b) => a.data.localeCompare(b.data))
+            .at(-1)?.carteira ?? 0,
+        }))
+        .sort(ordenarDecrescente),
+    [seriesEvolucao],
+  )
 
   const modoSnapshot =
     !apiDisponivel || investidores.length === 0 || dashboard === null
+
+  async function salvarOperacao(
+    operacao: Pick<OperacaoCarteira, 'id' | 'data' | 'quantidade' | 'precoUnitario' | 'taxas'>,
+  ) {
+    await atualizarOperacao(operacao.id, operacao)
+
+    const investidor = investidores.find((item) => item.nome === investidorSelecionado)
+
+    if (!investidor) {
+      return
+    }
+
+    const [dashboardAtualizado, operacoesAtualizadas] = await Promise.all([
+      obterDashboardPorInvestidor(investidor.id),
+      obterOperacoes(investidor.id),
+    ])
+
+    setCarteirasPorInvestidor((atuais) =>
+      atuais.map((item) =>
+        item.nome === investidorSelecionado
+          ? { ...item, dashboard: dashboardAtualizado }
+          : item,
+      ),
+    )
+    setOperacoes(operacoesAtualizadas)
+  }
 
   if (carregandoInvestidores) {
     return (
@@ -648,26 +1048,30 @@ function App() {
     <div className="shell">
       <aside className="sidebar">
         <div className="marca">
-          <div className="marca-icone">IX</div>
+          <img
+            className="marca-icone"
+            src="/tio-patinhas.png"
+            alt="Tio Patinhas mergulhando em moedas"
+          />
 
-          <div>
-            <strong>Investimentos</strong>
-            <span>Dashboard de carteira</span>
+          <div className="marca-info">
+            <strong>Silvio Rocha</strong>
+            <span>Dashboard de Carteira</span>
           </div>
         </div>
 
         <nav className="menu">
-          <button className="menu-item ativo" type="button">
+          <button className={`menu-item ${telaAtual === 'painel' ? 'ativo' : ''}`} type="button" onClick={() => setTelaAtual('painel')}>
             <span className="menu-icone">▣</span>
             Painel
           </button>
 
-          <button className="menu-item" type="button">
+          <button className={`menu-item ${telaAtual === 'carteira' ? 'ativo' : ''}`} type="button" onClick={() => setTelaAtual('carteira')}>
             <span className="menu-icone">◫</span>
             Carteira
           </button>
 
-          <button className="menu-item" type="button">
+          <button className={`menu-item ${telaAtual === 'operacoes' ? 'ativo' : ''}`} type="button" onClick={() => setTelaAtual('operacoes')}>
             <span className="menu-icone">↕</span>
             Operações
           </button>
@@ -690,7 +1094,9 @@ function App() {
       </aside>
 
       <main className="main">
-        <header className="hero">
+        {telaAtual === 'painel' ? (
+          <>
+          <header className="hero">
           <div className="hero-summary">
             <div className="summary-card summary-card-accent">
               <span>Patrimônio Total</span>
@@ -798,19 +1204,39 @@ function App() {
             />
           </article>
 
-          <article className="panel compact-metrics">
+          <article className="panel compact-metrics distribution-panel">
             <SectionTitle
               title="Distribuição"
-              subtitle="Tipos de ativo presentes na aba Cotações Ativos"
-              badge="Tipos"
+              subtitle="Patrimônio por investidor"
+              badge={formatarMoeda(
+                distribuicaoInvestidores.reduce((total, item) => total + item.value, 0),
+              )}
             />
 
-            <MetricBarList
-              items={distribuicaoTipos}
-              formatter={formatarMoeda}
-            />
+            <DistributionPieChart items={distribuicaoInvestidores} />
           </article>
         </section>
+          </>
+        ) : (
+          telaAtual === 'carteira' ? (
+            <CarteiraView
+              investidores={investidores}
+              carteiras={carteirasPorInvestidor}
+              selectedInvestor={investidorSelecionado}
+              onSelectInvestor={setInvestidorSelecionado}
+              snapshotSeries={dashboardSnapshot.timelinePorPessoa}
+              saldosDisponiveis={dashboard?.saldosDisponiveis ?? []}
+            />
+          ) : (
+            <OperacoesView
+              investidores={investidores}
+              selectedInvestor={investidorSelecionado}
+              onSelectInvestor={setInvestidorSelecionado}
+              operacoes={operacoes}
+              onSaveOperation={salvarOperacao}
+            />
+          )
+        )}
 
       </main>
     </div>

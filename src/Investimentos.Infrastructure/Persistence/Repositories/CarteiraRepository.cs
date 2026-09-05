@@ -29,6 +29,7 @@ namespace Investimentos.Infrastructure.Persistence.Repositories
                     .ThenBy(x => x.Sequencia)
                     .Select(x =>
                         new OperacaoCarteiraDto(
+                            x.Id,
                             x.AtivoId,
                             x.Ativo.Ticker.Codigo,
                             x.Ativo.Nome,

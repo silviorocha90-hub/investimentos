@@ -63,6 +63,19 @@ export interface EvolucaoInvestidor {
 	pontos: EvolucaoPonto[]
 }
 
+export interface OperacaoCarteira {
+	id: string
+	ativoId: string
+	ticker: string
+	nome: string
+	tipoOperacao: string
+	quantidade: number
+	precoUnitario: number
+	taxas: number
+	data: string
+	sequencia: number
+}
+
 export interface SaldoInvestidor {
 	investidor: string
 	valor: number

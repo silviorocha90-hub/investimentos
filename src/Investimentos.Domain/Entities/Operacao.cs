@@ -91,5 +91,35 @@
 
         public decimal ValorBruto =>
             Quantidade * PrecoUnitario;
+
+        public void Atualizar(
+            DateTime data,
+            decimal quantidade,
+            decimal precoUnitario,
+            decimal taxas)
+        {
+            if (quantidade <= 0)
+            {
+                throw new ArgumentException(
+                    "A quantidade deve ser maior que zero.");
+            }
+
+            if (precoUnitario < 0)
+            {
+                throw new ArgumentException(
+                    "O preço unitário não pode ser negativo.");
+            }
+
+            if (taxas < 0)
+            {
+                throw new ArgumentException(
+                    "As taxas não podem ser negativas.");
+            }
+
+            Data = data;
+            Quantidade = quantidade;
+            PrecoUnitario = precoUnitario;
+            Taxas = taxas;
+        }
     }
 }

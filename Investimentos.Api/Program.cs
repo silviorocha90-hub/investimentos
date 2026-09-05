@@ -8,6 +8,7 @@ using Investimentos.Application.Investidores.ListarInvestidores;
 using Investimentos.Application.Opcoes.CadastrarOperacaoOpcao;
 using Investimentos.Application.Opcoes.ConsultarOpcoes;
 using Investimentos.Application.Operacoes.CadastrarOperacao;
+using Investimentos.Application.Operacoes.AtualizarOperacao;
 using Investimentos.Application.Proventos.CadastrarProvento;
 using Investimentos.Application.Proventos.ConsultarProventos;
 using Investimentos.Domain.Entities;
@@ -21,6 +22,7 @@ builder.Services.AddScoped<CadastrarInvestidorHandler>();
 builder.Services.AddScoped<ListarInvestidoresHandler>();
 builder.Services.AddScoped<CadastrarAtivoHandler>();
 builder.Services.AddScoped<CadastrarOperacaoHandler>();
+builder.Services.AddScoped<AtualizarOperacaoHandler>();
 builder.Services.AddScoped<ConsultarCarteiraHandler>();
 builder.Services.AddScoped<CalcularCarteiraService>();
 builder.Services.AddScoped<CadastrarProventoHandler>();
@@ -141,6 +143,40 @@ app.MapPost(
         return Results.Created(
             $"/api/operacoes/{id}",
             new { id });
+    });
+
+app.MapGet(
+    "/api/operacoes/{investidorId:guid}",
+    async (
+        Guid investidorId,
+        ICarteiraRepository repository,
+        CancellationToken cancellationToken) =>
+    {
+        var resultado = await repository.ObterOperacoesAsync(
+            investidorId,
+            cancellationToken);
+
+        return Results.Ok(resultado);
+    });
+
+app.MapPut(
+    "/api/operacoes/{id:guid}",
+    async (
+        Guid id,
+        AtualizarOperacaoRequest request,
+        AtualizarOperacaoHandler handler,
+        CancellationToken cancellationToken) =>
+    {
+        await handler.HandleAsync(
+            new AtualizarOperacaoCommand(
+                id,
+                request.Data,
+                request.Quantidade,
+                request.PrecoUnitario,
+                request.Taxas),
+            cancellationToken);
+
+        return Results.NoContent();
     });
 
 app.MapGet(
@@ -348,6 +384,12 @@ public record CadastrarOperacaoRequest(
     Guid InvestidorId,
     string Ticker,
     string TipoOperacaoCodigo,
+    decimal Quantidade,
+    decimal PrecoUnitario,
+    decimal Taxas);
+
+public record AtualizarOperacaoRequest(
+    DateTime Data,
     decimal Quantidade,
     decimal PrecoUnitario,
     decimal Taxas);
