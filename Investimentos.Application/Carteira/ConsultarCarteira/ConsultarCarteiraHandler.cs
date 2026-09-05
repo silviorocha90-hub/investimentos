@@ -5,16 +5,20 @@ namespace Investimentos.Application.Carteira.ConsultarCarteira
     public class ConsultarCarteiraHandler
     {
         private readonly ICarteiraRepository _repository;
+        private readonly CalcularCarteiraService _calcularCarteiraService;
 
         public ConsultarCarteiraHandler(
-            ICarteiraRepository repository)
+            ICarteiraRepository repository,
+            CalcularCarteiraService calcularCarteiraService)
         {
             _repository = repository;
+            _calcularCarteiraService = calcularCarteiraService;
         }
 
-        public async Task<IReadOnlyList<PosicaoAtivoDto>> HandleAsync(
-            Guid investidorId,
-            CancellationToken cancellationToken = default)
+        public async Task<IReadOnlyList<PosicaoAtivoDto>>
+            HandleAsync(
+                Guid investidorId,
+                CancellationToken cancellationToken = default)
         {
             if (investidorId == Guid.Empty)
             {
@@ -22,9 +26,13 @@ namespace Investimentos.Application.Carteira.ConsultarCarteira
                     "O investidor é obrigatório.");
             }
 
-            return await _repository.ObterPosicoesAsync(
-                investidorId,
-                cancellationToken);
+            var operacoes =
+                await _repository.ObterOperacoesAsync(
+                    investidorId,
+                    cancellationToken);
+
+            return _calcularCarteiraService.Calcular(
+                operacoes);
         }
     }
 }

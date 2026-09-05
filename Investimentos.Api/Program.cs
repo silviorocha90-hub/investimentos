@@ -13,17 +13,12 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddInfrastructure(
     builder.Configuration);
 
-builder.Services.AddScoped<
-    CadastrarInvestidorHandler>();
+builder.Services.AddScoped<CadastrarInvestidorHandler>();
+builder.Services.AddScoped<CadastrarAtivoHandler>();
+builder.Services.AddScoped<CadastrarOperacaoHandler>();
+builder.Services.AddScoped<ConsultarCarteiraHandler>();
 
-builder.Services.AddScoped<
-    CadastrarAtivoHandler>();
-
-builder.Services.AddScoped<
-    CadastrarOperacaoHandler>();
-
-builder.Services.AddScoped<
-    ConsultarCarteiraHandler>();
+builder.Services.AddScoped<CalcularCarteiraService>();
 
 var app =
     builder.Build();
@@ -155,8 +150,7 @@ app.MapGet(
                     investidorId,
                     cancellationToken);
 
-            return Results.Ok(
-                posicoes);
+            return Results.Ok(posicoes);
         }
         catch (ArgumentException exception)
         {

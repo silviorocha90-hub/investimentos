@@ -4,8 +4,9 @@ namespace Investimentos.Application.Interfaces
 {
     public interface ICarteiraRepository
     {
-        Task<IReadOnlyList<PosicaoAtivoDto>> ObterPosicoesAsync(
-            Guid investidorId,
-            CancellationToken cancellationToken = default);
+        Task<IReadOnlyList<OperacaoCarteiraDto>>
+            ObterOperacoesAsync(
+                Guid investidorId,
+                CancellationToken cancellationToken = default);
     }
 }

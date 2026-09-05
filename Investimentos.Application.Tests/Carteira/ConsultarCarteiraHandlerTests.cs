@@ -8,68 +8,100 @@ namespace Investimentos.Application.Tests.Carteira
         [Fact]
         public async Task DeveConsultarCarteira()
         {
-            var investidorId = Guid.NewGuid();
+            var investidorId =
+                Guid.NewGuid();
+
+            var ativoId =
+                Guid.NewGuid();
 
             var repository =
-                new FakeCarteiraRepository();
+                new FakeCarteiraRepository(
+                    new List<OperacaoCarteiraDto>
+                    {
+                        new(
+                            ativoId,
+                            "ITUB4",
+                            "Itaú Unibanco",
+                            "COMPRA",
+                            100,
+                            40.00m,
+                            0,
+                            new DateTime(2026, 9, 4),
+                            1)
+                    });
+
+            var service =
+                new CalcularCarteiraService();
 
             var handler =
-                new ConsultarCarteiraHandler(repository);
+                new ConsultarCarteiraHandler(
+                    repository,
+                    service);
 
             var resultado =
-                await handler.HandleAsync(investidorId);
+                await handler.HandleAsync(
+                    investidorId);
 
             Assert.Single(resultado);
 
+            var posicao =
+                resultado[0];
+
             Assert.Equal(
                 "ITUB4",
-                resultado[0].Ticker);
+                posicao.Ticker);
 
             Assert.Equal(
                 100,
-                resultado[0].Quantidade);
+                posicao.Quantidade);
 
             Assert.Equal(
                 40.00m,
-                resultado[0].PrecoMedio);
+                posicao.PrecoMedio);
 
             Assert.Equal(
                 4000.00m,
-                resultado[0].CustoTotal);
+                posicao.CustoTotal);
         }
 
         [Fact]
-        public async Task NaoDeveConsultarSemInvestidor()
+        public async Task NaoDeveConsultarComInvestidorVazio()
         {
             var repository =
-                new FakeCarteiraRepository();
+                new FakeCarteiraRepository([]);
+
+            var service =
+                new CalcularCarteiraService();
 
             var handler =
-                new ConsultarCarteiraHandler(repository);
+                new ConsultarCarteiraHandler(
+                    repository,
+                    service);
 
             await Assert.ThrowsAsync<ArgumentException>(
-                () => handler.HandleAsync(Guid.Empty));
+                () => handler.HandleAsync(
+                    Guid.Empty));
         }
 
         private class FakeCarteiraRepository
             : ICarteiraRepository
         {
-            public Task<IReadOnlyList<PosicaoAtivoDto>>
-                ObterPosicoesAsync(
+            private readonly IReadOnlyList<OperacaoCarteiraDto>
+                _operacoes;
+
+            public FakeCarteiraRepository(
+                IReadOnlyList<OperacaoCarteiraDto> operacoes)
+            {
+                _operacoes = operacoes;
+            }
+
+            public Task<IReadOnlyList<OperacaoCarteiraDto>>
+                ObterOperacoesAsync(
                     Guid investidorId,
                     CancellationToken cancellationToken = default)
             {
-                IReadOnlyList<PosicaoAtivoDto> resultado =
-                [
-                    new PosicaoAtivoDto(
-                        "ITUB4",
-                        "Itaú Unibanco",
-                        100,
-                        40.00m,
-                        4000.00m)
-                ];
-
-                return Task.FromResult(resultado);
+                return Task.FromResult(
+                    _operacoes);
             }
         }
     }
