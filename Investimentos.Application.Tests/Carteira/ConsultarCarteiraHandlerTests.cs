@@ -27,7 +27,18 @@ namespace Investimentos.Application.Tests.Carteira
                             40.00m,
                             0,
                             new DateTime(2026, 9, 4),
-                            1)
+                            1),
+
+                        new(
+                            ativoId,
+                            "ITUB4",
+                            "Itaú Unibanco",
+                            "VENDA",
+                            50,
+                            45.00m,
+                            0,
+                            new DateTime(2026, 9, 4),
+                            2)
                     });
 
             var service =
@@ -52,7 +63,7 @@ namespace Investimentos.Application.Tests.Carteira
                 posicao.Ticker);
 
             Assert.Equal(
-                100,
+                50,
                 posicao.Quantidade);
 
             Assert.Equal(
@@ -60,8 +71,12 @@ namespace Investimentos.Application.Tests.Carteira
                 posicao.PrecoMedio);
 
             Assert.Equal(
-                4000.00m,
+                2000.00m,
                 posicao.CustoTotal);
+
+            Assert.Equal(
+                250.00m,
+                posicao.ResultadoRealizado);
         }
 
         [Fact]
@@ -86,7 +101,8 @@ namespace Investimentos.Application.Tests.Carteira
         private class FakeCarteiraRepository
             : ICarteiraRepository
         {
-            private readonly IReadOnlyList<OperacaoCarteiraDto>
+            private readonly
+                IReadOnlyList<OperacaoCarteiraDto>
                 _operacoes;
 
             public FakeCarteiraRepository(

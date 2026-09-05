@@ -12,7 +12,8 @@ namespace Investimentos.Application.Carteira.ConsultarCarteira
             CalcularCarteiraService calcularCarteiraService)
         {
             _repository = repository;
-            _calcularCarteiraService = calcularCarteiraService;
+            _calcularCarteiraService =
+                calcularCarteiraService;
         }
 
         public async Task<IReadOnlyList<PosicaoAtivoDto>>

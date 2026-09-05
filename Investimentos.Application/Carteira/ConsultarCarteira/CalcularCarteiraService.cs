@@ -25,6 +25,7 @@
                     {
                         decimal quantidade = 0;
                         decimal custoTotal = 0;
+                        decimal resultadoRealizado = 0;
 
                         foreach (var operacao in grupo)
                         {
@@ -56,9 +57,21 @@
                                         operacao.Quantidade,
                                         quantidade);
 
-                                custoTotal -=
+                                var valorVenda =
+                                    quantidadeVendida *
+                                    operacao.PrecoUnitario;
+
+                                var custoQuantidadeVendida =
                                     quantidadeVendida *
                                     precoMedio;
+
+                                resultadoRealizado +=
+                                    valorVenda
+                                    - custoQuantidadeVendida
+                                    - operacao.Taxas;
+
+                                custoTotal -=
+                                    custoQuantidadeVendida;
 
                                 quantidade -=
                                     quantidadeVendida;
@@ -75,10 +88,14 @@
                             grupo.Key.Nome,
                             quantidade,
                             precoMedioFinal,
-                            custoTotal);
+                            custoTotal,
+                            resultadoRealizado);
                     })
-                    .Where(x => x.Quantidade > 0)
-                    .OrderBy(x => x.Ticker)
+                    .Where(x =>
+                        x.Quantidade > 0 ||
+                        x.ResultadoRealizado != 0)
+                    .OrderBy(x =>
+                        x.Ticker)
                     .ToList();
 
             return posicoes;

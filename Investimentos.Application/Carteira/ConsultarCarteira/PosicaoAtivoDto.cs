@@ -5,5 +5,6 @@
         string Nome,
         decimal Quantidade,
         decimal PrecoMedio,
-        decimal CustoTotal);
+        decimal CustoTotal,
+        decimal ResultadoRealizado);
 }
