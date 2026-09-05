@@ -15,14 +15,7 @@ namespace Investimentos.Infrastructure
         {
             var connectionString =
                 configuration.GetConnectionString(
-                    "InvestimentosDb");
-
-            if (string.IsNullOrWhiteSpace(
-                connectionString))
-            {
-                throw new InvalidOperationException(
-                    "A connection string 'InvestimentosDb' não foi configurada.");
-            }
+                    "DefaultConnection");
 
             services.AddDbContext<InvestimentosDbContext>(
                 options =>
@@ -44,6 +37,14 @@ namespace Investimentos.Infrastructure
             services.AddScoped<
                 ICarteiraRepository,
                 CarteiraRepository>();
+
+            services.AddScoped<
+                IProventoRepository,
+                ProventoRepository>();
+
+            services.AddScoped<
+                IOperacaoOpcaoRepository,
+                OperacaoOpcaoRepository>();
 
             return services;
         }

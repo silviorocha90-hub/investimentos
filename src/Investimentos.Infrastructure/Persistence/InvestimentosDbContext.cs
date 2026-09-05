@@ -11,12 +11,29 @@ namespace Investimentos.Infrastructure.Persistence
         {
         }
 
-        public DbSet<ClasseAtivo> ClassesAtivos { get; set; }
-        public DbSet<TipoAtivo> TiposAtivos { get; set; }
-        public DbSet<Ativo> Ativos { get; set; }
-        public DbSet<Investidor> Investidores { get; set; }
-        public DbSet<TipoOperacao> TiposOperacoes { get; set; }
-        public DbSet<Operacao> Operacoes { get; set; }
+        public DbSet<ClasseAtivo> ClassesAtivos =>
+            Set<ClasseAtivo>();
+
+        public DbSet<TipoAtivo> TiposAtivos =>
+            Set<TipoAtivo>();
+
+        public DbSet<Ativo> Ativos =>
+            Set<Ativo>();
+
+        public DbSet<Investidor> Investidores =>
+            Set<Investidor>();
+
+        public DbSet<TipoOperacao> TiposOperacoes =>
+            Set<TipoOperacao>();
+
+        public DbSet<Operacao> Operacoes =>
+            Set<Operacao>();
+
+        public DbSet<Provento> Proventos =>
+            Set<Provento>();
+
+        public DbSet<OperacaoOpcao> OperacoesOpcoes =>
+            Set<OperacaoOpcao>();
 
         protected override void OnModelCreating(
             ModelBuilder modelBuilder)
