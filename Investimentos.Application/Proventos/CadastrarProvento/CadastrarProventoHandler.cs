@@ -23,12 +23,16 @@ namespace Investimentos.Application.Proventos.CadastrarProvento
                     cancellationToken);
 
             if (investidor is null)
+            {
                 throw new ArgumentException(
                     "O investidor informado não existe.");
+            }
 
             if (string.IsNullOrWhiteSpace(command.Ticker))
+            {
                 throw new ArgumentException(
                     "O ticker é obrigatório.");
+            }
 
             var ativo =
                 await _repository.ObterAtivoPorTickerAsync(
@@ -38,18 +42,22 @@ namespace Investimentos.Application.Proventos.CadastrarProvento
                     cancellationToken);
 
             if (ativo is null)
+            {
                 throw new ArgumentException(
                     "O ativo informado não existe.");
+            }
 
             var provento =
                 new Provento(
                     investidor,
                     ativo,
                     command.Tipo,
+                    null,
                     command.DataCom,
                     command.DataPagamento,
                     command.QuantidadeBase,
-                    command.ValorPorUnidade);
+                    command.ValorPorUnidade,
+                    command.ValorRecebido);
 
             await _repository.AdicionarAsync(
                 provento,

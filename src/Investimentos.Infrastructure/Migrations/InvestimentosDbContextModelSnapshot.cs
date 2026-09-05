@@ -111,6 +111,54 @@ namespace Investimentos.Infrastructure.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Investimentos.Domain.Entities.CotacaoAtivo", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("AtivoId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("DataReferencia")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("Preco")
+                        .HasPrecision(18, 8)
+                        .HasColumnType("decimal(18,8)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AtivoId", "DataReferencia")
+                        .IsUnique();
+
+                    b.ToTable("CotacaoAtivo", (string)null);
+                });
+
+            modelBuilder.Entity("Investimentos.Domain.Entities.HistoricoPatrimonio", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("DataReferencia")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("InvestidorId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("ValorCarteira")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("InvestidorId", "DataReferencia")
+                        .IsUnique();
+
+                    b.ToTable("HistoricoPatrimonio", (string)null);
+                });
+
             modelBuilder.Entity("Investimentos.Domain.Entities.Investidor", b =>
                 {
                     b.Property<Guid>("Id")
@@ -187,6 +235,9 @@ namespace Investimentos.Infrastructure.Migrations
                     b.Property<int>("Contratos")
                         .HasColumnType("int");
 
+                    b.Property<DateTime?>("DataFinalizacao")
+                        .HasColumnType("datetime2");
+
                     b.Property<DateTime>("DataOperacao")
                         .HasColumnType("datetime2");
 
@@ -198,6 +249,10 @@ namespace Investimentos.Infrastructure.Migrations
                         .HasMaxLength(10)
                         .HasColumnType("nvarchar(10)");
 
+                    b.Property<decimal?>("PrecoRecompraUnitario")
+                        .HasPrecision(18, 8)
+                        .HasColumnType("decimal(18,8)");
+
                     b.Property<decimal>("PremioUnitario")
                         .HasPrecision(18, 8)
                         .HasColumnType("decimal(18,8)");
@@ -205,6 +260,9 @@ namespace Investimentos.Infrastructure.Migrations
                     b.Property<decimal>("Quantidade")
                         .HasPrecision(18, 8)
                         .HasColumnType("decimal(18,8)");
+
+                    b.Property<decimal?>("ResultadoInformado")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("Situacao")
                         .IsRequired()
@@ -229,6 +287,10 @@ namespace Investimentos.Infrastructure.Migrations
                         .HasMaxLength(10)
                         .HasColumnType("nvarchar(10)");
 
+                    b.Property<decimal?>("ValorExecucao")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<DateTime>("Vencimento")
                         .HasColumnType("datetime2");
 
@@ -236,7 +298,9 @@ namespace Investimentos.Infrastructure.Migrations
 
                     b.HasIndex("AtivoId");
 
-                    b.HasIndex("InvestidorId", "TickerOpcao", "DataOperacao");
+                    b.HasIndex("TickerOpcao");
+
+                    b.HasIndex("InvestidorId", "DataOperacao");
 
                     b.ToTable("OperacaoOpcao", (string)null);
                 });
@@ -250,11 +314,15 @@ namespace Investimentos.Infrastructure.Migrations
                     b.Property<Guid>("AtivoId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<DateTime>("DataCom")
+                    b.Property<DateTime?>("DataCom")
                         .HasColumnType("datetime2");
 
                     b.Property<DateTime>("DataPagamento")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("Descricao")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<Guid>("InvestidorId")
                         .HasColumnType("uniqueidentifier");
@@ -272,7 +340,7 @@ namespace Investimentos.Infrastructure.Migrations
                         .HasPrecision(18, 8)
                         .HasColumnType("decimal(18,8)");
 
-                    b.Property<decimal>("ValorTotal")
+                    b.Property<decimal>("ValorRecebido")
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
@@ -283,6 +351,30 @@ namespace Investimentos.Infrastructure.Migrations
                     b.HasIndex("InvestidorId", "DataPagamento");
 
                     b.ToTable("Provento", (string)null);
+                });
+
+            modelBuilder.Entity("Investimentos.Domain.Entities.SaldoDisponivel", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("DataReferencia")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("InvestidorId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("Valor")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("InvestidorId", "DataReferencia")
+                        .IsUnique();
+
+                    b.ToTable("SaldoDisponivel", (string)null);
                 });
 
             modelBuilder.Entity("Investimentos.Domain.Entities.TipoAtivo", b =>
@@ -521,6 +613,28 @@ namespace Investimentos.Infrastructure.Migrations
                     b.Navigation("TipoAtivo");
                 });
 
+            modelBuilder.Entity("Investimentos.Domain.Entities.CotacaoAtivo", b =>
+                {
+                    b.HasOne("Investimentos.Domain.Entities.Ativo", "Ativo")
+                        .WithMany()
+                        .HasForeignKey("AtivoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Ativo");
+                });
+
+            modelBuilder.Entity("Investimentos.Domain.Entities.HistoricoPatrimonio", b =>
+                {
+                    b.HasOne("Investimentos.Domain.Entities.Investidor", "Investidor")
+                        .WithMany()
+                        .HasForeignKey("InvestidorId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Investidor");
+                });
+
             modelBuilder.Entity("Investimentos.Domain.Entities.Operacao", b =>
                 {
                     b.HasOne("Investimentos.Domain.Entities.Ativo", "Ativo")
@@ -582,6 +696,17 @@ namespace Investimentos.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Ativo");
+
+                    b.Navigation("Investidor");
+                });
+
+            modelBuilder.Entity("Investimentos.Domain.Entities.SaldoDisponivel", b =>
+                {
+                    b.HasOne("Investimentos.Domain.Entities.Investidor", "Investidor")
+                        .WithMany()
+                        .HasForeignKey("InvestidorId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.Navigation("Investidor");
                 });

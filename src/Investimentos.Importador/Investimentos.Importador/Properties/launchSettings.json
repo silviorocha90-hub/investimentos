@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Investimentos.Importador": {
+      "commandName": "Project",
+      "commandLineArgs": "\"C:\\Silvio\\Investimentos\\Investimentos.xlsx\""
+    }
+  }
+}

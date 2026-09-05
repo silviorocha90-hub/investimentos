@@ -1,6 +1,7 @@
 ﻿using Investimentos.Application.Carteira.ConsultarCarteira;
 using Investimentos.Application.Opcoes.ConsultarOpcoes;
 using Investimentos.Application.Proventos.ConsultarProventos;
+using Investimentos.Application.Interfaces;
 
 namespace Investimentos.Application.Dashboard
 {
@@ -9,15 +10,21 @@ namespace Investimentos.Application.Dashboard
         private readonly ConsultarCarteiraHandler _carteiraHandler;
         private readonly ConsultarProventosHandler _proventosHandler;
         private readonly ConsultarOpcoesHandler _opcoesHandler;
+        private readonly ICotacaoAtivoRepository _cotacaoRepository;
+        private readonly IDescontoFiscalRepository _descontoRepository;
 
         public ConsultarDashboardHandler(
             ConsultarCarteiraHandler carteiraHandler,
             ConsultarProventosHandler proventosHandler,
-            ConsultarOpcoesHandler opcoesHandler)
+            ConsultarOpcoesHandler opcoesHandler,
+            ICotacaoAtivoRepository cotacaoRepository,
+            IDescontoFiscalRepository descontoRepository)
         {
             _carteiraHandler = carteiraHandler;
             _proventosHandler = proventosHandler;
             _opcoesHandler = opcoesHandler;
+            _cotacaoRepository = cotacaoRepository;
+            _descontoRepository = descontoRepository;
         }
 
         public async Task<DashboardDto> HandleAsync(
@@ -45,40 +52,67 @@ namespace Investimentos.Application.Dashboard
                     investidorId,
                     cancellationToken);
 
-            var patrimonioPorCusto =
-                posicoes
-                    .Where(x => x.Quantidade > 0)
-                    .Sum(x => x.CustoTotal);
+            var cotacoes = await _cotacaoRepository
+                .ObterUltimasPorTickerAsync(cancellationToken);
 
-            var resultadoRealizado =
-                posicoes.Sum(
-                    x => x.ResultadoRealizado);
+            var valorAplicado = posicoes
+                .Where(x =>
+                    x.Quantidade > 0 &&
+                    x.Ticker != "PREV")
+                .Sum(x => x.Quantidade *
+                    (cotacoes.TryGetValue(x.Ticker, out var preco)
+                        ? preco
+                        : 0));
 
             var totalProventos =
                 proventos.Sum(
-                    x => x.ValorTotal);
+                    x => x.ValorRecebido);
 
             var premioLiquidoOpcoes =
-                opcoes.Sum(x =>
-                {
-                    var premioLiquido =
-                        x.PremioTotal - x.Taxas;
+                opcoes.Where(x => x.Situacao == "ENCERRADA").Sum(x =>
+                    x.ResultadoInformado ?? 0);
 
-                    return x.Natureza == "VENDA"
-                        ? premioLiquido
-                        : -premioLiquido;
+            var descontosFiscais =
+                await _descontoRepository.ObterTotalAsync(
+                    investidorId,
+                    cancellationToken);
+
+            premioLiquidoOpcoes -= descontosFiscais;
+
+            var valorizacaoAtivos = posicoes
+                .Where(x =>
+                    x.Quantidade > 0 &&
+                    x.Ticker != "PREV" &&
+                    x.DataPrimeiraCompra.HasValue &&
+                    x.DataPrimeiraCompra.Value < DateTime.Today.AddMonths(-1) &&
+                    cotacoes.TryGetValue(x.Ticker, out _))
+                .Sum(x =>
+                {
+                    var precoAtual = cotacoes[x.Ticker];
+                    return (x.Quantidade * precoAtual) - x.CustoTotal;
                 });
+
+            var resultadoRealizado =
+                premioLiquidoOpcoes +
+                totalProventos +
+                valorizacaoAtivos;
+
+            /*
+             * O desconto fiscal e separado do MyProfit para preservar
+             * o resultado original da operacao no banco.
+             */
 
             var quantidadeAtivos =
                 posicoes.Count(
-                    x => x.Quantidade > 0);
+                    x => x.Quantidade > 0 &&
+                        x.Ticker != "PREV");
 
             var quantidadeOpcoesAbertas =
                 opcoes.Count(
                     x => x.Situacao == "ABERTA");
 
             return new DashboardDto(
-                patrimonioPorCusto,
+                valorAplicado,
                 resultadoRealizado,
                 totalProventos,
                 premioLiquidoOpcoes,
@@ -86,7 +120,8 @@ namespace Investimentos.Application.Dashboard
                 quantidadeOpcoesAbertas,
                 posicoes,
                 proventos,
-                opcoes);
+                opcoes,
+                DescontosFiscais: descontosFiscais);
         }
     }
 }

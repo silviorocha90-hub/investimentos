@@ -4,9 +4,11 @@
         Guid Id,
         string Ticker,
         string Tipo,
-        DateTime DataCom,
+        DateTime? DataCom,
         DateTime DataPagamento,
         decimal QuantidadeBase,
         decimal ValorPorUnidade,
-        decimal ValorTotal);
+        decimal ValorBruto,
+        decimal ValorRecebido,
+        decimal ImpostoRetido);
 }

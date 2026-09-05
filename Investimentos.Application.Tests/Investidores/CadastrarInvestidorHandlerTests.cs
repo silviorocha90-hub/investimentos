@@ -112,6 +112,18 @@ namespace Investimentos.Application.Tests.Investidores
                 return Task.FromResult(
                     existe);
             }
+
+            public Task<IReadOnlyList<Investidor>> ListarAsync(
+                CancellationToken cancellationToken = default)
+            {
+                IReadOnlyList<Investidor> investidores =
+                    Investidores
+                        .OrderBy(x => x.Nome)
+                        .ToList();
+
+                return Task.FromResult(
+                    investidores);
+            }
         }
     }
 }

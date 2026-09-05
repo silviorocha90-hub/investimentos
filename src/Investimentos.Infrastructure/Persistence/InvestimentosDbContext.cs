@@ -35,6 +35,18 @@ namespace Investimentos.Infrastructure.Persistence
         public DbSet<OperacaoOpcao> OperacoesOpcoes =>
             Set<OperacaoOpcao>();
 
+        public DbSet<CotacaoAtivo> CotacoesAtivos =>
+            Set<CotacaoAtivo>();
+
+        public DbSet<SaldoDisponivel> SaldosDisponiveis =>
+            Set<SaldoDisponivel>();
+
+        public DbSet<HistoricoPatrimonio> HistoricosPatrimonio =>
+            Set<HistoricoPatrimonio>();
+
+        public DbSet<DescontoFiscal> DescontosFiscais =>
+            Set<DescontoFiscal>();
+
         protected override void OnModelCreating(
             ModelBuilder modelBuilder)
         {

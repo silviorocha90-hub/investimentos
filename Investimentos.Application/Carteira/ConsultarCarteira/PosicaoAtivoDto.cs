@@ -6,5 +6,6 @@
         decimal Quantidade,
         decimal PrecoMedio,
         decimal CustoTotal,
-        decimal ResultadoRealizado);
+        decimal ResultadoRealizado,
+        DateTime? DataPrimeiraCompra = null);
 }

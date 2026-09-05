@@ -2,10 +2,10 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Investimentos.Infrastructure.Persistence.Configurations
+namespace Investimentos.Infrastructure.Persistence.Configuration
 {
-    public class OperacaoOpcaoConfiguration
-        : IEntityTypeConfiguration<OperacaoOpcao>
+    public class OperacaoOpcaoConfiguration :
+        IEntityTypeConfiguration<OperacaoOpcao>
     {
         public void Configure(
             EntityTypeBuilder<OperacaoOpcao> builder)
@@ -38,6 +38,10 @@ namespace Investimentos.Infrastructure.Persistence.Configurations
                 .HasColumnType("datetime2")
                 .IsRequired();
 
+            builder.Property(x => x.DataFinalizacao)
+                .HasColumnType("datetime2")
+                .IsRequired(false);
+
             builder.Property(x => x.Strike)
                 .HasPrecision(18, 8)
                 .IsRequired();
@@ -57,7 +61,17 @@ namespace Investimentos.Infrastructure.Persistence.Configurations
                 .HasPrecision(18, 2)
                 .IsRequired();
 
+            builder.Property(x => x.PrecoRecompraUnitario)
+                .HasPrecision(18, 8)
+                .IsRequired(false);
+
+            builder.Property(x => x.ValorExecucao)
+                .HasPrecision(18, 2)
+                .IsRequired(false);
+
             builder.Ignore(x => x.PremioTotal);
+            builder.Ignore(x => x.ValorRecompraTotal);
+            builder.Ignore(x => x.ResultadoFinal);
 
             builder.HasOne(x => x.Investidor)
                 .WithMany()
@@ -69,13 +83,15 @@ namespace Investimentos.Infrastructure.Persistence.Configurations
                 .HasForeignKey(x => x.AtivoId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            builder.HasIndex(x =>
-                new
+            builder.HasIndex(
+                x => new
                 {
                     x.InvestidorId,
-                    x.TickerOpcao,
                     x.DataOperacao
                 });
+
+            builder.HasIndex(
+                x => x.TickerOpcao);
         }
     }
 }

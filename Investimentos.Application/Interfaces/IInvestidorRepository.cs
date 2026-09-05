@@ -11,5 +11,8 @@ namespace Investimentos.Application.Interfaces
         Task<bool> ExistePorNomeAsync(
             string nome,
             CancellationToken cancellationToken = default);
+
+        Task<IReadOnlyList<Investidor>> ListarAsync(
+            CancellationToken cancellationToken = default);
     }
 }

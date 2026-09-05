@@ -1,4 +1,27 @@
 <Solution>
+  <Folder Name="/frontend/">
+    <Project Path="frontend/investimentos-web/" Type="Website" DisplayName="investimentos-web">
+      <BuildType Project="Debug" />
+      <Properties Name="WebsiteProperties">
+        <Property Name="Debug.AspNetCompiler.Debug" Value="&quot;True&quot;" />
+        <Property Name="Debug.AspNetCompiler.FixedNames" Value="&quot;false&quot;" />
+        <Property Name="Debug.AspNetCompiler.ForceOverwrite" Value="&quot;true&quot;" />
+        <Property Name="Debug.AspNetCompiler.PhysicalPath" Value="&quot;frontend\investimentos-web\&quot;" />
+        <Property Name="Debug.AspNetCompiler.TargetPath" Value="&quot;PrecompiledWeb\localhost_62511\&quot;" />
+        <Property Name="Debug.AspNetCompiler.Updateable" Value="&quot;true&quot;" />
+        <Property Name="Debug.AspNetCompiler.VirtualPath" Value="&quot;/localhost_62511&quot;" />
+        <Property Name="Release.AspNetCompiler.Debug" Value="&quot;False&quot;" />
+        <Property Name="Release.AspNetCompiler.FixedNames" Value="&quot;false&quot;" />
+        <Property Name="Release.AspNetCompiler.ForceOverwrite" Value="&quot;true&quot;" />
+        <Property Name="Release.AspNetCompiler.PhysicalPath" Value="&quot;frontend\investimentos-web\&quot;" />
+        <Property Name="Release.AspNetCompiler.TargetPath" Value="&quot;PrecompiledWeb\localhost_62511\&quot;" />
+        <Property Name="Release.AspNetCompiler.Updateable" Value="&quot;true&quot;" />
+        <Property Name="Release.AspNetCompiler.VirtualPath" Value="&quot;/localhost_62511&quot;" />
+        <Property Name="TargetFrameworkMoniker" Value="&quot;.NETFramework,Version%3Dv4.8&quot;" />
+        <Property Name="VWDPort" Value="&quot;62511&quot;" />
+      </Properties>
+    </Project>
+  </Folder>
   <Folder Name="/src/">
     <Project Path="Investimentos.Api/Investimentos.Api.csproj" Id="16ad3071-8545-4a3f-90b8-442f395e43a7" />
     <Project Path="Investimentos.Application/Investimentos.Application.csproj" Id="ff9b1615-0366-4ed4-8b47-01259e873f71" />
@@ -10,4 +33,5 @@
     <Project Path="Investimentos.IntegrationTests/Investimentos.IntegrationTests.csproj" Id="bc0a1d6e-1515-4a7d-b59c-8ebb0f9c8c3e" />
     <Project Path="tests/Investimentos.Domain.Tests/Investimentos.Domain.Tests.csproj" Id="7f339098-a14f-4b85-b364-540c0627fad4" />
   </Folder>
+  <Project Path="src/Investimentos.Importador/Investimentos.Importador/Investimentos.Importador.csproj" Id="3618b504-f1a0-4ed2-b3d3-22939da7a973" />
 </Solution>

@@ -12,14 +12,15 @@ namespace Investimentos.Application.Opcoes.ConsultarOpcoes
             _repository = repository;
         }
 
-        public async Task<IReadOnlyList<OperacaoOpcaoDto>>
-            HandleAsync(
-                Guid investidorId,
-                CancellationToken cancellationToken = default)
+        public async Task<IReadOnlyList<OperacaoOpcaoDto>> HandleAsync(
+            Guid investidorId,
+            CancellationToken cancellationToken = default)
         {
             if (investidorId == Guid.Empty)
+            {
                 throw new ArgumentException(
                     "O investidor é obrigatório.");
+            }
 
             var operacoes =
                 await _repository.ListarAsync(
@@ -36,12 +37,18 @@ namespace Investimentos.Application.Opcoes.ConsultarOpcoes
                         x.Natureza,
                         x.DataOperacao,
                         x.Vencimento,
+                        x.DataFinalizacao,
                         x.Strike,
                         x.Contratos,
                         x.Quantidade,
                         x.PremioUnitario,
                         x.PremioTotal,
                         x.Taxas,
+                        x.PrecoRecompraUnitario,
+                        x.ValorRecompraTotal,
+                        x.ValorExecucao,
+                        x.ResultadoInformado,
+                        x.ResultadoFinal,
                         x.Situacao))
                 .ToList();
         }

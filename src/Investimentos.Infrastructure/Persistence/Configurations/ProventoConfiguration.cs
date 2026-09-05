@@ -4,8 +4,8 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Investimentos.Infrastructure.Persistence.Configurations
 {
-    public class ProventoConfiguration
-        : IEntityTypeConfiguration<Provento>
+    public class ProventoConfiguration :
+        IEntityTypeConfiguration<Provento>
     {
         public void Configure(
             EntityTypeBuilder<Provento> builder)
@@ -18,9 +18,13 @@ namespace Investimentos.Infrastructure.Persistence.Configurations
                 .HasMaxLength(30)
                 .IsRequired();
 
+            builder.Property(x => x.Descricao)
+                .HasMaxLength(200)
+                .IsRequired(false);
+
             builder.Property(x => x.DataCom)
                 .HasColumnType("datetime2")
-                .IsRequired();
+                .IsRequired(false);
 
             builder.Property(x => x.DataPagamento)
                 .HasColumnType("datetime2")
@@ -34,9 +38,12 @@ namespace Investimentos.Infrastructure.Persistence.Configurations
                 .HasPrecision(18, 8)
                 .IsRequired();
 
-            builder.Property(x => x.ValorTotal)
+            builder.Property(x => x.ValorRecebido)
                 .HasPrecision(18, 2)
                 .IsRequired();
+
+            builder.Ignore(x => x.ValorBruto);
+            builder.Ignore(x => x.ImpostoRetido);
 
             builder.HasOne(x => x.Investidor)
                 .WithMany()
@@ -48,8 +55,8 @@ namespace Investimentos.Infrastructure.Persistence.Configurations
                 .HasForeignKey(x => x.AtivoId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            builder.HasIndex(x =>
-                new
+            builder.HasIndex(
+                x => new
                 {
                     x.InvestidorId,
                     x.DataPagamento

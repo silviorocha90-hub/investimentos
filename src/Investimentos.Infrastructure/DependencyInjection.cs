@@ -52,6 +52,21 @@ namespace Investimentos.Infrastructure
                 IOperacaoOpcaoRepository,
                 OperacaoOpcaoRepository>();
 
+            services.AddScoped<
+                ISaldoDisponivelRepository,
+                SaldoDisponivelRepository>();
+            services.AddScoped<
+                IDescontoFiscalRepository,
+                DescontoFiscalRepository>();
+
+            services.AddScoped<
+                IHistoricoPatrimonioRepository,
+                HistoricoPatrimonioRepository>();
+
+            services.AddScoped<
+                ICotacaoAtivoRepository,
+                CotacaoAtivoRepository>();
+
             return services;
         }
     }

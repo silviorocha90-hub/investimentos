@@ -51,10 +51,12 @@ namespace Investimentos.Application.Tests.Dashboard
                     investidor,
                     ativo,
                     "DIVIDENDO",
+                    "Dividendo ITUB4",
                     new DateTime(2026, 8, 10),
                     new DateTime(2026, 8, 20),
                     100,
-                    0.50m);
+                    0.50m,
+                    50.00m);
 
             var proventoRepository =
                 new FakeProventoRepository(

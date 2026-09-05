@@ -1,12 +1,10 @@
 ﻿using Investimentos.Application.Interfaces;
 using Investimentos.Domain.Entities;
-using Investimentos.Domain.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 
 namespace Investimentos.Infrastructure.Persistence.Repositories
 {
-    public class OperacaoOpcaoRepository
-        : IOperacaoOpcaoRepository
+    public class OperacaoOpcaoRepository : IOperacaoOpcaoRepository
     {
         private readonly InvestimentosDbContext _context;
 
@@ -17,11 +15,11 @@ namespace Investimentos.Infrastructure.Persistence.Repositories
         }
 
         public async Task AdicionarAsync(
-            OperacaoOpcao operacao,
+            OperacaoOpcao operacaoOpcao,
             CancellationToken cancellationToken = default)
         {
             await _context.OperacoesOpcoes.AddAsync(
-                operacao,
+                operacaoOpcao,
                 cancellationToken);
 
             await _context.SaveChangesAsync(
@@ -42,19 +40,15 @@ namespace Investimentos.Infrastructure.Persistence.Repositories
             string ticker,
             CancellationToken cancellationToken = default)
         {
-            var tickerValueObject =
-                new Ticker(ticker);
-
             return await _context.Ativos
                 .FirstOrDefaultAsync(
-                    x => x.Ticker == tickerValueObject,
+                    x => x.Ticker.Codigo == ticker,
                     cancellationToken);
         }
 
-        public async Task<IReadOnlyList<OperacaoOpcao>>
-            ListarAsync(
-                Guid investidorId,
-                CancellationToken cancellationToken = default)
+        public async Task<IReadOnlyList<OperacaoOpcao>> ListarAsync(
+            Guid investidorId,
+            CancellationToken cancellationToken = default)
         {
             return await _context.OperacoesOpcoes
                 .AsNoTracking()

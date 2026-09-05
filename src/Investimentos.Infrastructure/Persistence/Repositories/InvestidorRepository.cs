@@ -36,5 +36,14 @@ namespace Investimentos.Infrastructure.Persistence.Repositories
                     x => x.Nome == nome,
                     cancellationToken);
         }
+
+        public async Task<IReadOnlyList<Investidor>> ListarAsync(
+            CancellationToken cancellationToken = default)
+        {
+            return await _context.Investidores
+                .AsNoTracking()
+                .OrderBy(x => x.Nome)
+                .ToListAsync(cancellationToken);
+        }
     }
 }

@@ -36,7 +36,9 @@ namespace Investimentos.Application.Proventos.ConsultarProventos
                         x.DataPagamento,
                         x.QuantidadeBase,
                         x.ValorPorUnidade,
-                        x.ValorTotal))
+                        x.ValorBruto,
+                        x.ValorRecebido,
+                        x.ImpostoRetido))
                 .ToList();
         }
     }
