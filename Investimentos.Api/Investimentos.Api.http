@@ -1,0 +1,9 @@
+@InvestimentosApi_HostAddress = https://localhost:7237
+
+### Cadastrar investidor
+POST {{InvestimentosApi_HostAddress}}/api/investidores
+Content-Type: application/json
+
+{
+  "nome": "Silvio"
+}

@@ -1,0 +1,50 @@
+# Visual Studio
+.vs/
+.vscode/
+
+# Build
+bin/
+obj/
+
+# User-specific files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Visual Studio cache
+*.db
+*.db-shm
+*.db-wal
+*.cache
+*.v2
+
+# Test results
+TestResults/
+*.trx
+
+# Coverage
+coverage/
+coverage.cobertura.xml
+
+# NuGet
+packages/
+*.nupkg
+*.snupkg
+
+# Logs
+*.log
+
+# Operating System
+.DS_Store
+Thumbs.db
+
+# Rider / JetBrains
+.idea/
+*.sln.iml
+
+# Frontend - para quando criarmos o React
+node_modules/
+dist/
+.env
+.env.local
