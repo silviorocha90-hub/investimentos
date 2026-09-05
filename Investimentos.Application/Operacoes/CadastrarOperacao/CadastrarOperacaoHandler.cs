@@ -28,20 +28,18 @@ namespace Investimentos.Application.Operacoes.CadastrarOperacao
                     "O investidor informado não existe.");
             }
 
-            if (string.IsNullOrWhiteSpace(command.Ticker))
+            if (string.IsNullOrWhiteSpace(
+                command.Ticker))
             {
                 throw new ArgumentException(
                     "O ticker do ativo é obrigatório.");
             }
 
-            var ticker =
-                command.Ticker
-                    .Trim()
-                    .ToUpperInvariant();
-
             var ativo =
                 await _repository.ObterAtivoPorTickerAsync(
-                    ticker,
+                    command.Ticker
+                        .Trim()
+                        .ToUpperInvariant(),
                     cancellationToken);
 
             if (ativo is null)
@@ -75,6 +73,36 @@ namespace Investimentos.Application.Operacoes.CadastrarOperacao
                     investidor.Id,
                     command.Data,
                     cancellationToken);
+
+            if (tipoOperacao.Codigo == "VENDA")
+            {
+                var quantidadeDisponivel =
+                    await _repository
+                        .ObterQuantidadeDisponivelAsync(
+                            investidor.Id,
+                            ativo.Id,
+                            command.Data,
+                            sequencia,
+                            cancellationToken);
+
+                if (quantidadeDisponivel <= 0)
+                {
+                    throw new InvalidOperationException(
+                        $"Não existe posição disponível de " +
+                        $"{ativo.Ticker.Codigo} para venda.");
+                }
+
+                if (command.Quantidade >
+                    quantidadeDisponivel)
+                {
+                    throw new InvalidOperationException(
+                        $"Quantidade de venda de " +
+                        $"{ativo.Ticker.Codigo} é maior que " +
+                        $"a posição disponível. " +
+                        $"Disponível: {quantidadeDisponivel}. " +
+                        $"Venda: {command.Quantidade}.");
+                }
+            }
 
             var operacao =
                 new Operacao(

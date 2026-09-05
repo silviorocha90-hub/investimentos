@@ -24,5 +24,12 @@ namespace Investimentos.Application.Interfaces
             Guid investidorId,
             DateTime data,
             CancellationToken cancellationToken = default);
+
+        Task<decimal> ObterQuantidadeDisponivelAsync(
+            Guid investidorId,
+            Guid ativoId,
+            DateTime data,
+            int sequencia,
+            CancellationToken cancellationToken = default);
     }
 }

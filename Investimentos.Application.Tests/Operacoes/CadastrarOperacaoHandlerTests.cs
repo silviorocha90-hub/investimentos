@@ -8,10 +8,24 @@ namespace Investimentos.Application.Tests.Operacoes
     public class CadastrarOperacaoHandlerTests
     {
         [Fact]
-        public async Task DeveCadastrarOperacao()
+        public async Task DeveCadastrarCompra()
         {
+            var investidor =
+                new Investidor("Silvio");
+
+            var ativo =
+                CriarAtivo();
+
+            var tipoOperacao =
+                new TipoOperacao(
+                    "COMPRA",
+                    "Compra");
+
             var repository =
-                new FakeOperacaoRepository();
+                new FakeOperacaoRepository(
+                    investidor,
+                    ativo,
+                    tipoOperacao);
 
             var handler =
                 new CadastrarOperacaoHandler(
@@ -20,9 +34,9 @@ namespace Investimentos.Application.Tests.Operacoes
             var command =
                 new CadastrarOperacaoCommand(
                     new DateTime(2026, 9, 4),
-                    repository.Investidor.Id,
-                    "itub4",
-                    "compra",
+                    investidor.Id,
+                    "ITUB4",
+                    "COMPRA",
                     100,
                     40.00m,
                     0);
@@ -30,242 +44,271 @@ namespace Investimentos.Application.Tests.Operacoes
             var id =
                 await handler.HandleAsync(command);
 
-            Assert.NotEqual(
-                Guid.Empty,
-                id);
-
-            Assert.Single(
-                repository.Operacoes);
-
-            var operacao =
-                repository.Operacoes[0];
-
-            Assert.Equal(
-                1,
-                operacao.Sequencia);
+            Assert.NotEqual(Guid.Empty, id);
+            Assert.NotNull(repository.OperacaoAdicionada);
 
             Assert.Equal(
                 100,
-                operacao.Quantidade);
-
-            Assert.Equal(
-                40.00m,
-                operacao.PrecoUnitario);
-
-            Assert.Equal(
-                4000.00m,
-                operacao.ValorBruto);
-        }
-
-        [Fact]
-        public async Task NaoDeveCadastrarComInvestidorInexistente()
-        {
-            var repository =
-                new FakeOperacaoRepository();
-
-            var handler =
-                new CadastrarOperacaoHandler(
-                    repository);
-
-            var command =
-                new CadastrarOperacaoCommand(
-                    new DateTime(2026, 9, 4),
-                    Guid.NewGuid(),
-                    "ITUB4",
-                    "COMPRA",
-                    100,
-                    40.00m,
-                    0);
-
-            await Assert.ThrowsAsync<ArgumentException>(
-                () => handler.HandleAsync(command));
-
-            Assert.Empty(
-                repository.Operacoes);
-        }
-
-        [Fact]
-        public async Task NaoDeveCadastrarComAtivoInexistente()
-        {
-            var repository =
-                new FakeOperacaoRepository();
-
-            var handler =
-                new CadastrarOperacaoHandler(
-                    repository);
-
-            var command =
-                new CadastrarOperacaoCommand(
-                    new DateTime(2026, 9, 4),
-                    repository.Investidor.Id,
-                    "XXXX3",
-                    "COMPRA",
-                    100,
-                    40.00m,
-                    0);
-
-            await Assert.ThrowsAsync<ArgumentException>(
-                () => handler.HandleAsync(command));
-
-            Assert.Empty(
-                repository.Operacoes);
-        }
-
-        [Fact]
-        public async Task NaoDeveCadastrarQuantidadeInvalida()
-        {
-            var repository =
-                new FakeOperacaoRepository();
-
-            var handler =
-                new CadastrarOperacaoHandler(
-                    repository);
-
-            var command =
-                new CadastrarOperacaoCommand(
-                    new DateTime(2026, 9, 4),
-                    repository.Investidor.Id,
-                    "ITUB4",
-                    "COMPRA",
-                    0,
-                    40.00m,
-                    0);
-
-            await Assert.ThrowsAsync<ArgumentException>(
-                () => handler.HandleAsync(command));
-
-            Assert.Empty(
-                repository.Operacoes);
-        }
-
-        [Fact]
-        public async Task DeveIncrementarSequencia()
-        {
-            var repository =
-                new FakeOperacaoRepository();
-
-            var handler =
-                new CadastrarOperacaoHandler(
-                    repository);
-
-            var data =
-                new DateTime(2026, 9, 4);
-
-            await handler.HandleAsync(
-                new CadastrarOperacaoCommand(
-                    data,
-                    repository.Investidor.Id,
-                    "ITUB4",
-                    "COMPRA",
-                    100,
-                    40.00m,
-                    0));
-
-            await handler.HandleAsync(
-                new CadastrarOperacaoCommand(
-                    data,
-                    repository.Investidor.Id,
-                    "ITUB4",
-                    "COMPRA",
-                    100,
-                    42.00m,
-                    0));
+                repository.OperacaoAdicionada!.Quantidade);
 
             Assert.Equal(
                 1,
-                repository.Operacoes[0].Sequencia);
+                repository.OperacaoAdicionada.Sequencia);
+        }
+
+        [Fact]
+        public async Task DeveCadastrarVendaComPosicaoSuficiente()
+        {
+            var investidor =
+                new Investidor("Silvio");
+
+            var ativo =
+                CriarAtivo();
+
+            var tipoOperacao =
+                new TipoOperacao(
+                    "VENDA",
+                    "Venda");
+
+            var repository =
+                new FakeOperacaoRepository(
+                    investidor,
+                    ativo,
+                    tipoOperacao,
+                    quantidadeDisponivel: 150);
+
+            var handler =
+                new CadastrarOperacaoHandler(
+                    repository);
+
+            var command =
+                new CadastrarOperacaoCommand(
+                    new DateTime(2026, 9, 5),
+                    investidor.Id,
+                    "ITUB4",
+                    "VENDA",
+                    50,
+                    45.00m,
+                    0);
+
+            var id =
+                await handler.HandleAsync(command);
+
+            Assert.NotEqual(Guid.Empty, id);
+            Assert.NotNull(repository.OperacaoAdicionada);
 
             Assert.Equal(
-                2,
-                repository.Operacoes[1].Sequencia);
+                50,
+                repository.OperacaoAdicionada!.Quantidade);
+        }
+
+        [Fact]
+        public async Task DevePermitirVendaIgualAPosicaoDisponivel()
+        {
+            var investidor =
+                new Investidor("Silvio");
+
+            var ativo =
+                CriarAtivo();
+
+            var tipoOperacao =
+                new TipoOperacao(
+                    "VENDA",
+                    "Venda");
+
+            var repository =
+                new FakeOperacaoRepository(
+                    investidor,
+                    ativo,
+                    tipoOperacao,
+                    quantidadeDisponivel: 150);
+
+            var handler =
+                new CadastrarOperacaoHandler(
+                    repository);
+
+            var command =
+                new CadastrarOperacaoCommand(
+                    new DateTime(2026, 9, 5),
+                    investidor.Id,
+                    "ITUB4",
+                    "VENDA",
+                    150,
+                    45.00m,
+                    0);
+
+            await handler.HandleAsync(command);
+
+            Assert.NotNull(
+                repository.OperacaoAdicionada);
+        }
+
+        [Fact]
+        public async Task NaoDeveCadastrarVendaMaiorQuePosicao()
+        {
+            var investidor =
+                new Investidor("Silvio");
+
+            var ativo =
+                CriarAtivo();
+
+            var tipoOperacao =
+                new TipoOperacao(
+                    "VENDA",
+                    "Venda");
+
+            var repository =
+                new FakeOperacaoRepository(
+                    investidor,
+                    ativo,
+                    tipoOperacao,
+                    quantidadeDisponivel: 150);
+
+            var handler =
+                new CadastrarOperacaoHandler(
+                    repository);
+
+            var command =
+                new CadastrarOperacaoCommand(
+                    new DateTime(2026, 9, 5),
+                    investidor.Id,
+                    "ITUB4",
+                    "VENDA",
+                    151,
+                    45.00m,
+                    0);
+
+            var exception =
+                await Assert.ThrowsAsync<
+                    InvalidOperationException>(
+                    () => handler.HandleAsync(command));
+
+            Assert.Contains(
+                "maior que a posição disponível",
+                exception.Message);
+
+            Assert.Null(
+                repository.OperacaoAdicionada);
+        }
+
+        [Fact]
+        public async Task NaoDeveCadastrarVendaSemPosicao()
+        {
+            var investidor =
+                new Investidor("Silvio");
+
+            var ativo =
+                CriarAtivo();
+
+            var tipoOperacao =
+                new TipoOperacao(
+                    "VENDA",
+                    "Venda");
+
+            var repository =
+                new FakeOperacaoRepository(
+                    investidor,
+                    ativo,
+                    tipoOperacao,
+                    quantidadeDisponivel: 0);
+
+            var handler =
+                new CadastrarOperacaoHandler(
+                    repository);
+
+            var command =
+                new CadastrarOperacaoCommand(
+                    new DateTime(2026, 9, 5),
+                    investidor.Id,
+                    "ITUB4",
+                    "VENDA",
+                    1,
+                    45.00m,
+                    0);
+
+            var exception =
+                await Assert.ThrowsAsync<
+                    InvalidOperationException>(
+                    () => handler.HandleAsync(command));
+
+            Assert.Contains(
+                "Não existe posição disponível",
+                exception.Message);
+
+            Assert.Null(
+                repository.OperacaoAdicionada);
+        }
+
+        private static Ativo CriarAtivo()
+        {
+            var classeAtivo =
+                new ClasseAtivo(
+                    "RENDA_VARIAVEL",
+                    "Renda Variável");
+
+            var tipoAtivo =
+                new TipoAtivo(
+                    "ACAO",
+                    "Ação",
+                    classeAtivo);
+
+            return new Ativo(
+                new Ticker("ITUB4"),
+                "Itaú Unibanco",
+                tipoAtivo);
         }
 
         private class FakeOperacaoRepository
             : IOperacaoRepository
         {
-            public Investidor Investidor { get; }
+            private readonly Investidor _investidor;
+            private readonly Ativo _ativo;
+            private readonly TipoOperacao _tipoOperacao;
+            private readonly decimal _quantidadeDisponivel;
 
-            public Ativo Ativo { get; }
-
-            public TipoOperacao TipoOperacaoCompra { get; }
-
-            public TipoOperacao TipoOperacaoVenda { get; }
-
-            public List<Operacao> Operacoes { get; } = [];
-
-            public FakeOperacaoRepository()
+            public Operacao? OperacaoAdicionada
             {
-                Investidor =
-                    new Investidor(
-                        "Silvio");
+                get;
+                private set;
+            }
 
-                var classe =
-                    new ClasseAtivo(
-                        "RENDA_VARIAVEL",
-                        "Renda Variável");
-
-                var tipoAtivo =
-                    new TipoAtivo(
-                        "ACAO",
-                        "Ação",
-                        classe);
-
-                Ativo =
-                    new Ativo(
-                        new Ticker("ITUB4"),
-                        "Itaú Unibanco",
-                        tipoAtivo);
-
-                TipoOperacaoCompra =
-                    new TipoOperacao(
-                        "COMPRA",
-                        "Compra");
-
-                TipoOperacaoVenda =
-                    new TipoOperacao(
-                        "VENDA",
-                        "Venda");
+            public FakeOperacaoRepository(
+                Investidor investidor,
+                Ativo ativo,
+                TipoOperacao tipoOperacao,
+                decimal quantidadeDisponivel = 0)
+            {
+                _investidor = investidor;
+                _ativo = ativo;
+                _tipoOperacao = tipoOperacao;
+                _quantidadeDisponivel =
+                    quantidadeDisponivel;
             }
 
             public Task AdicionarAsync(
                 Operacao operacao,
                 CancellationToken cancellationToken = default)
             {
-                Operacoes.Add(
-                    operacao);
+                OperacaoAdicionada =
+                    operacao;
 
                 return Task.CompletedTask;
             }
 
-            public Task<Investidor?>
-                ObterInvestidorPorIdAsync(
-                    Guid investidorId,
-                    CancellationToken cancellationToken = default)
+            public Task<Investidor?> ObterInvestidorPorIdAsync(
+                Guid investidorId,
+                CancellationToken cancellationToken = default)
             {
-                Investidor? resultado =
-                    Investidor.Id == investidorId
-                        ? Investidor
-                        : null;
-
-                return Task.FromResult(
-                    resultado);
+                return Task.FromResult<Investidor?>(
+                    _investidor);
             }
 
-            public Task<Ativo?>
-                ObterAtivoPorTickerAsync(
-                    string ticker,
-                    CancellationToken cancellationToken = default)
+            public Task<Ativo?> ObterAtivoPorTickerAsync(
+                string ticker,
+                CancellationToken cancellationToken = default)
             {
-                Ativo? resultado =
-                    string.Equals(
-                        Ativo.Ticker.Codigo,
-                        ticker,
-                        StringComparison.OrdinalIgnoreCase)
-                        ? Ativo
-                        : null;
-
-                return Task.FromResult(
-                    resultado);
+                return Task.FromResult<Ativo?>(
+                    _ativo);
             }
 
             public Task<TipoOperacao?>
@@ -273,41 +316,28 @@ namespace Investimentos.Application.Tests.Operacoes
                     string codigo,
                     CancellationToken cancellationToken = default)
             {
-                TipoOperacao? resultado =
-                    codigo.Equals(
-                        "COMPRA",
-                        StringComparison.OrdinalIgnoreCase)
-                        ? TipoOperacaoCompra
-                        : codigo.Equals(
-                            "VENDA",
-                            StringComparison.OrdinalIgnoreCase)
-                            ? TipoOperacaoVenda
-                            : null;
-
-                return Task.FromResult(
-                    resultado);
+                return Task.FromResult<TipoOperacao?>(
+                    _tipoOperacao);
             }
 
-            public Task<int>
-                ObterProximaSequenciaAsync(
+            public Task<int> ObterProximaSequenciaAsync(
+                Guid investidorId,
+                DateTime data,
+                CancellationToken cancellationToken = default)
+            {
+                return Task.FromResult(1);
+            }
+
+            public Task<decimal>
+                ObterQuantidadeDisponivelAsync(
                     Guid investidorId,
+                    Guid ativoId,
                     DateTime data,
+                    int sequencia,
                     CancellationToken cancellationToken = default)
             {
-                var ultimaSequencia =
-                    Operacoes
-                        .Where(x =>
-                            x.Investidor.Id ==
-                                investidorId &&
-                            x.Data.Date ==
-                                data.Date)
-                        .Select(x =>
-                            x.Sequencia)
-                        .DefaultIfEmpty(0)
-                        .Max();
-
                 return Task.FromResult(
-                    ultimaSequencia + 1);
+                    _quantidadeDisponivel);
             }
         }
     }

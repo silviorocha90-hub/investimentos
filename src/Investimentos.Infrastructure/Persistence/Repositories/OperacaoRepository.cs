@@ -5,8 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Investimentos.Infrastructure.Persistence.Repositories
 {
-    public class OperacaoRepository
-        : IOperacaoRepository
+    public class OperacaoRepository : IOperacaoRepository
     {
         private readonly InvestimentosDbContext _context;
 
@@ -57,8 +56,9 @@ namespace Investimentos.Infrastructure.Persistence.Repositories
         {
             return await _context.TiposOperacoes
                 .FirstOrDefaultAsync(
-                    x => x.Codigo == codigo &&
-                         x.Ativo,
+                    x =>
+                        x.Codigo == codigo &&
+                        x.Ativo,
                     cancellationToken);
         }
 
@@ -67,8 +67,11 @@ namespace Investimentos.Infrastructure.Persistence.Repositories
             DateTime data,
             CancellationToken cancellationToken = default)
         {
-            var inicio = data.Date;
-            var fim = inicio.AddDays(1);
+            var inicio =
+                data.Date;
+
+            var fim =
+                inicio.AddDays(1);
 
             var ultimaSequencia =
                 await _context.Operacoes
@@ -82,6 +85,55 @@ namespace Investimentos.Infrastructure.Persistence.Repositories
                 ?? 0;
 
             return ultimaSequencia + 1;
+        }
+
+        public async Task<decimal> ObterQuantidadeDisponivelAsync(
+            Guid investidorId,
+            Guid ativoId,
+            DateTime data,
+            int sequencia,
+            CancellationToken cancellationToken = default)
+        {
+            var operacoes =
+                await _context.Operacoes
+                    .AsNoTracking()
+                    .Where(x =>
+                        x.InvestidorId == investidorId &&
+                        x.AtivoId == ativoId &&
+                        (
+                            x.Data < data ||
+                            (
+                                x.Data == data &&
+                                x.Sequencia < sequencia
+                            )
+                        ))
+                    .Select(x => new
+                    {
+                        TipoOperacao =
+                            x.TipoOperacao.Codigo,
+
+                        x.Quantidade
+                    })
+                    .ToListAsync(
+                        cancellationToken);
+
+            decimal quantidadeDisponivel = 0;
+
+            foreach (var operacao in operacoes)
+            {
+                if (operacao.TipoOperacao == "COMPRA")
+                {
+                    quantidadeDisponivel +=
+                        operacao.Quantidade;
+                }
+                else if (operacao.TipoOperacao == "VENDA")
+                {
+                    quantidadeDisponivel -=
+                        operacao.Quantidade;
+                }
+            }
+
+            return quantidadeDisponivel;
         }
     }
 }
