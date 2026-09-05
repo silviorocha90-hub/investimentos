@@ -46,24 +46,27 @@
                             {
                                 if (quantidade <= 0)
                                 {
-                                    continue;
+                                    throw new InvalidOperationException(
+                                        $"Não existe posição disponível de {grupo.Key.Ticker} para venda.");
+                                }
+
+                                if (operacao.Quantidade > quantidade)
+                                {
+                                    throw new InvalidOperationException(
+                                        $"Quantidade de venda de {grupo.Key.Ticker} é maior que a posição disponível. " +
+                                        $"Disponível: {quantidade}. Venda: {operacao.Quantidade}.");
                                 }
 
                                 var precoMedio =
                                     custoTotal / quantidade;
 
-                                var quantidadeVendida =
-                                    Math.Min(
-                                        operacao.Quantidade,
-                                        quantidade);
+                                var custoQuantidadeVendida =
+                                    operacao.Quantidade *
+                                    precoMedio;
 
                                 var valorVenda =
-                                    quantidadeVendida *
+                                    operacao.Quantidade *
                                     operacao.PrecoUnitario;
-
-                                var custoQuantidadeVendida =
-                                    quantidadeVendida *
-                                    precoMedio;
 
                                 resultadoRealizado +=
                                     valorVenda
@@ -74,7 +77,12 @@
                                     custoQuantidadeVendida;
 
                                 quantidade -=
-                                    quantidadeVendida;
+                                    operacao.Quantidade;
+
+                                if (quantidade == 0)
+                                {
+                                    custoTotal = 0;
+                                }
                             }
                         }
 

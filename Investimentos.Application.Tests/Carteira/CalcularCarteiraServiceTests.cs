@@ -219,7 +219,6 @@ namespace Investimentos.Application.Tests.Carteira
             Assert.Equal(40.00m, posicao.PrecoMedio);
             Assert.Equal(2000.00m, posicao.CustoTotal);
 
-            // (45 - 40) × 50 - 10
             Assert.Equal(
                 240.00m,
                 posicao.ResultadoRealizado);
@@ -267,12 +266,7 @@ namespace Investimentos.Application.Tests.Carteira
             Assert.Equal(50, posicao.Quantidade);
             Assert.Equal(40.00m, posicao.PrecoMedio);
             Assert.Equal(2000.00m, posicao.CustoTotal);
-
-            // Primeira venda: (44 - 40) × 25 = 100
-            // Segunda venda: (46 - 40) × 25 = 150
-            Assert.Equal(
-                250.00m,
-                posicao.ResultadoRealizado);
+            Assert.Equal(250.00m, posicao.ResultadoRealizado);
         }
 
         [Fact]
@@ -313,12 +307,106 @@ namespace Investimentos.Application.Tests.Carteira
         }
 
         [Fact]
-        public void DeveRespeitarSequenciaDasOperacoes()
+        public void NaoDevePermitirVendaSemPosicao()
         {
             var ativoId = Guid.NewGuid();
 
-            var data =
-                new DateTime(2026, 9, 4);
+            var operacoes = new[]
+            {
+                CriarOperacao(
+                    ativoId,
+                    "VENDA",
+                    50,
+                    45.00m,
+                    0,
+                    1)
+            };
+
+            var exception =
+                Assert.Throws<InvalidOperationException>(
+                    () => _service.Calcular(operacoes));
+
+            Assert.Contains(
+                "Não existe posição disponível",
+                exception.Message);
+        }
+
+        [Fact]
+        public void NaoDevePermitirVendaMaiorQuePosicao()
+        {
+            var ativoId = Guid.NewGuid();
+
+            var operacoes = new[]
+            {
+                CriarOperacao(
+                    ativoId,
+                    "COMPRA",
+                    100,
+                    40.00m,
+                    0,
+                    1),
+
+                CriarOperacao(
+                    ativoId,
+                    "VENDA",
+                    150,
+                    45.00m,
+                    0,
+                    2)
+            };
+
+            var exception =
+                Assert.Throws<InvalidOperationException>(
+                    () => _service.Calcular(operacoes));
+
+            Assert.Contains(
+                "maior que a posição disponível",
+                exception.Message);
+
+            Assert.Contains(
+                "Disponível: 100",
+                exception.Message);
+
+            Assert.Contains(
+                "Venda: 150",
+                exception.Message);
+        }
+
+        [Fact]
+        public void DevePermitirVendaExatamenteIgualAPosicao()
+        {
+            var ativoId = Guid.NewGuid();
+
+            var operacoes = new[]
+            {
+                CriarOperacao(
+                    ativoId,
+                    "COMPRA",
+                    100,
+                    40.00m,
+                    0,
+                    1),
+
+                CriarOperacao(
+                    ativoId,
+                    "VENDA",
+                    100,
+                    40.00m,
+                    0,
+                    2)
+            };
+
+            var resultado =
+                _service.Calcular(operacoes);
+
+            Assert.Empty(resultado);
+        }
+
+        [Fact]
+        public void DeveRespeitarSequenciaDasOperacoes()
+        {
+            var ativoId = Guid.NewGuid();
+            var data = new DateTime(2026, 9, 4);
 
             var operacoes = new[]
             {
