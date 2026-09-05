@@ -1,5 +1,7 @@
+using Investimentos.Api.ExceptionHandling;
 using Investimentos.Application.Ativos.CadastrarAtivo;
 using Investimentos.Application.Carteira.ConsultarCarteira;
+using Investimentos.Application.Dashboard;
 using Investimentos.Application.Investidores.CadastrarInvestidor;
 using Investimentos.Application.Opcoes.CadastrarOperacaoOpcao;
 using Investimentos.Application.Opcoes.ConsultarOpcoes;
@@ -41,6 +43,28 @@ builder.Services.AddScoped<
 builder.Services.AddScoped<
     ConsultarOpcoesHandler>();
 
+builder.Services.AddScoped<
+    ConsultarDashboardHandler>();
+
+builder.Services.AddExceptionHandler<
+    ApiExceptionHandler>();
+
+builder.Services.AddProblemDetails();
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(
+        "Frontend",
+        policy =>
+        {
+            policy
+                .WithOrigins(
+                    "http://localhost:5173")
+                .AllowAnyHeader()
+                .AllowAnyMethod();
+        });
+});
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -53,7 +77,11 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseExceptionHandler();
+
 app.UseHttpsRedirection();
+
+app.UseCors("Frontend");
 
 app.MapPost(
     "/api/investidores",
@@ -220,6 +248,21 @@ app.MapGet(
     async (
         Guid investidorId,
         ConsultarOpcoesHandler handler,
+        CancellationToken cancellationToken) =>
+    {
+        var resultado =
+            await handler.HandleAsync(
+                investidorId,
+                cancellationToken);
+
+        return Results.Ok(resultado);
+    });
+
+app.MapGet(
+    "/api/dashboard/{investidorId:guid}",
+    async (
+        Guid investidorId,
+        ConsultarDashboardHandler handler,
         CancellationToken cancellationToken) =>
     {
         var resultado =
