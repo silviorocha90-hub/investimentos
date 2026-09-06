@@ -7,8 +7,9 @@ using Investimentos.Application.Investidores.CadastrarInvestidor;
 using Investimentos.Application.Investidores.ListarInvestidores;
 using Investimentos.Application.Opcoes.CadastrarOperacaoOpcao;
 using Investimentos.Application.Opcoes.ConsultarOpcoes;
-using Investimentos.Application.Operacoes.CadastrarOperacao;
 using Investimentos.Application.Operacoes.AtualizarOperacao;
+using Investimentos.Application.Operacoes.CadastrarOperacao;
+using Investimentos.Application.Operacoes.ExcluirOperacao;
 using Investimentos.Application.Proventos.CadastrarProvento;
 using Investimentos.Application.Proventos.ConsultarProventos;
 using Investimentos.Domain.Entities;
@@ -23,6 +24,7 @@ builder.Services.AddScoped<ListarInvestidoresHandler>();
 builder.Services.AddScoped<CadastrarAtivoHandler>();
 builder.Services.AddScoped<CadastrarOperacaoHandler>();
 builder.Services.AddScoped<AtualizarOperacaoHandler>();
+builder.Services.AddScoped<ExcluirOperacaoHandler>();
 builder.Services.AddScoped<ConsultarCarteiraHandler>();
 builder.Services.AddScoped<CalcularCarteiraService>();
 builder.Services.AddScoped<CadastrarProventoHandler>();
@@ -40,7 +42,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("Frontend", policy =>
     {
         policy
-            .WithOrigins("http://localhost:5173")
+            .WithOrigins("http://localhost:5173", "http://localhost:5174")
             .AllowAnyHeader()
             .AllowAnyMethod();
     });
@@ -152,9 +154,10 @@ app.MapGet(
         ICarteiraRepository repository,
         CancellationToken cancellationToken) =>
     {
-        var resultado = await repository.ObterOperacoesAsync(
-            investidorId,
-            cancellationToken);
+        var resultado =
+            await repository.ObterOperacoesAsync(
+                investidorId,
+                cancellationToken);
 
         return Results.Ok(resultado);
     });
@@ -174,6 +177,20 @@ app.MapPut(
                 request.Quantidade,
                 request.PrecoUnitario,
                 request.Taxas),
+            cancellationToken);
+
+        return Results.NoContent();
+    });
+
+app.MapDelete(
+    "/api/operacoes/{id:guid}",
+    async (
+        Guid id,
+        ExcluirOperacaoHandler handler,
+        CancellationToken cancellationToken) =>
+    {
+        await handler.HandleAsync(
+            id,
             cancellationToken);
 
         return Results.NoContent();
@@ -331,17 +348,22 @@ app.MapGet(
         IDescontoFiscalRepository repository,
         CancellationToken cancellationToken) =>
     {
-        var descontos = await repository.ListarAsync(null, cancellationToken);
-        return Results.Ok(descontos.Select(x => new
-        {
-            x.Id,
-            x.InvestidorId,
-            Investidor = x.Investidor.Nome,
-            x.Tipo,
-            x.DataPagamento,
-            x.Valor,
-            x.Descricao
-        }));
+        var descontos =
+            await repository.ListarAsync(
+                null,
+                cancellationToken);
+
+        return Results.Ok(
+            descontos.Select(x => new
+            {
+                x.Id,
+                x.InvestidorId,
+                Investidor = x.Investidor.Nome,
+                x.Tipo,
+                x.DataPagamento,
+                x.Valor,
+                x.Descricao
+            }));
     });
 
 app.MapPost(
@@ -351,22 +373,32 @@ app.MapPost(
         IDescontoFiscalRepository repository,
         CancellationToken cancellationToken) =>
     {
-        var investidor = await repository.ObterInvestidorAsync(
-            request.InvestidorId,
-            cancellationToken);
+        var investidor =
+            await repository.ObterInvestidorAsync(
+                request.InvestidorId,
+                cancellationToken);
 
         if (investidor is null)
-            return Results.NotFound("Investidor não encontrado.");
+        {
+            return Results.NotFound(
+                "Investidor não encontrado.");
+        }
 
-        var desconto = new DescontoFiscal(
-            investidor,
-            request.Tipo.Trim().ToUpperInvariant(),
-            request.DataPagamento,
-            request.Valor,
-            request.Descricao);
+        var desconto =
+            new DescontoFiscal(
+                investidor,
+                request.Tipo.Trim().ToUpperInvariant(),
+                request.DataPagamento,
+                request.Valor,
+                request.Descricao);
 
-        await repository.AdicionarAsync(desconto, cancellationToken);
-        return Results.Created($"/api/descontos-fiscais/{desconto.Id}", new { desconto.Id });
+        await repository.AdicionarAsync(
+            desconto,
+            cancellationToken);
+
+        return Results.Created(
+            $"/api/descontos-fiscais/{desconto.Id}",
+            new { desconto.Id });
     });
 
 app.Run();

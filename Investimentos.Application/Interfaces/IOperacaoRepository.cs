@@ -12,6 +12,9 @@ namespace Investimentos.Application.Interfaces
             Guid id,
             CancellationToken cancellationToken = default);
 
+        void Remover(
+            Operacao operacao);
+
         Task SalvarAsync(
             CancellationToken cancellationToken = default);
 
@@ -37,6 +40,12 @@ namespace Investimentos.Application.Interfaces
             Guid ativoId,
             DateTime data,
             int sequencia,
+            CancellationToken cancellationToken = default);
+
+        Task<bool> HistoricoPermaneceValidoSemOperacaoAsync(
+            Guid operacaoId,
+            Guid investidorId,
+            Guid ativoId,
             CancellationToken cancellationToken = default);
     }
 }

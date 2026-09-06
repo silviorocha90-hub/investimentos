@@ -24,6 +24,7 @@ namespace Investimentos.Application.Tests.Dashboard
                     new[]
                     {
                         new OperacaoCarteiraDto(
+                            Guid.NewGuid(),
                             ativo.Id,
                             "ITUB4",
                             "Itaú Unibanco",
@@ -35,6 +36,7 @@ namespace Investimentos.Application.Tests.Dashboard
                             1),
 
                         new OperacaoCarteiraDto(
+                            Guid.NewGuid(),
                             ativo.Id,
                             "ITUB4",
                             "Itaú Unibanco",
@@ -101,7 +103,10 @@ namespace Investimentos.Application.Tests.Dashboard
                 new ConsultarDashboardHandler(
                     carteiraHandler,
                     proventosHandler,
-                    opcoesHandler);
+                    opcoesHandler,
+                    null, // ICotacaoAtivoRepository not needed for this test
+                    null  // IDescontoFiscalRepository not needed for this test
+                );
 
             var resultado =
                 await handler.HandleAsync(

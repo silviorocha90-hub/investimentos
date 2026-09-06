@@ -295,6 +295,29 @@ namespace Investimentos.Application.Tests.Operacoes
                 return Task.CompletedTask;
             }
 
+            public Task<Operacao?> ObterPorIdAsync(
+                Guid id,
+                CancellationToken cancellationToken = default)
+            {
+                return Task.FromResult<Operacao?>(
+                    OperacaoAdicionada);
+            }
+
+            public void Remover(
+                Operacao operacao)
+            {
+                if (OperacaoAdicionada?.Id == operacao.Id)
+                {
+                    OperacaoAdicionada = null;
+                }
+            }
+
+            public Task SalvarAsync(
+                CancellationToken cancellationToken = default)
+            {
+                return Task.CompletedTask;
+            }
+
             public Task<Investidor?> ObterInvestidorPorIdAsync(
                 Guid investidorId,
                 CancellationToken cancellationToken = default)
@@ -338,6 +361,16 @@ namespace Investimentos.Application.Tests.Operacoes
             {
                 return Task.FromResult(
                     _quantidadeDisponivel);
+            }
+
+            public Task<bool>
+                HistoricoPermaneceValidoSemOperacaoAsync(
+                    Guid operacaoId,
+                    Guid investidorId,
+                    Guid ativoId,
+                    CancellationToken cancellationToken = default)
+            {
+                return Task.FromResult(true);
             }
         }
     }

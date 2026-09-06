@@ -18,7 +18,8 @@ namespace Investimentos.Application.Tests.Carteira
                 new FakeCarteiraRepository(
                     new List<OperacaoCarteiraDto>
                     {
-                        new(
+                        new OperacaoCarteiraDto(
+                            Guid.NewGuid(),
                             ativoId,
                             "ITUB4",
                             "Itaú Unibanco",
@@ -29,7 +30,8 @@ namespace Investimentos.Application.Tests.Carteira
                             new DateTime(2026, 9, 4),
                             1),
 
-                        new(
+                        new OperacaoCarteiraDto(
+                            Guid.NewGuid(),
                             ativoId,
                             "ITUB4",
                             "Itaú Unibanco",

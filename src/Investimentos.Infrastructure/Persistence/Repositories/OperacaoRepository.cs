@@ -32,13 +32,22 @@ namespace Investimentos.Infrastructure.Persistence.Repositories
             CancellationToken cancellationToken = default)
         {
             return await _context.Operacoes
-                .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+                .FirstOrDefaultAsync(
+                    x => x.Id == id,
+                    cancellationToken);
+        }
+
+        public void Remover(
+            Operacao operacao)
+        {
+            _context.Operacoes.Remove(operacao);
         }
 
         public Task SalvarAsync(
             CancellationToken cancellationToken = default)
         {
-            return _context.SaveChangesAsync(cancellationToken);
+            return _context.SaveChangesAsync(
+                cancellationToken);
         }
 
         public async Task<Investidor?> ObterInvestidorPorIdAsync(
@@ -148,6 +157,53 @@ namespace Investimentos.Infrastructure.Persistence.Repositories
             }
 
             return quantidadeDisponivel;
+        }
+
+        public async Task<bool> HistoricoPermaneceValidoSemOperacaoAsync(
+            Guid operacaoId,
+            Guid investidorId,
+            Guid ativoId,
+            CancellationToken cancellationToken = default)
+        {
+            var operacoes =
+                await _context.Operacoes
+                    .AsNoTracking()
+                    .Where(x =>
+                        x.Id != operacaoId &&
+                        x.InvestidorId == investidorId &&
+                        x.AtivoId == ativoId)
+                    .OrderBy(x => x.Data)
+                    .ThenBy(x => x.Sequencia)
+                    .Select(x => new
+                    {
+                        TipoOperacao = x.TipoOperacao.Codigo,
+                        x.Quantidade
+                    })
+                    .ToListAsync(
+                        cancellationToken);
+
+            decimal quantidadeAcumulada = 0;
+
+            foreach (var operacao in operacoes)
+            {
+                if (operacao.TipoOperacao == "COMPRA")
+                {
+                    quantidadeAcumulada +=
+                        operacao.Quantidade;
+                }
+                else if (operacao.TipoOperacao == "VENDA")
+                {
+                    quantidadeAcumulada -=
+                        operacao.Quantidade;
+                }
+
+                if (quantidadeAcumulada < 0)
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
     }
 }

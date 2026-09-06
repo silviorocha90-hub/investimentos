@@ -59,18 +59,15 @@ namespace Investimentos.Application.Dashboard
                 .Where(x =>
                     x.Quantidade > 0 &&
                     x.Ticker != "PREV")
-                .Sum(x => x.Quantidade *
-                    (cotacoes.TryGetValue(x.Ticker, out var preco)
-                        ? preco
-                        : 0));
+                .Sum(x => x.CustoTotal);
 
             var totalProventos =
                 proventos.Sum(
                     x => x.ValorRecebido);
 
             var premioLiquidoOpcoes =
-                opcoes.Where(x => x.Situacao == "ENCERRADA").Sum(x =>
-                    x.ResultadoInformado ?? 0);
+                opcoes.Where(x => x.Situacao == "ENCERRADA" || x.Situacao == "EXECUTADA").Sum(x =>
+                    x.ResultadoInformado ?? x.ResultadoFinal ?? 0);
 
             var descontosFiscais =
                 await _descontoRepository.ObterTotalAsync(

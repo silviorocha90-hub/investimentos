@@ -329,9 +329,15 @@ a {
   table-layout: fixed;
 }
 
+.portfolio-positions .data-table th,
+.portfolio-positions .data-table td {
+  text-align: center;
+}
+
 .portfolio-positions .data-table th:nth-child(1),
 .portfolio-positions .data-table td:nth-child(1) {
   width: 40%;
+  text-align: left;
 }
 
 .portfolio-positions .data-table th:nth-child(2),
@@ -367,9 +373,15 @@ a {
   font-size: 0.6rem;
 }
 
+.portfolio-operations .positions-table th,
+.portfolio-operations .positions-table td {
+  text-align: center;
+}
+
 .portfolio-operations .positions-table th:nth-child(1),
 .portfolio-operations .positions-table td:nth-child(1) {
   width: 12%;
+  text-align: left;
 }
 
 .portfolio-operations .positions-table th:nth-child(2),

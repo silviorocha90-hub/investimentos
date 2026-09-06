@@ -5,6 +5,7 @@ import {
   obterEvolucaoConsolidada,
   obterOperacoes,
   atualizarOperacao,
+  criarOperacao,
 } from './api/dashboardApi'
 import { listarInvestidores } from './api/investidoresApi'
 import { dashboardSnapshot } from './data/dashboardSnapshot'
@@ -576,14 +577,92 @@ function OperacoesView({
 }) {
   const [operacaoEmEdicao, setOperacaoEmEdicao] = useState<string | null>(null)
   const [salvandoOperacao, setSalvandoOperacao] = useState(false)
+  const [deletandoOperacao, setDeletandoOperacao] = useState(false)
+
+  // Estados para formulário de nova operação
+  const [formNovaOperacao, setFormNovaOperacao] = useState({
+    ticker: '',
+    tipoOperacaoCodigo: 'COMPRA',
+    quantidade: '',
+    precoUnitario: '',
+    taxas: '0',
+    data: new Date().toISOString().split('T')[0],
+  })
+  const [criandoOperacao, setCriandoOperacao] = useState(false)
+  const [erroOperacao, setErroOperacao] = useState<string | null>(null)
+
+  const handleDeleteOperation = async (operacaoId: string) => {
+    if (!confirm('Tem certeza que deseja deletar esta operação? Esta ação não pode ser desfeita.')) {
+      return
+    }
+    try {
+      setDeletandoOperacao(true)
+      const response = await fetch(`${import.meta.env.VITE_API_URL ?? 'http://localhost:5001'}/api/operacoes/${operacaoId}`, {
+        method: 'DELETE',
+      })
+      if (!response.ok) {
+        throw new Error(`Erro ao deletar operação: ${response.status}`)
+      }
+      // Recarregar operações após delete
+      window.location.reload()
+    } catch (error) {
+      console.error('Erro ao deletar operação:', error)
+      alert('Erro ao deletar operação!')
+    } finally {
+      setDeletandoOperacao(false)
+    }
+  }
+
+  const handleAdicionarOperacao = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    setErroOperacao(null)
+
+    // Validação básica
+    if (!formNovaOperacao.ticker.trim()) {
+      setErroOperacao('Ticker é obrigatório')
+      return
+    }
+    if (!formNovaOperacao.quantidade || Number(formNovaOperacao.quantidade) <= 0) {
+      setErroOperacao('Quantidade deve ser maior que 0')
+      return
+    }
+    if (!formNovaOperacao.precoUnitario || Number(formNovaOperacao.precoUnitario) <= 0) {
+      setErroOperacao('Preço unitário deve ser maior que 0')
+      return
+    }
+
+    try {
+      setCriandoOperacao(true)
+      const investidor = investidores.find((item) => item.nome === selectedInvestor)
+      if (!investidor) {
+        setErroOperacao('Investidor não selecionado')
+        return
+      }
+
+      await criarOperacao(investidor.id, {
+        data: formNovaOperacao.data,
+        ticker: formNovaOperacao.ticker.toUpperCase(),
+        tipoOperacaoCodigo: formNovaOperacao.tipoOperacaoCodigo,
+        quantidade: Number(formNovaOperacao.quantidade),
+        precoUnitario: Number(formNovaOperacao.precoUnitario),
+        taxas: Number(formNovaOperacao.taxas) || 0,
+      })
+
+      // Recarregar operações após criar
+      window.location.reload()
+    } catch (error) {
+      console.error('Erro ao criar operação:', error)
+      setErroOperacao(error instanceof Error ? error.message : 'Erro ao criar operação')
+    } finally {
+      setCriandoOperacao(false)
+    }
+  }
 
   return (
-    <section className="portfolio-view">
+    <section className="portfolio-view operacoes-view">
       <div className="portfolio-toolbar">
         <div>
-          <span className="eyebrow">Operações</span>
-          <h1>Posições e operações</h1>
-          <p>Edite os dados da posição e atualize a carteira online.</p>
+          <h1>Operações</h1>
         </div>
 
         <label className="investor-select-label">
@@ -596,15 +675,122 @@ function OperacoesView({
         </label>
       </div>
 
-      <article className="panel portfolio-operations">
+      <article className="panel portfolio-add-operation">
+        <SectionTitle title="Adicionar Nova Operação" />
+        <form onSubmit={handleAdicionarOperacao} style={{ padding: '1rem', borderTop: '1px solid var(--border)', background: 'rgba(99, 230, 200, 0.04)' }}>
+          {erroOperacao && (
+            <div style={{ color: '#ff6b6b', marginBottom: '1rem', fontSize: '0.9rem' }}>
+              ⚠️ {erroOperacao}
+            </div>
+          )}
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem', marginBottom: '1rem' }}>
+            <div>
+              <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.85rem', color: 'var(--text-muted)' }}>Ticker *</label>
+              <input
+                type="text"
+                placeholder="Ex: PETR3"
+                value={formNovaOperacao.ticker}
+                onChange={(e) => setFormNovaOperacao({ ...formNovaOperacao, ticker: e.target.value })}
+                style={{ width: '100%', padding: '0.5rem', border: '1px solid var(--border)', borderRadius: '4px' }}
+                disabled={criandoOperacao}
+              />
+            </div>
+
+            <div>
+              <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.85rem', color: 'var(--text-muted)' }}>Tipo *</label>
+              <select
+                value={formNovaOperacao.tipoOperacaoCodigo}
+                onChange={(e) => setFormNovaOperacao({ ...formNovaOperacao, tipoOperacaoCodigo: e.target.value })}
+                style={{ width: '100%', padding: '0.5rem', border: '1px solid var(--border)', borderRadius: '4px' }}
+                disabled={criandoOperacao}
+              >
+                <option value="COMPRA">COMPRA</option>
+                <option value="VENDA">VENDA</option>
+              </select>
+            </div>
+
+            <div>
+              <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.85rem', color: 'var(--text-muted)' }}>Quantidade *</label>
+              <input
+                type="number"
+                placeholder="0.0000"
+                min="0.0001"
+                step="any"
+                value={formNovaOperacao.quantidade}
+                onChange={(e) => setFormNovaOperacao({ ...formNovaOperacao, quantidade: e.target.value })}
+                style={{ width: '100%', padding: '0.5rem', border: '1px solid var(--border)', borderRadius: '4px' }}
+                disabled={criandoOperacao}
+              />
+            </div>
+
+            <div>
+              <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.85rem', color: 'var(--text-muted)' }}>Preço Unitário *</label>
+              <input
+                type="number"
+                placeholder="0.00"
+                min="0"
+                step="0.01"
+                value={formNovaOperacao.precoUnitario}
+                onChange={(e) => setFormNovaOperacao({ ...formNovaOperacao, precoUnitario: e.target.value })}
+                style={{ width: '100%', padding: '0.5rem', border: '1px solid var(--border)', borderRadius: '4px' }}
+                disabled={criandoOperacao}
+              />
+            </div>
+
+            <div>
+              <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.85rem', color: 'var(--text-muted)' }}>Taxas</label>
+              <input
+                type="number"
+                placeholder="0.00"
+                min="0"
+                step="0.01"
+                value={formNovaOperacao.taxas}
+                onChange={(e) => setFormNovaOperacao({ ...formNovaOperacao, taxas: e.target.value })}
+                style={{ width: '100%', padding: '0.5rem', border: '1px solid var(--border)', borderRadius: '4px' }}
+                disabled={criandoOperacao}
+              />
+            </div>
+
+            <div>
+              <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.85rem', color: 'var(--text-muted)' }}>Data *</label>
+              <input
+                type="date"
+                value={formNovaOperacao.data}
+                onChange={(e) => setFormNovaOperacao({ ...formNovaOperacao, data: e.target.value })}
+                style={{ width: '100%', padding: '0.5rem', border: '1px solid var(--border)', borderRadius: '4px' }}
+                disabled={criandoOperacao}
+              />
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            disabled={criandoOperacao}
+            style={{
+              padding: '0.6rem 1.5rem',
+              background: criandoOperacao ? '#ccc' : 'var(--primary)',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: criandoOperacao ? 'not-allowed' : 'pointer',
+              fontSize: '0.9rem',
+              fontWeight: '500',
+            }}
+          >
+            {criandoOperacao ? 'Adicionando...' : '✓ Adicionar Operação'}
+          </button>
+        </form>
+      </article>
+
+      <article className="panel portfolio-operations" style={{ display: 'flex', flexDirection: 'column', height: 'auto' }}>
         <SectionTitle
-          title={`Posições de ${selectedInvestor}`}
-          subtitle="Edite data, quantidade, preço e taxas da operação de origem"
+          title={`Operações de ${selectedInvestor}`}
           badge={`${operacoes.length} operações`}
         />
 
         {operacoes.length > 0 ? (
-          <div className="table-wrap compact">
+          <div className="table-wrap compact" style={{ flex: 1, overflowY: 'auto', height: '600px', marginTop: '1rem' }}>
             <table className="data-table positions-table">
               <thead>
                 <tr>
@@ -614,7 +800,7 @@ function OperacoesView({
                   <th className="align-right">Quantidade</th>
                   <th className="align-right">Preço</th>
                   <th className="align-right">Taxas</th>
-                  <th>Ação</th>
+                  <th>Ações</th>
                 </tr>
               </thead>
               <tbody>
@@ -661,7 +847,10 @@ function OperacoesView({
                           <td className="align-right">{formatarNumeroInteiro(operacao.quantidade)}</td>
                           <td className="align-right">{formatarMoeda(operacao.precoUnitario)}</td>
                           <td className="align-right">{formatarMoeda(operacao.taxas)}</td>
-                          <td><button className="table-action" type="button" onClick={() => setOperacaoEmEdicao(operacao.id)}>Editar</button></td>
+                          <td className="operation-actions" style={{ whiteSpace: 'nowrap' }}>
+                            <button className="table-action" type="button" onClick={() => setOperacaoEmEdicao(operacao.id)}>Editar</button>
+                            <button className="table-action" type="button" style={{ color: '#ff6b6b' }} disabled={deletandoOperacao} onClick={() => handleDeleteOperation(operacao.id)}>Deletar</button>
+                          </td>
                         </>
                       )}
                     </tr>
@@ -671,7 +860,7 @@ function OperacoesView({
             </table>
           </div>
         ) : (
-          <div className="empty-state"><strong>Nenhuma operação disponível para edição</strong></div>
+          <div className="empty-state"><strong>Nenhuma operação disponível</strong></div>
         )}
       </article>
     </section>
@@ -763,9 +952,9 @@ function CarteiraView({
               <thead>
                 <tr>
                   <th>Ativo</th>
-                  <th className="align-right">Quantidade</th>
-                  <th className="align-right">Preço médio</th>
-                  <th className="align-right">Custo total</th>
+                  <th>Quantidade</th>
+                  <th>Preço médio</th>
+                  <th>Custo total</th>
                 </tr>
               </thead>
               <tbody>
@@ -922,19 +1111,23 @@ function App() {
     }
 
     async function carregarCarteirasPorInvestidor() {
-      try {
-        const resultados = await Promise.all(
-          investidores.map(async (investidor) => ({
-            nome: investidor.nome,
-            dashboard: await obterDashboardPorInvestidor(investidor.id),
-          })),
-        )
+      const resultados = await Promise.allSettled(
+        investidores.map(async (investidor) => ({
+          nome: investidor.nome,
+          dashboard: await obterDashboardPorInvestidor(investidor.id),
+        })),
+      )
 
-        setCarteirasPorInvestidor(resultados)
-      } catch (error) {
-        console.error(error)
-        setCarteirasPorInvestidor([])
-      }
+      const sucesso = resultados.flatMap((resultado) => {
+        if (resultado.status === 'fulfilled') {
+          return [resultado.value]
+        }
+
+        console.error(resultado.reason)
+        return []
+      })
+
+      setCarteirasPorInvestidor(sucesso)
     }
 
     carregarCarteirasPorInvestidor()

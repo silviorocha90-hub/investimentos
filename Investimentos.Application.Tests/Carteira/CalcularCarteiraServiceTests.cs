@@ -411,6 +411,7 @@ namespace Investimentos.Application.Tests.Carteira
             var operacoes = new[]
             {
                 new OperacaoCarteiraDto(
+                    Guid.NewGuid(),
                     ativoId,
                     "ITUB4",
                     "Itaú Unibanco",
@@ -422,6 +423,7 @@ namespace Investimentos.Application.Tests.Carteira
                     3),
 
                 new OperacaoCarteiraDto(
+                    Guid.NewGuid(),
                     ativoId,
                     "ITUB4",
                     "Itaú Unibanco",
@@ -433,6 +435,7 @@ namespace Investimentos.Application.Tests.Carteira
                     2),
 
                 new OperacaoCarteiraDto(
+                    Guid.NewGuid(),
                     ativoId,
                     "ITUB4",
                     "Itaú Unibanco",
@@ -466,6 +469,7 @@ namespace Investimentos.Application.Tests.Carteira
             int sequencia)
         {
             return new OperacaoCarteiraDto(
+                Guid.NewGuid(),
                 ativoId,
                 "ITUB4",
                 "Itaú Unibanco",
