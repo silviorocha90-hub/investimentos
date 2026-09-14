@@ -18,13 +18,15 @@ namespace Investimentos.Infrastructure
                 configuration.GetConnectionString(
                     "InvestimentosDb");
 
-            if (string.IsNullOrWhiteSpace(connectionString))
+            if (string.IsNullOrWhiteSpace(
+                connectionString))
             {
                 throw new InvalidOperationException(
                     "A connection string 'InvestimentosDb' não foi configurada.");
             }
 
-            services.AddDbContext<InvestimentosDbContext>(
+            services.AddDbContext<
+                InvestimentosDbContext>(
                 options =>
                     options.UseSqlServer(
                         connectionString));

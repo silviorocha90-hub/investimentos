@@ -63,14 +63,29 @@ namespace Investimentos.Infrastructure.Persistence.Repositories
                 .Include(x => x.Permissoes)
                 .Include(x => x.Investidores)
                 .OrderBy(x => x.Nome)
-                .ToListAsync(cancellationToken);
+                .ToListAsync(
+                    cancellationToken);
+        }
+
+        public async Task<int> ContarAdminsAtivosAsync(
+            CancellationToken cancellationToken = default)
+        {
+            return await _context.Usuarios
+                .CountAsync(
+                    x =>
+                        x.Perfil ==
+                            PerfilUsuario.Admin &&
+                        x.Status ==
+                            StatusUsuario.Ativo,
+                    cancellationToken);
         }
 
         public async Task AdicionarAsync(
             Usuario usuario,
             CancellationToken cancellationToken = default)
         {
-            ArgumentNullException.ThrowIfNull(usuario);
+            ArgumentNullException.ThrowIfNull(
+                usuario);
 
             await _context.Usuarios.AddAsync(
                 usuario,

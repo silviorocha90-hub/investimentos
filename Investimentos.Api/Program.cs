@@ -1,5 +1,7 @@
 using Investimentos.Api.Endpoints;
 using Investimentos.Api.ExceptionHandling;
+using Investimentos.Api.Startup;
+using Investimentos.Application.Administracao;
 using Investimentos.Application.Ativos.CadastrarAtivo;
 using Investimentos.Application.Carteira.ConsultarCarteira;
 using Investimentos.Application.Dashboard;
@@ -15,15 +17,69 @@ using Investimentos.Application.Operacoes.CadastrarOperacao;
 using Investimentos.Application.Operacoes.ExcluirOperacao;
 using Investimentos.Application.Proventos.CadastrarProvento;
 using Investimentos.Application.Proventos.ConsultarProventos;
+using Investimentos.Application.Usuarios.Administracao;
+using Investimentos.Application.Usuarios.Autenticacao;
 using Investimentos.Domain.Entities;
 using Investimentos.Infrastructure;
 using Investimentos.Infrastructure.Persistence.Repositories;
-using Investimentos.Application.Administracao;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Investimentos.Application.Usuarios.Administracao;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddInfrastructure(
     builder.Configuration);
+
+builder.Services.AddScoped<
+    AutenticacaoService>();
+
+builder.Services
+    .AddAuthentication(
+        CookieAuthenticationDefaults
+            .AuthenticationScheme)
+    .AddCookie(
+        options =>
+        {
+            options.Cookie.Name =
+                "investimentos.auth";
+
+            options.Cookie.HttpOnly =
+                true;
+
+            options.Cookie.SecurePolicy =
+                CookieSecurePolicy.Always;
+
+            options.Cookie.SameSite =
+                SameSiteMode.Lax;
+
+            options.ExpireTimeSpan =
+                TimeSpan.FromHours(8);
+
+            options.SlidingExpiration =
+                true;
+
+            options.Events.OnRedirectToLogin =
+                context =>
+                {
+                    context.Response.StatusCode =
+                        StatusCodes
+                            .Status401Unauthorized;
+
+                    return Task.CompletedTask;
+                };
+
+            options.Events.OnRedirectToAccessDenied =
+                context =>
+                {
+                    context.Response.StatusCode =
+                        StatusCodes
+                            .Status403Forbidden;
+
+                    return Task.CompletedTask;
+                };
+        });
+
+builder.Services.AddAuthorization();
 
 builder.Services.AddScoped<CadastrarInvestidorHandler>();
 builder.Services.AddScoped<ListarInvestidoresHandler>();
@@ -51,6 +107,8 @@ builder.Services.AddScoped<
 builder.Services.AddScoped<ConsultarDashboardHandler>();
 builder.Services.AddScoped<ConsultarDashboardConsolidadoHandler>();
 
+builder.Services.AddScoped<AdministrarUsuariosService>();
+
 builder.Services.AddExceptionHandler<ApiExceptionHandler>();
 builder.Services.AddProblemDetails();
 
@@ -64,8 +122,9 @@ builder.Services.AddCors(options =>
                 .WithOrigins(
                     "http://localhost:5173",
                     "http://localhost:5174")
-                .AllowAnyHeader()
-                .AllowAnyMethod();
+                    .AllowAnyHeader()
+                    .AllowAnyMethod()
+                    .AllowCredentials();
         });
 });
 
@@ -91,6 +150,8 @@ if (app.Environment.IsDevelopment())
 app.UseExceptionHandler();
 app.UseHttpsRedirection();
 app.UseCors("Frontend");
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapPost(
     "/api/investidores",
@@ -699,6 +760,13 @@ app.MapPut(
     });
 
 app.MapAdministracaoInvestidoresEndpoints();
+
+app.MapAuthEndpoints();
+app.MapUsuariosEndpoints();
+
+await BootstrapAdminService.ExecutarAsync(
+    app.Services,
+    app.Configuration);
 
 app.Run();
 

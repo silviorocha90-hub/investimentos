@@ -19,6 +19,9 @@ namespace Investimentos.Application.Interfaces
         Task<IReadOnlyList<Usuario>> ListarAsync(
             CancellationToken cancellationToken = default);
 
+        Task<int> ContarAdminsAtivosAsync(
+            CancellationToken cancellationToken = default);
+
         Task AdicionarAsync(
             Usuario usuario,
             CancellationToken cancellationToken = default);
