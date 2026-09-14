@@ -503,4 +503,237 @@
   .admin-modal-grid {
     grid-template-columns: 1fr;
   }
+
+  /* ========================================
+   Administração - Usuários
+   ======================================== */
+
+.admin-users-toolbar > div {
+  display: grid;
+  gap: 4px;
+}
+
+.admin-users-toolbar strong {
+  color: var(--text);
+  font-size: 0.82rem;
+}
+
+.admin-users-toolbar span {
+  color: var(--muted);
+  font-size: 0.68rem;
+}
+
+.admin-users-toolbar select {
+  min-width: 150px;
+  height: 34px;
+  padding: 0 10px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--panel-strong);
+  color: var(--text);
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 700;
+  outline: none;
+}
+
+.admin-users-table {
+  min-width: 980px;
+}
+
+.admin-users-table th,
+.admin-users-table td {
+  text-align: center;
+  vertical-align: middle;
+}
+
+.admin-users-table td:first-child,
+.admin-users-table td:nth-child(2) {
+  text-align: left;
+}
+
+.admin-user-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 76px;
+  min-height: 25px;
+  padding: 0 8px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 0.64rem;
+  font-weight: 800;
+}
+
+.admin-user-status.status-ativo {
+  border-color: rgba(99, 230, 200, 0.36);
+  background: rgba(99, 230, 200, 0.08);
+  color: var(--accent);
+}
+
+.admin-user-status.status-pendente {
+  border-color: rgba(255, 193, 7, 0.34);
+  background: rgba(255, 193, 7, 0.08);
+  color: #ffd166;
+}
+
+.admin-user-status.status-bloqueado,
+.admin-user-status.status-rejeitado {
+  border-color: rgba(255, 88, 108, 0.32);
+  background: rgba(255, 88, 108, 0.08);
+  color: var(--negative);
+}
+
+.admin-user-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.admin-action-danger {
+  border-color: rgba(255, 88, 108, 0.3);
+  color: var(--negative);
+}
+
+.admin-action-danger:hover:not(:disabled) {
+  border-color: rgba(255, 88, 108, 0.55);
+  background: rgba(255, 88, 108, 0.08);
+}
+
+.admin-user-empty {
+  height: 90px;
+  color: var(--muted);
+  text-align: center !important;
+}
+
+.admin-user-modal {
+  width: min(720px, 96vw);
+}
+
+.admin-user-modal-content {
+  display: grid;
+  gap: 16px;
+  padding: 16px 18px;
+}
+
+.admin-user-identification {
+  display: grid;
+  gap: 5px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--panel-strong);
+}
+
+.admin-user-identification span,
+.admin-user-identification small {
+  color: var(--muted);
+  font-size: 0.68rem;
+}
+
+.admin-user-identification strong {
+  color: var(--text);
+  font-size: 0.8rem;
+}
+
+.admin-user-profile {
+  display: grid;
+  gap: 6px;
+}
+
+.admin-user-profile > span {
+  color: var(--muted);
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+
+.admin-user-profile select {
+  width: 100%;
+  height: 36px;
+  padding: 0 10px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--panel-strong);
+  color: var(--text);
+  font: inherit;
+  font-size: 0.74rem;
+  font-weight: 700;
+  outline: none;
+}
+
+.admin-user-access-section {
+  display: grid;
+  gap: 12px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+
+.admin-user-access-section > div:first-child {
+  display: grid;
+  gap: 4px;
+}
+
+.admin-user-access-section > div:first-child > strong {
+  color: var(--text);
+  font-size: 0.78rem;
+}
+
+.admin-user-access-section > div:first-child > span {
+  color: var(--muted);
+  font-size: 0.68rem;
+}
+
+.admin-user-check-grid {
+  display: grid;
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.admin-user-check {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 38px;
+  padding: 0 11px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--panel-strong);
+  color: var(--text);
+  font-size: 0.72rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.admin-user-check input {
+  accent-color: var(--accent);
+}
+
+.admin-user-check:has(input:checked) {
+  border-color: rgba(99, 230, 200, 0.36);
+  background: rgba(99, 230, 200, 0.06);
+}
+
+.admin-user-note {
+  color: var(--muted);
+  font-size: 0.68rem;
+}
+
+@media (max-width: 760px) {
+  .admin-users-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .admin-users-toolbar select {
+    width: 100%;
+  }
+
+  .admin-user-check-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 }

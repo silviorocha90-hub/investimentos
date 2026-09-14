@@ -50,7 +50,7 @@ builder.Services
                 CookieSecurePolicy.Always;
 
             options.Cookie.SameSite =
-                SameSiteMode.Lax;
+                SameSiteMode.None;
 
             options.ExpireTimeSpan =
                 TimeSpan.FromHours(8);

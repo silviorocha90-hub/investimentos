@@ -20,10 +20,16 @@ namespace Investimentos.Api.Endpoints
                 "/api/auth/login",
                 LoginAsync);
 
+            /*
+             * Logout propositalmente não exige autorização.
+             *
+             * A operação é idempotente:
+             * mesmo que a sessão já tenha expirado,
+             * o cookie local deve ser removido.
+             */
             app.MapPost(
-                    "/api/auth/logout",
-                    LogoutAsync)
-                .RequireAuthorization();
+                "/api/auth/logout",
+                LogoutAsync);
 
             app.MapGet(
                     "/api/auth/me",
@@ -221,7 +227,9 @@ namespace Investimentos.Api.Endpoints
                     ? Enum
                         .GetValues<
                             PermissaoSistema>()
-                        .Select(x => x.ToString())
+                        .Select(
+                            x =>
+                                x.ToString())
                         .ToArray()
                     : usuario.Permissoes
                         .Select(

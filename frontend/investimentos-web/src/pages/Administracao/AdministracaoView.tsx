@@ -3,33 +3,46 @@ import {
   useMemo,
   useState,
 } from 'react'
+
 import type {
   FormEvent,
 } from 'react'
+
 import {
   atualizarAtivo,
   criarAtivo,
   obterAdministracao,
 } from '../../api/administracaoApi'
+
 import type {
   Administracao,
   AtivoAdministracao,
 } from '../../types/administracao'
+
 import {
   AtivosTab,
 } from './components/AtivosTab'
+
 import {
   InvestidoresTab,
 } from './components/InvestidoresTab'
+
 import {
   CarteiraTab,
 } from './components/CarteiraTab'
+
 import {
   ParametrosTab,
 } from './components/ParametrosTab'
+
+import {
+  UsuariosTab,
+} from './components/UsuariosTab'
+
 import {
   AtivoModal,
 } from './components/AtivoModal'
+
 import './Administracao.css'
 
 type AbaAdministracao =
@@ -37,6 +50,7 @@ type AbaAdministracao =
   | 'investidores'
   | 'carteira'
   | 'parametros'
+  | 'usuarios'
 
 type ModoModalAtivo =
   | 'novo'
@@ -184,7 +198,7 @@ export function AdministracaoView() {
   }
 
   useEffect(() => {
-    carregar()
+    void carregar()
   }, [])
 
   const tiposAtivos =
@@ -418,15 +432,6 @@ export function AdministracaoView() {
       }
 
       setModalAtivo(null)
-
-      /*
-       * Uma atualização de Ativos
-       * mantém o usuário na aba
-       * de origem.
-       *
-       * Os filtros e a paginação
-       * permanecem preservados.
-       */
       setAba('ativos')
 
       await carregar()
@@ -539,6 +544,23 @@ export function AdministracaoView() {
         >
           Parâmetros
         </button>
+
+        <button
+          type="button"
+          className={
+            aba ===
+            'usuarios'
+              ? 'active'
+              : ''
+          }
+          onClick={() =>
+            trocarAba(
+              'usuarios',
+            )
+          }
+        >
+          Usuários
+        </button>
       </nav>
 
       {aba === 'ativos' ? (
@@ -601,6 +623,13 @@ export function AdministracaoView() {
       {aba ===
       'parametros' ? (
         <ParametrosTab
+          dados={dados}
+        />
+      ) : null}
+
+      {aba ===
+      'usuarios' ? (
+        <UsuariosTab
           dados={dados}
         />
       ) : null}
