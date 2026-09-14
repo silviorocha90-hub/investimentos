@@ -8,6 +8,10 @@ namespace Investimentos.Application.Interfaces
             Provento provento,
             CancellationToken cancellationToken = default);
 
+        Task<Provento?> ObterPorIdAsync(
+            Guid id,
+            CancellationToken cancellationToken = default);
+
         Task<Investidor?> ObterInvestidorAsync(
             Guid investidorId,
             CancellationToken cancellationToken = default);
@@ -20,5 +24,11 @@ namespace Investimentos.Application.Interfaces
             ListarAsync(
                 Guid investidorId,
                 CancellationToken cancellationToken = default);
+
+        void Excluir(
+            Provento provento);
+
+        Task SalvarAlteracoesAsync(
+            CancellationToken cancellationToken = default);
     }
 }

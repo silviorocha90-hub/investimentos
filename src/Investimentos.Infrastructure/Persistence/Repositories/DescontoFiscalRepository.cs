@@ -8,29 +8,50 @@ namespace Investimentos.Infrastructure.Persistence.Repositories
     {
         private readonly InvestimentosDbContext _context;
 
-        public DescontoFiscalRepository(InvestimentosDbContext context) => _context = context;
-
-        public async Task AdicionarAsync(DescontoFiscal desconto, CancellationToken cancellationToken = default)
+        public DescontoFiscalRepository(
+            InvestimentosDbContext context)
         {
-            await _context.DescontosFiscais.AddAsync(desconto, cancellationToken);
-            await _context.SaveChangesAsync(cancellationToken);
+            _context = context;
         }
 
-        public Task<Investidor?> ObterInvestidorAsync(Guid investidorId, CancellationToken cancellationToken = default) =>
-            _context.Investidores.FirstOrDefaultAsync(x => x.Id == investidorId, cancellationToken);
-
-        public async Task<IReadOnlyList<DescontoFiscal>> ListarAsync(Guid? investidorId = null, CancellationToken cancellationToken = default)
+        public async Task AdicionarAsync(
+            DescontoFiscal desconto,
+            CancellationToken cancellationToken = default)
         {
-            var query = _context.DescontosFiscais.AsNoTracking().Include(x => x.Investidor).AsQueryable();
-            if (investidorId.HasValue)
-                query = query.Where(x => x.InvestidorId == investidorId.Value);
+            if (desconto is null)
+            {
+                throw new ArgumentNullException(
+                    nameof(desconto));
+            }
 
-            return await query.OrderByDescending(x => x.DataPagamento).ToListAsync(cancellationToken);
+            await _context.DescontosFiscais.AddAsync(
+                desconto,
+                cancellationToken);
+
+            await _context.SaveChangesAsync(
+                cancellationToken);
         }
 
-        public Task<decimal> ObterTotalAsync(Guid investidorId, CancellationToken cancellationToken = default) =>
-            _context.DescontosFiscais
-                .Where(x => x.InvestidorId == investidorId)
-                .SumAsync(x => x.Valor, cancellationToken);
+        public async Task<IReadOnlyList<DescontoFiscal>> ListarAsync(
+            CancellationToken cancellationToken = default)
+        {
+            return await _context.DescontosFiscais
+                .AsNoTracking()
+                .OrderByDescending(
+                    x => x.DataPagamento)
+                .ThenBy(
+                    x => x.Tipo)
+                .ToListAsync(
+                    cancellationToken);
+        }
+
+        public async Task<decimal> ObterTotalAsync(
+            CancellationToken cancellationToken = default)
+        {
+            return await _context.DescontosFiscais
+                .SumAsync(
+                    x => x.Valor,
+                    cancellationToken);
+        }
     }
 }

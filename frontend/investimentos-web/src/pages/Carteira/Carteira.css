@@ -1,0 +1,286 @@
+/* =========================================================
+   CARTEIRA
+   Estilos exclusivos da tela Carteira
+   ========================================================= */
+
+.carteira-page {
+  min-height: calc(100vh - 42px);
+  grid-template-rows: auto auto auto auto;
+}
+
+/* =========================================================
+   INDICADORES
+   ========================================================= */
+
+.carteira-page .portfolio-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+/* =========================================================
+   PAINEL DE POSIÇÕES
+   ========================================================= */
+
+.carteira-page .portfolio-positions {
+  min-width: 0;
+  min-height: 0;
+
+  height: clamp(340px, 45vh, 500px);
+  max-height: clamp(340px, 45vh, 500px);
+
+  box-sizing: border-box;
+
+  display: flex;
+  flex-direction: column;
+
+  overflow: hidden;
+}
+
+/*
+ * A rolagem da carteira deve ser somente vertical.
+ * A tabela inteira precisa caber na largura do painel.
+ */
+.carteira-page .portfolio-positions .table-wrap {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+
+  width: 100%;
+  max-width: 100%;
+
+  margin-top: 4px;
+
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  scrollbar-gutter: stable;
+}
+
+/* =========================================================
+   TABELA DE POSIÇÕES
+   ========================================================= */
+
+.carteira-page .portfolio-positions .data-table {
+  width: 100%;
+  max-width: 100%;
+
+  table-layout: fixed;
+  border-collapse: collapse;
+
+  font-size: 0.72rem;
+}
+
+/*
+ * Distribuição das cinco colunas:
+ *
+ * Ativo       36%
+ * Tipo        18%
+ * Quantidade  12%
+ * Preço médio 17%
+ * Custo total 17%
+ *
+ * Total = 100%
+ */
+
+.carteira-page .portfolio-positions .data-table th:nth-child(1),
+.carteira-page .portfolio-positions .data-table td:nth-child(1) {
+  width: 10%;
+  text-align: left;
+}
+
+.carteira-page .portfolio-positions .data-table th:nth-child(2),
+.carteira-page .portfolio-positions .data-table td:nth-child(2) {
+  width: 10%;
+  text-align: left;
+}
+
+.carteira-page .portfolio-positions .data-table th:nth-child(3),
+.carteira-page .portfolio-positions .data-table td:nth-child(3) {
+  width: 10%;
+  text-align: right;
+}
+
+.carteira-page .portfolio-positions .data-table th:nth-child(4),
+.carteira-page .portfolio-positions .data-table td:nth-child(4) {
+  width: 10%;
+  text-align: right;
+}
+
+.carteira-page .portfolio-positions .data-table th:nth-child(5),
+.carteira-page .portfolio-positions .data-table td:nth-child(5) {
+  width: 10%;
+  text-align: right;
+}
+
+/* =========================================================
+   CABEÇALHO
+   ========================================================= */
+
+.carteira-page .portfolio-positions .data-table thead {
+  position: sticky;
+  top: 0;
+  z-index: 4;
+
+  background: var(--panel);
+}
+
+.carteira-page .portfolio-positions .data-table th {
+  padding: 10px 10px;
+
+  background: var(--panel);
+
+  font-size: 0.62rem;
+  white-space: nowrap;
+}
+
+/* =========================================================
+   CÉLULAS
+   ========================================================= */
+
+.carteira-page .portfolio-positions .data-table td {
+  min-width: 0;
+
+  padding: 8px 10px;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/*
+ * O ativo pode conter ticker + nome.
+ * Evita que um nome grande force a largura da tabela.
+ */
+.carteira-page .portfolio-positions .data-table td:first-child {
+  overflow: hidden;
+}
+
+.carteira-page .portfolio-positions .data-table td:first-child .ticker {
+  flex-shrink: 0;
+}
+
+.carteira-page .portfolio-positions .data-table .subtle-inline {
+  display: inline;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Valores numéricos nunca quebram linha. */
+
+.carteira-page .portfolio-positions .data-table td:nth-child(3),
+.carteira-page .portfolio-positions .data-table td:nth-child(4),
+.carteira-page .portfolio-positions .data-table td:nth-child(5) {
+  white-space: nowrap;
+}
+
+/* =========================================================
+   ESTADO VAZIO
+   ========================================================= */
+
+.carteira-page .portfolio-positions .empty-state {
+  flex: 1;
+
+  min-height: 220px;
+
+  display: grid;
+  place-items: center;
+}
+
+/* =========================================================
+   CARDS INFERIORES
+   ========================================================= */
+
+.carteira-page .portfolio-secondary-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.carteira-page .portfolio-secondary-metrics .portfolio-metric {
+  min-height: 82px;
+  box-sizing: border-box;
+}
+
+/* =========================================================
+   RESPONSIVIDADE
+   ========================================================= */
+
+@media (max-width: 1000px) {
+  .carteira-page .portfolio-positions .data-table th,
+  .carteira-page .portfolio-positions .data-table td {
+    padding-left: 7px;
+    padding-right: 7px;
+  }
+
+  .carteira-page .portfolio-positions .data-table th:nth-child(1),
+  .carteira-page .portfolio-positions .data-table td:nth-child(1) {
+    width: 32%;
+  }
+
+  .carteira-page .portfolio-positions .data-table th:nth-child(2),
+  .carteira-page .portfolio-positions .data-table td:nth-child(2) {
+    width: 18%;
+  }
+
+  .carteira-page .portfolio-positions .data-table th:nth-child(3),
+  .carteira-page .portfolio-positions .data-table td:nth-child(3) {
+    width: 14%;
+  }
+
+  .carteira-page .portfolio-positions .data-table th:nth-child(4),
+  .carteira-page .portfolio-positions .data-table td:nth-child(4) {
+    width: 18%;
+  }
+
+  .carteira-page .portfolio-positions .data-table th:nth-child(5),
+  .carteira-page .portfolio-positions .data-table td:nth-child(5) {
+    width: 18%;
+  }
+}
+
+@media (max-width: 760px) {
+  .carteira-page {
+    min-height: auto;
+    grid-template-rows: none;
+  }
+
+  .carteira-page .portfolio-metrics,
+  .carteira-page .portfolio-secondary-metrics {
+    grid-template-columns: 1fr;
+  }
+
+  .carteira-page .portfolio-positions {
+    height: 340px;
+    max-height: 340px;
+  }
+
+  /*
+   * Continua sem scroll horizontal.
+   * Em telas estreitas reduzimos tipografia e espaçamento.
+   */
+  .carteira-page .portfolio-positions .data-table {
+    font-size: 0.66rem;
+  }
+
+  .carteira-page .portfolio-positions .data-table th {
+    padding: 8px 4px;
+    font-size: 0.54rem;
+    letter-spacing: 0.03em;
+  }
+
+  .carteira-page .portfolio-positions .data-table td {
+    padding: 7px 4px;
+  }
+
+  .carteira-page .portfolio-positions .ticker {
+    min-height: 24px;
+    padding: 0 6px;
+    font-size: 0.7rem;
+  }
+
+  .carteira-page .portfolio-positions .subtle-inline {
+    display: none;
+  }
+}

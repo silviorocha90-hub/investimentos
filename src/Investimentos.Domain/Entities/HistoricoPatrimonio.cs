@@ -21,23 +21,44 @@
             DateTime dataReferencia,
             decimal valorCarteira)
         {
-            if (investidor is null)
-            {
-                throw new ArgumentException(
-                    "O investidor é obrigatório.");
-            }
-
-            if (valorCarteira < 0)
-            {
-                throw new ArgumentException(
-                    "O valor da carteira não pode ser negativo.");
-            }
+            ValidarInvestidor(investidor);
+            ValidarValor(valorCarteira);
 
             Id = Guid.NewGuid();
 
             Investidor = investidor;
             DataReferencia = dataReferencia;
             ValorCarteira = valorCarteira;
+        }
+
+        public void Atualizar(
+            DateTime dataReferencia,
+            decimal valorCarteira)
+        {
+            ValidarValor(valorCarteira);
+
+            DataReferencia = dataReferencia;
+            ValorCarteira = valorCarteira;
+        }
+
+        private static void ValidarInvestidor(
+            Investidor investidor)
+        {
+            if (investidor is null)
+            {
+                throw new ArgumentException(
+                    "O investidor é obrigatório.");
+            }
+        }
+
+        private static void ValidarValor(
+            decimal valorCarteira)
+        {
+            if (valorCarteira < 0)
+            {
+                throw new ArgumentException(
+                    "O valor da carteira não pode ser negativo.");
+            }
         }
     }
 }

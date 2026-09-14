@@ -1,14 +1,17 @@
-using Investimentos.Application.Interfaces;
 using Investimentos.Application.Dashboard;
+using Investimentos.Application.Interfaces;
+using Investimentos.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace Investimentos.Infrastructure.Persistence.Repositories
 {
-    public class HistoricoPatrimonioRepository : IHistoricoPatrimonioRepository
+    public class HistoricoPatrimonioRepository :
+        IHistoricoPatrimonioRepository
     {
         private readonly InvestimentosDbContext _context;
 
-        public HistoricoPatrimonioRepository(InvestimentosDbContext context)
+        public HistoricoPatrimonioRepository(
+            InvestimentosDbContext context)
         {
             _context = context;
         }
@@ -51,8 +54,42 @@ namespace Investimentos.Infrastructure.Persistence.Repositories
                     grupo.Key,
                     grupo.Select(x => new EvolucaoPontoDto(
                         x.DataReferencia,
-                        x.ValorCarteira)).ToList()))
+                        x.ValorCarteira))
+                        .ToList()))
                 .ToList();
+        }
+
+        public Task<HistoricoPatrimonio?> ObterPorIdAsync(
+            Guid id,
+            CancellationToken cancellationToken = default)
+        {
+            return _context.HistoricosPatrimonio
+                .FirstOrDefaultAsync(
+                    x => x.Id == id,
+                    cancellationToken);
+        }
+
+        public async Task AdicionarAsync(
+            HistoricoPatrimonio historicoPatrimonio,
+            CancellationToken cancellationToken = default)
+        {
+            await _context.HistoricosPatrimonio.AddAsync(
+                historicoPatrimonio,
+                cancellationToken);
+        }
+
+        public void Excluir(
+            HistoricoPatrimonio historicoPatrimonio)
+        {
+            _context.HistoricosPatrimonio.Remove(
+                historicoPatrimonio);
+        }
+
+        public Task SalvarAlteracoesAsync(
+            CancellationToken cancellationToken = default)
+        {
+            return _context.SaveChangesAsync(
+                cancellationToken);
         }
     }
 }

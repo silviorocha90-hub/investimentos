@@ -10,5 +10,10 @@
         decimal PrecoUnitario,
         decimal Taxas,
         DateTime Data,
-        int Sequencia);
+        int Sequencia)
+    {
+        public string TipoAtivoCodigo { get; init; } = string.Empty;
+
+        public string TipoAtivoNome { get; init; } = string.Empty;
+    }
 }

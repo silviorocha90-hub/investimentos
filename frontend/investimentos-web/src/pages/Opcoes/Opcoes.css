@@ -1,0 +1,801 @@
+.options-page {
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+}
+
+/* =========================================================
+   CABEÇALHO DA TELA
+   ========================================================= */
+
+.options-header-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  min-width: 0;
+  padding: 12px 14px 14px;
+  box-sizing: border-box;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--panel);
+}
+
+.options-page-heading {
+  display: flex;
+  align-items: center;
+}
+
+.options-page-title {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  margin: 0;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: rgba(70, 211, 178, 0.12);
+  color: var(--accent);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.options-investor-label {
+  width: 188px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.options-investor-label span {
+  color: var(--muted);
+  font-size: 0.66rem;
+  font-weight: 700;
+}
+
+.options-investor-label select {
+  width: 100%;
+  height: 38px;
+  min-width: 0;
+  padding: 0 12px;
+  box-sizing: border-box;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  outline: none;
+  background: var(--panel-strong);
+  color: var(--text);
+  font: inherit;
+  font-size: 0.74rem;
+  font-weight: 600;
+}
+
+.options-investor-label select:hover {
+  border-color: rgba(70, 211, 178, 0.28);
+}
+
+.options-investor-label select:focus {
+  border-color: rgba(70, 211, 178, 0.55);
+}
+
+/* =========================================================
+   GRÁFICOS
+   ========================================================= */
+
+.options-charts-grid {
+  display: grid;
+  grid-template-columns:
+    minmax(0, 1.45fr)
+    minmax(320px, 0.85fr);
+  gap: 14px;
+}
+
+.options-chart-card {
+  min-width: 0;
+  min-height: 300px;
+  padding: 18px;
+  box-sizing: border-box;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--panel);
+}
+
+.options-chart-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 22px;
+  gap: 16px;
+}
+
+.options-chart-header strong {
+  color: var(--text);
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+
+/* =========================================================
+   EVOLUÇÃO
+   ========================================================= */
+
+.options-month-chart {
+  height: 220px;
+  margin-top: 20px;
+  display: grid;
+  grid-template-columns:
+    repeat(12, minmax(0, 1fr));
+  gap: 7px;
+  align-items: end;
+}
+
+.options-month-column {
+  min-width: 0;
+  height: 100%;
+  display: grid;
+  grid-template-rows:
+    30px 1fr 20px;
+  gap: 5px;
+  text-align: center;
+}
+
+.options-month-value {
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 0.55rem;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.options-month-value.negative {
+  color: #ff8585;
+}
+
+.options-month-track {
+  position: relative;
+  min-height: 0;
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.025);
+  overflow: hidden;
+}
+
+.options-month-track i {
+  position: absolute;
+  left: 15%;
+  right: 15%;
+  bottom: 0;
+  border-radius: 6px 6px 2px 2px;
+  background:
+    linear-gradient(
+      180deg,
+      var(--accent),
+      rgba(70, 211, 178, 0.4)
+    );
+}
+
+.options-month-track i.negative {
+  background:
+    linear-gradient(
+      180deg,
+      #ff8585,
+      rgba(255, 100, 100, 0.35)
+    );
+}
+
+.options-month-column > span {
+  color: var(--muted);
+  font-size: 0.61rem;
+}
+
+/* =========================================================
+   RANKING
+   ========================================================= */
+
+.options-ranking {
+  margin-top: 20px;
+  display: grid;
+  gap: 12px;
+}
+
+.options-ranking-row {
+  display: grid;
+  grid-template-columns:
+    22px 82px minmax(60px, 1fr) 104px;
+  gap: 9px;
+  align-items: center;
+  font-size: 0.72rem;
+}
+
+.options-ranking-position {
+  color: var(--muted);
+}
+
+.options-ranking-row strong {
+  overflow: hidden;
+  color: var(--text);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.options-ranking-track {
+  height: 7px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.05);
+  overflow: hidden;
+}
+
+.options-ranking-track i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--accent);
+}
+
+.options-ranking-track i.negative {
+  background: #ff8585;
+}
+
+.options-ranking-value {
+  text-align: right;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.options-ranking-value.negative {
+  color: #ff8585;
+}
+
+.options-chart-empty {
+  min-height: 180px;
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+}
+
+/* =========================================================
+   CAMPOS
+   ========================================================= */
+
+.options-form-grid label,
+.options-filters label {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.options-form-grid label > span,
+.options-filters label > span {
+  color: var(--muted);
+  font-size: 0.67rem;
+  font-weight: 700;
+}
+
+.options-form-grid input,
+.options-form-grid select,
+.options-filters select {
+  width: 100%;
+  height: 38px;
+  min-width: 0;
+  padding: 0 10px;
+  box-sizing: border-box;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  outline: none;
+  background: var(--panel-strong);
+  color: var(--text);
+  font: inherit;
+  font-size: 0.74rem;
+}
+
+.options-form-grid input:focus,
+.options-form-grid select:focus,
+.options-filters select:focus {
+  border-color: rgba(70, 211, 178, 0.55);
+}
+
+.options-form-grid input:disabled,
+.options-form-grid select:disabled {
+  opacity: 0.72;
+  cursor: not-allowed;
+}
+
+/* =========================================================
+   BOTÕES
+   ========================================================= */
+
+.options-primary-button,
+.options-clear-button,
+.options-new-button,
+.options-edit-button,
+.options-delete-button {
+  border-radius: 9px;
+  background: transparent;
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease,
+    opacity 0.15s ease;
+}
+
+.options-primary-button,
+.options-new-button {
+  min-height: 36px;
+  padding: 0 15px;
+  border: 1px solid rgba(70, 211, 178, 0.4);
+  background: rgba(70, 211, 178, 0.1);
+  color: var(--accent);
+  font-size: 0.7rem;
+  white-space: nowrap;
+}
+
+.options-primary-button:hover:not(:disabled),
+.options-new-button:hover:not(:disabled) {
+  background: rgba(70, 211, 178, 0.18);
+  border-color: rgba(70, 211, 178, 0.55);
+}
+
+.options-new-button:disabled,
+.options-primary-button:disabled,
+.options-clear-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.options-clear-button {
+  min-height: 36px;
+  padding: 0 14px;
+  border: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 0.7rem;
+  white-space: nowrap;
+}
+
+.options-clear-button:hover:not(:disabled) {
+  border-color: rgba(70, 211, 178, 0.4);
+  background: rgba(70, 211, 178, 0.06);
+  color: var(--text);
+}
+
+/* =========================================================
+   FILTROS
+   ========================================================= */
+
+.options-filters-panel {
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--panel);
+}
+
+.options-filter-heading {
+  display: flex;
+  align-items: center;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--line);
+}
+
+.options-filter-heading strong {
+  color: var(--text);
+  font-size: 0.86rem;
+  font-weight: 800;
+}
+
+.options-filters {
+  display: grid;
+  grid-template-columns:
+    repeat(5, minmax(110px, 1fr))
+    auto;
+  gap: 10px;
+  align-items: end;
+  padding: 12px 14px 14px;
+}
+
+/* =========================================================
+   LISTA DE OPÇÕES
+   ========================================================= */
+
+.options-table-panel {
+  width: 100%;
+  min-width: 0;
+  min-height: 420px;
+  overflow: hidden;
+  box-sizing: border-box;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--panel);
+}
+
+.options-list-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--line);
+}
+
+.options-list-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.options-list-title strong {
+  color: var(--text);
+  font-size: 0.86rem;
+  font-weight: 800;
+}
+
+.options-count-badge {
+  flex: 0 0 auto;
+  padding: 5px 9px;
+  border: 1px solid rgba(70, 211, 178, 0.22);
+  border-radius: 999px;
+  background: rgba(70, 211, 178, 0.07);
+  color: var(--accent);
+  font-size: 0.65rem;
+  font-weight: 800;
+}
+
+/* =========================================================
+   TABELA
+   ========================================================= */
+
+.options-table-wrap {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.options-table {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+}
+
+.options-table th,
+.options-table td {
+  box-sizing: border-box;
+  padding: 9px 4px;
+  overflow: hidden;
+  border-bottom: 1px solid var(--line);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.options-table th {
+  color: var(--muted);
+  font-size: 0.56rem;
+  font-weight: 800;
+  text-align: left;
+}
+
+.options-table td {
+  color: var(--text);
+  font-size: 0.64rem;
+}
+
+.options-table tbody tr {
+  transition: background 0.12s ease;
+}
+
+.options-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.018);
+}
+
+/*
+ * Distribuição real das colunas
+ *
+ * Vencimento      11%
+ * Ticker           8%
+ * Tipo             5%
+ * Natureza         7%
+ * Status           10%
+ * Quantidade       11%
+ * Strike           10%
+ * Prêmio Unit.     12%
+ * Prêmio Total     13%
+ * Ações            13%
+ *
+ * TOTAL           100%
+ */
+
+/* Vencimento */
+.options-table th:nth-child(1),
+.options-table td:nth-child(1) {
+  width: 11%;
+  text-align: left;
+}
+
+/* Ticker */
+.options-table th:nth-child(2),
+.options-table td:nth-child(2) {
+  width: 8%;
+  text-align: center;
+  padding-left: 2px;
+  padding-right: 2px;
+}
+
+/* Tipo */
+.options-table th:nth-child(3),
+.options-table td:nth-child(3) {
+  width: 5%;
+  text-align: center;
+  padding-left: 1px;
+  padding-right: 1px;
+}
+
+/* Natureza */
+.options-table th:nth-child(4),
+.options-table td:nth-child(4) {
+  width: 7%;
+  text-align: center;
+  padding-left: 1px;
+  padding-right: 1px;
+}
+
+/* Status */
+.options-table th:nth-child(5),
+.options-table td:nth-child(5) {
+  width: 10%;
+  text-align: center;
+}
+
+/* Quantidade */
+.options-table th:nth-child(6),
+.options-table td:nth-child(6) {
+  width: 11%;
+  text-align: right;
+}
+
+/* Strike */
+.options-table th:nth-child(7),
+.options-table td:nth-child(7) {
+  width: 10%;
+  text-align: right;
+}
+
+/* Prêmio Unitário */
+.options-table th:nth-child(8),
+.options-table td:nth-child(8) {
+  width: 12%;
+  text-align: right;
+}
+
+/* Prêmio Total */
+.options-table th:nth-child(9),
+.options-table td:nth-child(9) {
+  width: 13%;
+  text-align: right;
+}
+
+/* Ações */
+.options-table th:nth-child(10),
+.options-table td:nth-child(10) {
+  width: 13%;
+  text-align: center;
+}
+
+/* =========================================================
+   CHIPS
+   ========================================================= */
+
+.option-type-chip,
+.option-status-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 21px;
+  padding: 0 5px;
+  border-radius: 999px;
+  font-size: 0.56rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.option-type-chip.put {
+  color: #ff7b8a;
+  background: rgba(255, 88, 108, 0.14);
+}
+
+.option-type-chip.call {
+  color: var(--accent);
+  background: rgba(70, 211, 178, 0.12);
+}
+
+.option-status-chip.encerrada {
+  color: var(--accent);
+  background: rgba(70, 211, 178, 0.12);
+}
+
+.option-status-chip.executada {
+  color: #ffb65c;
+  background: rgba(255, 159, 67, 0.14);
+}
+
+/* =========================================================
+   AÇÕES
+   ========================================================= */
+
+.options-row-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.options-edit-button,
+.options-delete-button {
+  min-height: 25px;
+  padding: 0 6px;
+  font-size: 0.58rem;
+}
+
+.options-edit-button {
+  border: 1px solid rgba(78, 161, 255, 0.34);
+  color: #74b9ff;
+}
+
+.options-edit-button:hover {
+  background: rgba(78, 161, 255, 0.08);
+}
+
+.options-delete-button {
+  border: 1px solid rgba(255, 88, 108, 0.34);
+  color: #ff8585;
+}
+
+.options-delete-button:hover:not(:disabled) {
+  background: rgba(255, 88, 108, 0.08);
+}
+
+.options-delete-button:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}
+
+/* =========================================================
+   MODAL
+   ========================================================= */
+
+.options-modal {
+  width: min(
+    680px,
+    calc(100vw - 32px)
+  );
+}
+
+.options-modal-body {
+  padding: 18px;
+}
+
+.options-form-grid {
+  display: grid;
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.options-status-field {
+  grid-column: 1 / -1;
+}
+
+.options-modal-error {
+  margin-bottom: 14px;
+  padding: 10px 12px;
+  border: 1px solid rgba(255, 100, 100, 0.28);
+  border-radius: 10px;
+  background: rgba(255, 100, 100, 0.08);
+  color: #ff9b9b;
+  font-size: 0.7rem;
+}
+
+/* =========================================================
+   ESTADOS
+   ========================================================= */
+
+.options-empty-state {
+  min-height: 320px;
+  gap: 14px;
+}
+
+.positive {
+  color: var(--accent) !important;
+}
+
+.negative {
+  color: #ff8585 !important;
+}
+
+/* =========================================================
+   RESPONSIVO
+   ========================================================= */
+
+@media (max-width: 1100px) {
+  .options-charts-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .options-filters {
+    grid-template-columns:
+      repeat(3, minmax(110px, 1fr));
+  }
+
+  .options-table th {
+    font-size: 0.52rem;
+  }
+
+  .options-table td {
+    font-size: 0.59rem;
+  }
+
+  .options-table th,
+  .options-table td {
+    padding-left: 2px;
+    padding-right: 2px;
+  }
+
+  .options-edit-button,
+  .options-delete-button {
+    padding: 0 4px;
+    font-size: 0.54rem;
+  }
+}
+
+@media (max-width: 760px) {
+  .options-investor-label {
+    width: 100%;
+  }
+
+  .options-filters,
+  .options-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .options-status-field {
+    grid-column: auto;
+  }
+
+  .options-month-value {
+    display: none;
+  }
+
+  .options-chart-card {
+    min-height: auto;
+  }
+
+  .options-list-heading {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .options-new-button {
+    width: 100%;
+  }
+
+  .options-table th {
+    font-size: 0.48rem;
+  }
+
+  .options-table td {
+    font-size: 0.55rem;
+  }
+
+  .options-table th,
+  .options-table td {
+    padding-left: 1px;
+    padding-right: 1px;
+  }
+
+  .options-edit-button,
+  .options-delete-button {
+    padding: 0 3px;
+    font-size: 0.5rem;
+  }
+}

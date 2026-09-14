@@ -135,6 +135,35 @@ namespace Investimentos.Infrastructure.Migrations
                     b.ToTable("CotacaoAtivo", (string)null);
                 });
 
+            modelBuilder.Entity("Investimentos.Domain.Entities.DescontoFiscal", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("DataPagamento")
+                        .HasColumnType("date");
+
+                    b.Property<string>("Descricao")
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
+
+                    b.Property<string>("Tipo")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<decimal>("Valor")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DataPagamento", "Tipo");
+
+                    b.ToTable("DescontoFiscal", (string)null);
+                });
+
             modelBuilder.Entity("Investimentos.Domain.Entities.HistoricoPatrimonio", b =>
                 {
                     b.Property<Guid>("Id")

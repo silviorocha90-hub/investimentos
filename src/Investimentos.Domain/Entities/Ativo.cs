@@ -23,28 +23,56 @@ namespace Investimentos.Domain.Entities
             string nome,
             TipoAtivo tipoAtivo)
         {
-            if (ticker is null)
-            {
-                throw new ArgumentException(
-                    "O ticker do ativo é obrigatório.");
-            }
-
-            if (string.IsNullOrWhiteSpace(nome))
-            {
-                throw new ArgumentException(
-                    "O nome do ativo é obrigatório.");
-            }
-
-            if (tipoAtivo is null)
-            {
-                throw new ArgumentException(
-                    "O tipo do ativo é obrigatório.");
-            }
+            ValidarTicker(ticker);
+            ValidarNome(nome);
+            ValidarTipoAtivo(tipoAtivo);
 
             Id = Guid.NewGuid();
             Ticker = ticker;
             Nome = nome.Trim();
             TipoAtivo = tipoAtivo;
+        }
+
+        public void Atualizar(
+            string nome,
+            TipoAtivo tipoAtivo)
+        {
+            ValidarNome(nome);
+            ValidarTipoAtivo(tipoAtivo);
+
+            Nome = nome.Trim();
+            TipoAtivo = tipoAtivo;
+            TipoAtivoId = tipoAtivo.Id;
+        }
+
+        private static void ValidarTicker(
+            Ticker ticker)
+        {
+            if (ticker is null)
+            {
+                throw new ArgumentException(
+                    "O ticker do ativo é obrigatório.");
+            }
+        }
+
+        private static void ValidarNome(
+            string nome)
+        {
+            if (string.IsNullOrWhiteSpace(nome))
+            {
+                throw new ArgumentException(
+                    "O nome do ativo é obrigatório.");
+            }
+        }
+
+        private static void ValidarTipoAtivo(
+            TipoAtivo tipoAtivo)
+        {
+            if (tipoAtivo is null)
+            {
+                throw new ArgumentException(
+                    "O tipo do ativo é obrigatório.");
+            }
         }
     }
 }

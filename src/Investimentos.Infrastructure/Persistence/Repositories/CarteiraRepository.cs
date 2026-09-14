@@ -38,7 +38,14 @@ namespace Investimentos.Infrastructure.Persistence.Repositories
                             x.PrecoUnitario,
                             x.Taxas,
                             x.Data,
-                            x.Sequencia))
+                            x.Sequencia)
+                        {
+                            TipoAtivoCodigo =
+                                x.Ativo.TipoAtivo.Codigo,
+
+                            TipoAtivoNome =
+                                x.Ativo.TipoAtivo.Nome
+                        })
                     .ToListAsync(
                         cancellationToken);
 

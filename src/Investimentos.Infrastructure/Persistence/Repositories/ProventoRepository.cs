@@ -26,6 +26,18 @@ namespace Investimentos.Infrastructure.Persistence.Repositories
                 cancellationToken);
         }
 
+        public async Task<Provento?> ObterPorIdAsync(
+            Guid id,
+            CancellationToken cancellationToken = default)
+        {
+            return await _context.Proventos
+                .Include(x => x.Investidor)
+                .Include(x => x.Ativo)
+                .FirstOrDefaultAsync(
+                    x => x.Id == id,
+                    cancellationToken);
+        }
+
         public async Task<Investidor?> ObterInvestidorAsync(
             Guid investidorId,
             CancellationToken cancellationToken = default)
@@ -40,25 +52,63 @@ namespace Investimentos.Infrastructure.Persistence.Repositories
             string ticker,
             CancellationToken cancellationToken = default)
         {
-            return await _context.Ativos
-                .FirstOrDefaultAsync(
-                    x => x.Ticker.Codigo == ticker,
-                    cancellationToken);
+            var tickerNormalizado =
+                ticker
+                    .Trim()
+                    .ToUpperInvariant();
+
+            var ativos =
+                await _context.Ativos
+                    .ToListAsync(
+                        cancellationToken);
+
+            return ativos
+                .FirstOrDefault(
+                    x =>
+                        x.Ticker.Codigo ==
+                        tickerNormalizado);
         }
 
         public async Task<IReadOnlyList<Provento>> ListarAsync(
             Guid investidorId,
             CancellationToken cancellationToken = default)
         {
-            return await _context.Proventos
-                .AsNoTracking()
-                .Include(x => x.Ativo)
-                .Where(x =>
-                    x.InvestidorId == investidorId)
-                .OrderByDescending(x =>
-                    x.DataPagamento)
-                .ToListAsync(
-                    cancellationToken);
+            var proventos =
+                await _context.Proventos
+                    .AsNoTracking()
+                    .Include(x => x.Ativo)
+                    .Where(
+                        x =>
+                            x.InvestidorId ==
+                            investidorId)
+                    .OrderByDescending(
+                        x =>
+                            x.DataPagamento)
+                    .ToListAsync(
+                        cancellationToken);
+
+            return proventos
+                .OrderByDescending(
+                    x =>
+                        x.DataPagamento)
+                .ThenBy(
+                    x =>
+                        x.Ativo.Ticker.Codigo)
+                .ToList();
+        }
+
+        public void Excluir(
+            Provento provento)
+        {
+            _context.Proventos.Remove(
+                provento);
+        }
+
+        public async Task SalvarAlteracoesAsync(
+            CancellationToken cancellationToken = default)
+        {
+            await _context.SaveChangesAsync(
+                cancellationToken);
         }
     }
 }

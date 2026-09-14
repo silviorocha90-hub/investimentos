@@ -3,9 +3,18 @@
     public record PosicaoAtivoDto(
         string Ticker,
         string Nome,
+        string TipoAtivoCodigo,
+        string TipoAtivoNome,
         decimal Quantidade,
         decimal PrecoMedio,
         decimal CustoTotal,
         decimal ResultadoRealizado,
-        DateTime? DataPrimeiraCompra = null);
+        DateTime? DataPrimeiraCompra = null)
+    {
+        public decimal? PrecoAtual { get; init; }
+
+        public decimal ValorAtual { get; init; }
+
+        public decimal Valorizacao { get; init; }
+    }
 }

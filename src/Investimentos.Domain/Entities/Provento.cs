@@ -33,7 +33,7 @@
         {
             Investidor = null!;
             Ativo = null!;
-            Tipo = null!;
+            Tipo = string.Empty;
         }
 
         public Provento(
@@ -41,6 +41,106 @@
             Ativo ativo,
             string tipo,
             string? descricao,
+            DateTime? dataCom,
+            DateTime dataPagamento,
+            decimal quantidadeBase,
+            decimal valorPorUnidade,
+            decimal valorRecebido)
+        {
+            Validar(
+                investidor,
+                ativo,
+                tipo,
+                dataCom,
+                dataPagamento,
+                quantidadeBase,
+                valorPorUnidade,
+                valorRecebido);
+
+            Id = Guid.NewGuid();
+
+            Investidor = investidor;
+            InvestidorId = investidor.Id;
+
+            Ativo = ativo;
+            AtivoId = ativo.Id;
+
+            Tipo = string.Empty;
+
+            AplicarDados(
+                tipo,
+                descricao,
+                dataCom,
+                dataPagamento,
+                quantidadeBase,
+                valorPorUnidade,
+                valorRecebido);
+        }
+
+        public void Atualizar(
+            Ativo ativo,
+            string tipo,
+            string? descricao,
+            DateTime? dataCom,
+            DateTime dataPagamento,
+            decimal quantidadeBase,
+            decimal valorPorUnidade,
+            decimal valorRecebido)
+        {
+            Validar(
+                Investidor,
+                ativo,
+                tipo,
+                dataCom,
+                dataPagamento,
+                quantidadeBase,
+                valorPorUnidade,
+                valorRecebido);
+
+            Ativo = ativo;
+            AtivoId = ativo.Id;
+
+            AplicarDados(
+                tipo,
+                descricao,
+                dataCom,
+                dataPagamento,
+                quantidadeBase,
+                valorPorUnidade,
+                valorRecebido);
+        }
+
+        private void AplicarDados(
+            string tipo,
+            string? descricao,
+            DateTime? dataCom,
+            DateTime dataPagamento,
+            decimal quantidadeBase,
+            decimal valorPorUnidade,
+            decimal valorRecebido)
+        {
+            Tipo =
+                tipo
+                    .Trim()
+                    .ToUpperInvariant();
+
+            Descricao =
+                string.IsNullOrWhiteSpace(
+                    descricao)
+                    ? null
+                    : descricao.Trim();
+
+            DataCom = dataCom;
+            DataPagamento = dataPagamento;
+            QuantidadeBase = quantidadeBase;
+            ValorPorUnidade = valorPorUnidade;
+            ValorRecebido = valorRecebido;
+        }
+
+        private static void Validar(
+            Investidor investidor,
+            Ativo ativo,
+            string tipo,
             DateTime? dataCom,
             DateTime dataPagamento,
             decimal quantidadeBase,
@@ -59,14 +159,17 @@
                     "O ativo é obrigatório.");
             }
 
-            if (string.IsNullOrWhiteSpace(tipo))
+            if (string.IsNullOrWhiteSpace(
+                    tipo))
             {
                 throw new ArgumentException(
                     "O tipo do provento é obrigatório.");
             }
 
             var tipoNormalizado =
-                tipo.Trim().ToUpperInvariant();
+                tipo
+                    .Trim()
+                    .ToUpperInvariant();
 
             if (tipoNormalizado != "DIVIDENDO" &&
                 tipoNormalizado != "JCP" &&
@@ -95,30 +198,12 @@
             }
 
             if (dataCom.HasValue &&
-                dataPagamento.Date < dataCom.Value.Date)
+                dataPagamento.Date <
+                dataCom.Value.Date)
             {
                 throw new ArgumentException(
                     "A data de pagamento não pode ser anterior à data-com.");
             }
-
-            Id = Guid.NewGuid();
-
-            Investidor = investidor;
-            Ativo = ativo;
-
-            Tipo = tipoNormalizado;
-
-            Descricao =
-                string.IsNullOrWhiteSpace(descricao)
-                    ? null
-                    : descricao.Trim();
-
-            DataCom = dataCom;
-            DataPagamento = dataPagamento;
-
-            QuantidadeBase = quantidadeBase;
-            ValorPorUnidade = valorPorUnidade;
-            ValorRecebido = valorRecebido;
         }
     }
 }

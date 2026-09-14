@@ -1,0 +1,556 @@
+.proventos-page {
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+}
+
+.proventos-resumo {
+  display: grid;
+  grid-template-columns:
+    repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.provento-kpi {
+  min-width: 0;
+  min-height: 108px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--panel);
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.provento-kpi-destaque {
+  border-color:
+    rgba(70, 211, 178, 0.28);
+  background:
+    linear-gradient(
+      135deg,
+      rgba(24, 116, 102, 0.2),
+      var(--panel)
+    );
+}
+
+.provento-kpi span,
+.proventos-chart-header span,
+.proventos-history-header span {
+  color: var(--muted);
+  font-size: 0.72rem;
+}
+
+.provento-kpi strong {
+  margin-top: 8px;
+  font-size: 1.22rem;
+  color: var(--text);
+}
+
+.provento-kpi-destaque strong {
+  color: var(--accent);
+}
+
+.provento-kpi small {
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 0.67rem;
+}
+
+.proventos-graficos {
+  display: grid;
+  grid-template-columns:
+    minmax(0, 1.45fr)
+    minmax(320px, 0.85fr);
+  gap: 14px;
+}
+
+.proventos-chart-card {
+  min-width: 0;
+  min-height: 300px;
+  padding: 18px;
+}
+
+.proventos-chart-header,
+.proventos-history-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.proventos-chart-header > div,
+.proventos-history-header > div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.proventos-chart-header strong,
+.proventos-history-header strong {
+  font-size: 0.92rem;
+}
+
+.proventos-chart-header small {
+  padding: 5px 9px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--muted);
+}
+
+.proventos-month-chart {
+  height: 220px;
+  margin-top: 20px;
+  display: grid;
+  grid-template-columns:
+    repeat(12, minmax(0, 1fr));
+  gap: 7px;
+  align-items: end;
+}
+
+.proventos-month-column {
+  min-width: 0;
+  height: 100%;
+  display: grid;
+  grid-template-rows:
+    30px 1fr 20px;
+  gap: 5px;
+  text-align: center;
+}
+
+.proventos-month-value {
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 0.55rem;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.proventos-month-track {
+  position: relative;
+  min-height: 0;
+  border-radius: 7px;
+  background:
+    rgba(255, 255, 255, 0.025);
+  overflow: hidden;
+}
+
+.proventos-month-track i {
+  position: absolute;
+  left: 15%;
+  right: 15%;
+  bottom: 0;
+  border-radius: 6px 6px 2px 2px;
+  background:
+    linear-gradient(
+      180deg,
+      var(--accent),
+      rgba(70, 211, 178, 0.4)
+    );
+}
+
+.proventos-month-column > span {
+  color: var(--muted);
+  font-size: 0.61rem;
+}
+
+.proventos-ranking {
+  margin-top: 20px;
+  display: grid;
+  gap: 12px;
+}
+
+.proventos-ranking-row {
+  display: grid;
+  grid-template-columns:
+    22px 62px minmax(60px, 1fr) 94px;
+  gap: 9px;
+  align-items: center;
+  font-size: 0.72rem;
+}
+
+.proventos-ranking-position {
+  color: var(--muted);
+}
+
+.proventos-ranking-track {
+  height: 7px;
+  border-radius: 999px;
+  background:
+    rgba(255, 255, 255, 0.05);
+  overflow: hidden;
+}
+
+.proventos-ranking-track i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--accent);
+}
+
+.proventos-ranking-value {
+  text-align: right;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.proventos-chart-empty,
+.proventos-loading {
+  min-height: 180px;
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+}
+
+.proventos-history {
+  min-width: 0;
+  padding: 18px;
+}
+
+.proventos-new-button {
+  padding: 9px 14px;
+  border: 1px solid
+    rgba(70, 211, 178, 0.35);
+  border-radius: 10px;
+  background:
+    rgba(70, 211, 178, 0.12);
+  color: var(--accent);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.proventos-new-button:hover {
+  background:
+    rgba(70, 211, 178, 0.2);
+}
+
+.proventos-filters {
+  margin: 18px 0 14px;
+  display: grid;
+  grid-template-columns:
+    120px 160px 160px
+    minmax(180px, 1fr);
+  gap: 10px;
+}
+
+.proventos-filters label,
+.provento-form-grid label {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.proventos-filters label > span,
+.provento-form-grid label > span {
+  color: var(--muted);
+  font-size: 0.66rem;
+  font-weight: 600;
+}
+
+.proventos-filters input,
+.proventos-filters select,
+.provento-form-grid input,
+.provento-form-grid select {
+  width: 100%;
+  min-width: 0;
+  height: 38px;
+  padding: 0 10px;
+  box-sizing: border-box;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  outline: none;
+  background: var(--panel-strong);
+  color: var(--text);
+}
+
+.proventos-filters input:focus,
+.proventos-filters select:focus,
+.provento-form-grid input:focus,
+.provento-form-grid select:focus {
+  border-color:
+    rgba(70, 211, 178, 0.55);
+}
+
+.proventos-table-wrap {
+  width: 100%;
+  overflow-x: hidden;
+}
+
+.proventos-table {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+  font-size: 0.7rem;
+}
+
+.proventos-table th {
+  padding: 10px 8px;
+  border-bottom: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 0.59rem;
+  text-align: left;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.proventos-table td {
+  padding: 10px 8px;
+  border-bottom: 1px solid var(--line);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.proventos-table th:nth-child(1),
+.proventos-table td:nth-child(1) {
+  width: 11%;
+}
+
+.proventos-table th:nth-child(2),
+.proventos-table td:nth-child(2) {
+  width: 10%;
+}
+
+.proventos-table th:nth-child(3),
+.proventos-table td:nth-child(3) {
+  width: 13%;
+}
+
+.proventos-table th:nth-child(4),
+.proventos-table td:nth-child(4) {
+  width: 10%;
+  text-align: right;
+}
+
+.proventos-table th:nth-child(5),
+.proventos-table td:nth-child(5) {
+  width: 14%;
+  text-align: right;
+}
+
+.proventos-table th:nth-child(6),
+.proventos-table td:nth-child(6) {
+  width: 14%;
+  text-align: right;
+}
+
+.proventos-table th:nth-child(7),
+.proventos-table td:nth-child(7) {
+  width: 10%;
+  text-align: right;
+}
+
+.proventos-table th:nth-child(8),
+.proventos-table td:nth-child(8) {
+  width: 18%;
+  text-align: right;
+}
+
+.provento-recebido {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.provento-tipo {
+  display: inline-flex;
+  padding: 4px 7px;
+  border-radius: 999px;
+  font-size: 0.58rem;
+  font-weight: 700;
+}
+
+.provento-tipo-dividendo {
+  background:
+    rgba(70, 211, 178, 0.12);
+  color: var(--accent);
+}
+
+.provento-tipo-jcp {
+  background:
+    rgba(141, 167, 255, 0.12);
+  color: #aabaff;
+}
+
+.provento-tipo-rendimento {
+  background:
+    rgba(255, 191, 105, 0.12);
+  color: #ffbf69;
+}
+
+.provento-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 5px;
+}
+
+.provento-actions button {
+  padding: 5px 7px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 0.62rem;
+  cursor: pointer;
+}
+
+.provento-actions button:hover {
+  color: var(--text);
+  border-color:
+    rgba(70, 211, 178, 0.4);
+}
+
+.provento-actions .danger:hover {
+  color: #ff8585;
+  border-color:
+    rgba(255, 100, 100, 0.4);
+}
+
+.proventos-empty {
+  min-height: 150px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  color: var(--muted);
+}
+
+.proventos-empty strong {
+  color: var(--text);
+}
+
+.proventos-pagination {
+  margin-top: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--muted);
+  font-size: 0.66rem;
+}
+
+.proventos-pagination > div {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.proventos-pagination button {
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel-strong);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.proventos-pagination button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.provento-modal {
+  width: min(680px, calc(100vw - 32px));
+}
+
+.provento-modal-body {
+  padding: 18px;
+}
+
+.provento-form-grid {
+  display: grid;
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.provento-field-full {
+  grid-column: 1 / -1;
+}
+
+.provento-calculo {
+  margin-top: 18px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  display: grid;
+  grid-template-columns:
+    repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  background:
+    rgba(255, 255, 255, 0.018);
+}
+
+.provento-calculo > div {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.provento-calculo span {
+  color: var(--muted);
+  font-size: 0.62rem;
+}
+
+.provento-calculo strong {
+  font-size: 0.86rem;
+}
+
+.provento-calculo-destaque strong {
+  color: var(--accent);
+}
+
+.provento-form-error,
+.proventos-error {
+  padding: 10px 12px;
+  border: 1px solid
+    rgba(255, 100, 100, 0.28);
+  border-radius: 10px;
+  background:
+    rgba(255, 100, 100, 0.08);
+  color: #ff9b9b;
+  font-size: 0.7rem;
+}
+
+.provento-form-error {
+  margin-bottom: 14px;
+}
+
+@media (max-width: 1100px) {
+  .proventos-resumo {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+
+  .proventos-graficos {
+    grid-template-columns: 1fr;
+  }
+
+  .proventos-filters {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .proventos-resumo,
+  .proventos-filters,
+  .provento-form-grid,
+  .provento-calculo {
+    grid-template-columns: 1fr;
+  }
+
+  .provento-field-full {
+    grid-column: auto;
+  }
+
+  .proventos-month-value {
+    display: none;
+  }
+
+  .proventos-table {
+    font-size: 0.62rem;
+  }
+}

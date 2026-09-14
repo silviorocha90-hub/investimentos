@@ -4,13 +4,23 @@ using Investimentos.Application.Proventos.ConsultarProventos;
 
 namespace Investimentos.Application.Dashboard
 {
-    public record EvolucaoPontoDto(DateTime Data, decimal Carteira);
+    public record EvolucaoPontoDto(
+        DateTime Data,
+        decimal Carteira);
 
     public record EvolucaoInvestidorDto(
         string Investidor,
         IReadOnlyList<EvolucaoPontoDto> Pontos);
 
-    public record SaldoInvestidorDto(string Investidor, decimal Valor);
+    public record SaldoInvestidorDto(
+        string Investidor,
+        decimal Valor);
+
+    public record DistribuicaoTipoAtivoDto(
+        string Codigo,
+        string Nome,
+        decimal Valor,
+        decimal Percentual);
 
     public record DashboardDto(
         decimal ValorAplicado,
@@ -25,9 +35,12 @@ namespace Investimentos.Application.Dashboard
         decimal PatrimonioEstimado = 0,
         decimal CaixaDisponivel = 0,
         IReadOnlyList<SaldoInvestidorDto>? SaldosDisponiveis = null,
-        decimal DescontosFiscais = 0)
+        decimal DescontosFiscais = 0,
+        IReadOnlyList<DistribuicaoTipoAtivoDto>? DistribuicaoPorTipo = null,
+        decimal ValorizacaoAtivos = 0)
     {
         [Obsolete("Use ValorAplicado.")]
-        public decimal PatrimonioPorCusto => ValorAplicado;
+        public decimal PatrimonioPorCusto =>
+            ValorAplicado;
     }
 }

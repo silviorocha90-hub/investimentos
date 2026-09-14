@@ -1,82 +1,108 @@
 export interface PosicaoAtivo {
-	ticker: string
-	nome: string
-	quantidade: number
-	precoMedio: number
-	custoTotal: number
-	resultadoRealizado: number
-	dataPrimeiraCompra?: string
+  ticker: string
+  nome: string
+  tipoAtivoCodigo: string
+  tipoAtivoNome: string
+  quantidade: number
+  precoMedio: number
+  custoTotal: number
+  resultadoRealizado: number
+  dataPrimeiraCompra?: string | null
+
+  precoAtual?: number | null
+  valorAtual: number
+  valorizacao: number
 }
 
 export interface Provento {
-	id: string
-	ticker: string
-	tipo: string
-	dataCom: string
-	dataPagamento: string
-	quantidadeBase: number
-	valorPorUnidade: number
-	valorTotal: number
+  id: string
+  ticker: string
+  tipo: string
+  dataCom?: string | null
+  dataPagamento: string
+  quantidadeBase: number
+  valorPorUnidade: number
+  valorBruto: number
+  valorRecebido: number
+  impostoRetido: number
 }
 
 export interface OperacaoOpcao {
-	id: string
-	tickerAtivo: string
-	tickerOpcao: string
-	tipoOpcao: string
-	natureza: string
-	dataOperacao: string
-	vencimento: string
-	strike: number
-	contratos: number
-	quantidade: number
-	premioUnitario: number
-		premioTotal: number
-		 taxas: number
-	resultadoInformado?: number
-		 situacao: string
+  id: string
+  tickerAtivo: string
+  tickerOpcao: string
+  tipoOpcao: string
+  natureza: string
+  dataOperacao: string
+  vencimento: string
+  dataFinalizacao?: string | null
+  strike: number
+  contratos: number
+  quantidade: number
+  premioUnitario: number
+  premioTotal: number
+  taxas: number
+  precoRecompraUnitario?: number | null
+  valorRecompraTotal?: number | null
+  valorExecucao?: number | null
+  resultadoInformado?: number | null
+  resultadoFinal?: number | null
+  situacao: string
 }
 
-export interface Dashboard {
-	valorAplicado: number
-	resultadoRealizado: number
-	totalProventos: number
-	premioLiquidoOpcoes: number
-	quantidadeAtivos: number
-	quantidadeOpcoesAbertas: number
-	patrimonioEstimado?: number
-	caixaDisponivel?: number
-	descontosFiscais?: number
-	saldosDisponiveis?: SaldoInvestidor[]
-	posicoes: PosicaoAtivo[]
-	proventos: Provento[]
-	opcoes: OperacaoOpcao[]
-}
-
-export interface EvolucaoPonto {
-	data: string
-	carteira: number
-}
-
-export interface EvolucaoInvestidor {
-	investidor: string
-	pontos: EvolucaoPonto[]
-}
-
-export interface OperacaoCarteira {
-	id: string
-	ativoId: string
-	ticker: string
-	nome: string
-	tipoOperacao: string
-	quantidade: number
-	precoUnitario: number
-	taxas: number
-	data: string
-	sequencia: number
+export interface DistribuicaoTipoAtivo {
+  codigo: string
+  nome: string
+  valor: number
+  percentual: number
 }
 
 export interface SaldoInvestidor {
-	investidor: string
-	valor: number
+  investidor: string
+  valor: number
+}
+
+export interface Dashboard {
+  valorAplicado: number
+  resultadoRealizado: number
+  totalProventos: number
+  premioLiquidoOpcoes: number
+  quantidadeAtivos: number
+  quantidadeOpcoesAbertas: number
+
+  patrimonioEstimado?: number
+  caixaDisponivel?: number
+  descontosFiscais?: number
+
+  valorizacaoAtivos?: number
+
+  saldosDisponiveis?: SaldoInvestidor[]
+  distribuicaoPorTipo: DistribuicaoTipoAtivo[]
+
+  posicoes: PosicaoAtivo[]
+  proventos: Provento[]
+  opcoes: OperacaoOpcao[]
+}
+
+export interface EvolucaoPonto {
+  data: string
+  carteira: number
+}
+
+export interface EvolucaoInvestidor {
+  investidor: string
+  pontos: EvolucaoPonto[]
+}
+
+export interface OperacaoCarteira {
+  id: string
+  ativoId: string
+  ticker: string
+  nome: string
+  tipoOperacao: string
+  quantidade: number
+  precoUnitario: number
+  taxas: number
+  data: string
+  sequencia: number
 }

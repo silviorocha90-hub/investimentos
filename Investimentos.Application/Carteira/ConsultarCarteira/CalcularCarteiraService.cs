@@ -19,18 +19,24 @@
                     {
                         x.AtivoId,
                         x.Ticker,
-                        x.Nome
+                        x.Nome,
+                        x.TipoAtivoCodigo,
+                        x.TipoAtivoNome
                     })
                     .Select(grupo =>
                     {
                         decimal quantidade = 0;
                         decimal custoTotal = 0;
                         decimal resultadoRealizado = 0;
-                        DateTime? dataPrimeiraCompra = grupo
-                            .Where(x => x.TipoOperacao == "COMPRA")
-                            .Select(x => (DateTime?)x.Data)
-                            .OrderBy(x => x)
-                            .FirstOrDefault();
+
+                        DateTime? dataPrimeiraCompra =
+                            grupo
+                                .Where(x =>
+                                    x.TipoOperacao == "COMPRA")
+                                .Select(x =>
+                                    (DateTime?)x.Data)
+                                .OrderBy(x => x)
+                                .FirstOrDefault();
 
                         foreach (var operacao in grupo)
                         {
@@ -99,14 +105,18 @@
                         return new PosicaoAtivoDto(
                             grupo.Key.Ticker,
                             grupo.Key.Nome,
+                            grupo.Key.TipoAtivoCodigo,
+                            grupo.Key.TipoAtivoNome,
                             quantidade,
                             precoMedioFinal,
                             custoTotal,
                             resultadoRealizado,
                             dataPrimeiraCompra);
                     })
-                    .Where(x => x.Quantidade > 0)
-                    .OrderBy(x => x.Ticker)
+                    .Where(x =>
+                        x.Quantidade > 0)
+                    .OrderBy(x =>
+                        x.Ticker)
                     .ToList();
 
             return posicoes;

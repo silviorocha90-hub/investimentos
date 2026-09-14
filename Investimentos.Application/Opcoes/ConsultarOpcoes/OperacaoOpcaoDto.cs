@@ -20,5 +20,51 @@
         decimal? ValorExecucao,
         decimal? ResultadoInformado,
         decimal? ResultadoFinal,
-        string Situacao);
+        string Situacao)
+    {
+        public decimal? ValorAcaoAtual { get; init; }
+
+        public decimal? PercentualGanho
+        {
+            get
+            {
+                var resultado =
+                    ResultadoInformado ??
+                    ResultadoFinal;
+
+                var capital =
+                    Strike * Quantidade;
+
+                if (!resultado.HasValue ||
+                    capital == 0)
+                {
+                    return null;
+                }
+
+                return resultado.Value /
+                    capital *
+                    100m;
+            }
+        }
+
+        public decimal? PercentualGanhoPremio
+        {
+            get
+            {
+                var resultado =
+                    ResultadoInformado ??
+                    ResultadoFinal;
+
+                if (!resultado.HasValue ||
+                    PremioTotal == 0)
+                {
+                    return null;
+                }
+
+                return resultado.Value /
+                    PremioTotal *
+                    100m;
+            }
+        }
+    }
 }

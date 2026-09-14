@@ -33,5 +33,13 @@
             DataReferencia = dataReferencia;
             Valor = valor;
         }
+
+        public void Atualizar(
+            DateTime dataReferencia,
+            decimal valor)
+        {
+            DataReferencia = dataReferencia;
+            Valor = valor;
+        }
     }
 }

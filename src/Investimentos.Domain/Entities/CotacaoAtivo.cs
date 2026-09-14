@@ -27,17 +27,34 @@
                     "O ativo é obrigatório.");
             }
 
+            ValidarPreco(preco);
+
+            Id = Guid.NewGuid();
+
+            Ativo = ativo;
+            AtivoId = ativo.Id;
+            DataReferencia = dataReferencia.Date;
+            Preco = preco;
+        }
+
+        public void Atualizar(
+            DateTime dataReferencia,
+            decimal preco)
+        {
+            ValidarPreco(preco);
+
+            DataReferencia = dataReferencia.Date;
+            Preco = preco;
+        }
+
+        private static void ValidarPreco(
+            decimal preco)
+        {
             if (preco < 0)
             {
                 throw new ArgumentException(
                     "O preço da cotação não pode ser negativo.");
             }
-
-            Id = Guid.NewGuid();
-
-            Ativo = ativo;
-            DataReferencia = dataReferencia;
-            Preco = preco;
         }
     }
 }
