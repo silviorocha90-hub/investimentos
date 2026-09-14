@@ -1,10 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Investimentos.Domain.Usuarios
+﻿namespace Investimentos.Domain.Usuarios
 {
-    internal class StatusUsuario
+    public enum StatusUsuario
     {
+        Pendente = 1,
+        Ativo = 2,
+        Rejeitado = 3,
+        Bloqueado = 4
     }
 }

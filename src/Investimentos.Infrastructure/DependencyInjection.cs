@@ -1,4 +1,5 @@
 ﻿using Investimentos.Application.Interfaces;
+using Investimentos.Infrastructure.Identity;
 using Investimentos.Infrastructure.Persistence;
 using Investimentos.Infrastructure.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -55,6 +56,7 @@ namespace Investimentos.Infrastructure
             services.AddScoped<
                 ISaldoDisponivelRepository,
                 SaldoDisponivelRepository>();
+
             services.AddScoped<
                 IDescontoFiscalRepository,
                 DescontoFiscalRepository>();
@@ -66,6 +68,18 @@ namespace Investimentos.Infrastructure
             services.AddScoped<
                 ICotacaoAtivoRepository,
                 CotacaoAtivoRepository>();
+
+            services.AddScoped<
+                IUsuarioRepository,
+                UsuarioRepository>();
+
+            services.AddScoped<
+                ITokenRecuperacaoSenhaRepository,
+                TokenRecuperacaoSenhaRepository>();
+
+            services.AddScoped<
+                IPasswordService,
+                PasswordService>();
 
             return services;
         }

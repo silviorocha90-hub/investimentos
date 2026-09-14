@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Investimentos.Domain.Usuarios
+﻿namespace Investimentos.Domain.Usuarios
 {
-    internal class PerfilUsuario
+    public enum PerfilUsuario
     {
+        Admin = 1,
+        Usuario = 2
     }
 }

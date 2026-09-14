@@ -1,12 +1,15 @@
 ﻿using Investimentos.Domain.Entities;
+using Investimentos.Domain.Usuarios;
 using Microsoft.EntityFrameworkCore;
 
 namespace Investimentos.Infrastructure.Persistence
 {
-    public class InvestimentosDbContext : DbContext
+    public class InvestimentosDbContext
+        : DbContext
     {
         public InvestimentosDbContext(
-            DbContextOptions<InvestimentosDbContext> options)
+            DbContextOptions<InvestimentosDbContext>
+                options)
             : base(options)
         {
         }
@@ -41,19 +44,37 @@ namespace Investimentos.Infrastructure.Persistence
         public DbSet<SaldoDisponivel> SaldosDisponiveis =>
             Set<SaldoDisponivel>();
 
-        public DbSet<HistoricoPatrimonio> HistoricosPatrimonio =>
-            Set<HistoricoPatrimonio>();
+        public DbSet<HistoricoPatrimonio>
+            HistoricosPatrimonio =>
+                Set<HistoricoPatrimonio>();
 
         public DbSet<DescontoFiscal> DescontosFiscais =>
             Set<DescontoFiscal>();
+
+        public DbSet<Usuario> Usuarios =>
+            Set<Usuario>();
+
+        public DbSet<UsuarioPermissao>
+            UsuariosPermissoes =>
+                Set<UsuarioPermissao>();
+
+        public DbSet<UsuarioInvestidor>
+            UsuariosInvestidores =>
+                Set<UsuarioInvestidor>();
+
+        public DbSet<TokenRecuperacaoSenha>
+            TokensRecuperacaoSenha =>
+                Set<TokenRecuperacaoSenha>();
 
         protected override void OnModelCreating(
             ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
-            modelBuilder.ApplyConfigurationsFromAssembly(
-                typeof(InvestimentosDbContext).Assembly);
+            modelBuilder
+                .ApplyConfigurationsFromAssembly(
+                    typeof(InvestimentosDbContext)
+                        .Assembly);
         }
     }
 }

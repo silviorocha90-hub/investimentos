@@ -753,20 +753,20 @@ export function OperacoesView({
                                 Editar
                               </button>
 
-                              <button
-                                className="table-action operation-delete-button"
-                                type="button"
-                                disabled={
-                                  deletandoOperacao
-                                }
+                             <button
+                              className="table-action operation-delete-button"
+                              type="button"
+                              disabled={
+                                deletandoOperacao
+                                        }
                                 onClick={() =>
-                                  handleDeleteOperation(
-                                    operacao.id,
-                                  )
-                                }
-                              >
-                                Deletar
-                              </button>
+                                handleDeleteOperation(
+                                operacao.id,
+                                                      )
+                                          }
+                                >
+                                Excluir
+                              </button>                            
                             </td>
                           </>
                         )}
