@@ -30,6 +30,8 @@ import type {
   FormularioUsuario,
 } from './UsuarioModal'
 
+import './Usuarios.css'
+
 type FiltroUsuario =
   | 'TODOS'
   | 'Pendente'
@@ -124,15 +126,43 @@ export function UsuariosTab({
     void carregar()
   }, [])
 
+  const resumo =
+    useMemo(
+      () => ({
+        total:
+          usuarios.length,
+
+        pendentes:
+          usuarios.filter(
+            (usuario) =>
+              usuario.status ===
+              'Pendente',
+          ).length,
+
+        ativos:
+          usuarios.filter(
+            (usuario) =>
+              usuario.status ===
+              'Ativo',
+          ).length,
+
+        bloqueados:
+          usuarios.filter(
+            (usuario) =>
+              usuario.status ===
+              'Bloqueado',
+          ).length,
+      }),
+      [usuarios],
+    )
+
   const usuariosFiltrados =
     useMemo(
       () =>
         usuarios.filter(
           (usuario) =>
-            filtro ===
-              'TODOS' ||
-            usuario.status ===
-              filtro,
+            filtro === 'TODOS' ||
+            usuario.status === filtro,
         ),
       [
         usuarios,
@@ -140,17 +170,17 @@ export function UsuariosTab({
       ],
     )
 
-  const pendentes =
-    usuarios.filter(
-      (usuario) =>
-        usuario.status ===
-        'Pendente',
-    ).length
-
-  function editar(
+  function abrirAcessos(
     usuario:
       UsuarioAdministracao,
   ) {
+    if (
+      usuario.perfil ===
+      'Admin'
+    ) {
+      return
+    }
+
     setUsuarioEditando(
       usuario,
     )
@@ -208,20 +238,6 @@ export function UsuariosTab({
     }
   }
 
-  async function aprovar(
-    usuario:
-      UsuarioAdministracao,
-  ) {
-    await executarAcao(
-      usuario,
-      async () => {
-        await aprovarUsuario(
-          usuario.id,
-        )
-      },
-    )
-  }
-
   async function rejeitar(
     usuario:
       UsuarioAdministracao,
@@ -249,6 +265,13 @@ export function UsuariosTab({
     usuario:
       UsuarioAdministracao,
   ) {
+    if (
+      usuario.perfil ===
+      'Admin'
+    ) {
+      return
+    }
+
     const confirmado =
       window.confirm(
         `Bloquear o acesso de ${usuario.nome}?`,
@@ -299,6 +322,15 @@ export function UsuariosTab({
         formulario,
       )
 
+      if (
+        usuarioEditando.status ===
+        'Pendente'
+      ) {
+        await aprovarUsuario(
+          usuarioEditando.id,
+        )
+      }
+
       setUsuarioEditando(null)
 
       await carregar()
@@ -306,11 +338,70 @@ export function UsuariosTab({
       setErro(
         error instanceof Error
           ? error.message
-          : 'Não foi possível salvar os acessos.',
+          : usuarioEditando.status ===
+              'Pendente'
+            ? 'Não foi possível configurar e aprovar o usuário.'
+            : 'Não foi possível salvar os acessos.',
       )
     } finally {
       setProcessandoId(null)
     }
+  }
+
+  function quantidadeAcessos(
+    usuario:
+      UsuarioAdministracao,
+  ) {
+    if (
+      usuario.perfil ===
+      'Admin'
+    ) {
+      return 'Todos'
+    }
+
+    if (
+      usuario.permissoes.length ===
+      0
+    ) {
+      return 'Não configurado'
+    }
+
+    return `${usuario.permissoes.length} tela(s)`
+  }
+
+  function quantidadeInvestidores(
+    usuario:
+      UsuarioAdministracao,
+  ) {
+    if (
+      usuario.perfil ===
+      'Admin'
+    ) {
+      return 'Todos'
+    }
+
+    if (
+      usuario.investidoresIds
+        .length === 0
+    ) {
+      return 'Não configurado'
+    }
+
+    return `${usuario.investidoresIds.length} investidor(es)`
+  }
+
+  function formatarData(
+    data?: string | null,
+  ) {
+    if (!data) {
+      return '—'
+    }
+
+    return new Date(
+      data,
+    ).toLocaleDateString(
+      'pt-BR',
+    )
   }
 
   if (carregando) {
@@ -322,57 +413,216 @@ export function UsuariosTab({
   }
 
   return (
-    <>
-      <div className="admin-panel panel">
-        <div className="admin-toolbar admin-users-toolbar">
+    <div className="users-page">
+      <section className="users-summary-grid">
+        <button
+          type="button"
+          className={
+            filtro === 'TODOS'
+              ? 'users-summary-card active'
+              : 'users-summary-card'
+          }
+          onClick={() =>
+            setFiltro('TODOS')
+          }
+        >
+          <span>
+            Usuários
+          </span>
+
+          <strong>
+            {resumo.total}
+          </strong>
+
+          <small>
+            Total cadastrado
+          </small>
+        </button>
+
+        <button
+          type="button"
+          className={
+            filtro === 'Pendente'
+              ? 'users-summary-card users-summary-warning active'
+              : 'users-summary-card users-summary-warning'
+          }
+          onClick={() =>
+            setFiltro(
+              'Pendente',
+            )
+          }
+        >
+          <span>
+            Pendentes
+          </span>
+
+          <strong>
+            {resumo.pendentes}
+          </strong>
+
+          <small>
+            Aguardando liberação
+          </small>
+        </button>
+
+        <button
+          type="button"
+          className={
+            filtro === 'Ativo'
+              ? 'users-summary-card users-summary-success active'
+              : 'users-summary-card users-summary-success'
+          }
+          onClick={() =>
+            setFiltro('Ativo')
+          }
+        >
+          <span>
+            Ativos
+          </span>
+
+          <strong>
+            {resumo.ativos}
+          </strong>
+
+          <small>
+            Com acesso liberado
+          </small>
+        </button>
+
+        <button
+          type="button"
+          className={
+            filtro === 'Bloqueado'
+              ? 'users-summary-card users-summary-danger active'
+              : 'users-summary-card users-summary-danger'
+          }
+          onClick={() =>
+            setFiltro(
+              'Bloqueado',
+            )
+          }
+        >
+          <span>
+            Bloqueados
+          </span>
+
+          <strong>
+            {resumo.bloqueados}
+          </strong>
+
+          <small>
+            Sem acesso ao sistema
+          </small>
+        </button>
+      </section>
+
+      <section className="users-panel panel">
+        <header className="users-panel-header">
           <div>
             <strong>
-              Usuários
+              Gerenciamento de usuários
             </strong>
 
             <span>
-              {usuarios.length}
-              {' '}
-              cadastrado(s)
-              {pendentes > 0
-                ? ` · ${pendentes} pendente(s)`
-                : ''}
+              Perfis, permissões e
+              acesso aos investidores
             </span>
           </div>
 
-          <select
-            value={filtro}
-            onChange={(
-              event,
-            ) =>
-              setFiltro(
-                event.target
-                  .value as
-                  FiltroUsuario,
-              )
-            }
-          >
-            <option value="TODOS">
+          <div className="users-filter-tabs">
+            <button
+              type="button"
+              className={
+                filtro === 'TODOS'
+                  ? 'active'
+                  : ''
+              }
+              onClick={() =>
+                setFiltro(
+                  'TODOS',
+                )
+              }
+            >
               Todos
-            </option>
+            </button>
 
-            <option value="Pendente">
+            <button
+              type="button"
+              className={
+                filtro ===
+                'Pendente'
+                  ? 'active'
+                  : ''
+              }
+              onClick={() =>
+                setFiltro(
+                  'Pendente',
+                )
+              }
+            >
               Pendentes
-            </option>
 
-            <option value="Ativo">
+              {resumo.pendentes >
+              0 ? (
+                <span>
+                  {
+                    resumo.pendentes
+                  }
+                </span>
+              ) : null}
+            </button>
+
+            <button
+              type="button"
+              className={
+                filtro === 'Ativo'
+                  ? 'active'
+                  : ''
+              }
+              onClick={() =>
+                setFiltro(
+                  'Ativo',
+                )
+              }
+            >
               Ativos
-            </option>
+            </button>
 
-            <option value="Bloqueado">
+            <button
+              type="button"
+              className={
+                filtro ===
+                'Bloqueado'
+                  ? 'active'
+                  : ''
+              }
+              onClick={() =>
+                setFiltro(
+                  'Bloqueado',
+                )
+              }
+            >
               Bloqueados
-            </option>
+            </button>
 
-            <option value="Rejeitado">
+            <button
+              type="button"
+              className={
+                filtro ===
+                'Rejeitado'
+                  ? 'active'
+                  : ''
+              }
+              onClick={() =>
+                setFiltro(
+                  'Rejeitado',
+                )
+              }
+            >
               Rejeitados
-            </option>
-          </select>
-        </div>
+            </button>
+          </div>
+        </header>
 
         {erro &&
         !usuarioEditando ? (
@@ -381,129 +631,178 @@ export function UsuariosTab({
           </div>
         ) : null}
 
-        <div className="admin-table-wrap">
-          <table className="admin-table admin-users-table">
-            <thead>
-              <tr>
-                <th>
-                  Nome
-                </th>
+        <div className="users-list">
+          {usuariosFiltrados.map(
+            (usuario) => {
+              const processando =
+                processandoId ===
+                usuario.id
 
-                <th>
-                  E-mail
-                </th>
+              const admin =
+                usuario.perfil ===
+                'Admin'
 
-                <th>
-                  Perfil
-                </th>
+              return (
+                <article
+                  key={usuario.id}
+                  className="user-card"
+                >
+                  <div className="user-card-top">
+                    <div className="user-identity">
+                      <div className="user-avatar">
+                        {usuario.nome
+                          .trim()
+                          .charAt(0)
+                          .toUpperCase()}
+                      </div>
 
-                <th>
-                  Status
-                </th>
+                      <div>
+                        <div className="user-name-row">
+                          <strong>
+                            {
+                              usuario.nome
+                            }
+                          </strong>
 
-                <th>
-                  Cadastro
-                </th>
+                          {admin ? (
+                            <span className="user-admin-badge">
+                              Administrador
+                            </span>
+                          ) : null}
+                        </div>
 
-                <th>
-                  Ações
-                </th>
-              </tr>
-            </thead>
-
-            <tbody>
-              {usuariosFiltrados.map(
-                (usuario) => {
-                  const processando =
-                    processandoId ===
-                    usuario.id
-
-                  return (
-                    <tr
-                      key={
-                        usuario.id
-                      }
-                    >
-                      <td>
-                        <strong>
+                        <span>
                           {
-                            usuario.nome
-                          }
-                        </strong>
-                      </td>
-
-                      <td>
-                        {
-                          usuario.email
-                        }
-                      </td>
-
-                      <td>
-                        {
-                          usuario.perfil ===
-                          'Admin'
-                            ? 'Administrador'
-                            : 'Usuário'
-                        }
-                      </td>
-
-                      <td>
-                        <span
-                          className={`admin-user-status status-${usuario.status.toLowerCase()}`}
-                        >
-                          {
-                            usuario.status
+                            usuario.email
                           }
                         </span>
-                      </td>
+                      </div>
+                    </div>
 
-                      <td>
-                        {new Date(
+                    <span
+                      className={`user-status status-${usuario.status.toLowerCase()}`}
+                    >
+                      {usuario.status}
+                    </span>
+                  </div>
+
+                  <div className="user-details-grid">
+                    <div>
+                      <span>
+                        Perfil
+                      </span>
+
+                      <strong>
+                        {admin
+                          ? 'Administrador'
+                          : 'Usuário'}
+                      </strong>
+                    </div>
+
+                    <div>
+                      <span>
+                        Telas
+                      </span>
+
+                      <strong
+                        className={
+                          !admin &&
+                          usuario
+                            .permissoes
+                            .length ===
+                            0
+                            ? 'user-detail-warning'
+                            : ''
+                        }
+                      >
+                        {
+                          quantidadeAcessos(
+                            usuario,
+                          )
+                        }
+                      </strong>
+                    </div>
+
+                    <div>
+                      <span>
+                        Investidores
+                      </span>
+
+                      <strong
+                        className={
+                          !admin &&
+                          usuario
+                            .investidoresIds
+                            .length ===
+                            0
+                            ? 'user-detail-warning'
+                            : ''
+                        }
+                      >
+                        {
+                          quantidadeInvestidores(
+                            usuario,
+                          )
+                        }
+                      </strong>
+                    </div>
+
+                    <div>
+                      <span>
+                        Cadastro
+                      </span>
+
+                      <strong>
+                        {formatarData(
                           usuario
                             .dataCadastro,
-                        ).toLocaleDateString(
-                          'pt-BR',
                         )}
-                      </td>
+                      </strong>
+                    </div>
 
-                      <td>
-                        <div className="admin-user-actions">
-                          <button
-                            type="button"
-                            className="admin-action"
-                            disabled={
-                              processando
-                            }
-                            onClick={() =>
-                              editar(
-                                usuario,
-                              )
-                            }
-                          >
-                            Acessos
-                          </button>
+                    <div>
+                      <span>
+                        Último acesso
+                      </span>
 
+                      <strong>
+                        {formatarData(
+                          usuario
+                            .ultimoLogin,
+                        )}
+                      </strong>
+                    </div>
+                  </div>
+
+                  <footer className="user-card-footer">
+                    {admin ? (
+                      <div className="user-admin-protected">
+                        <span>
+                          ✓
+                        </span>
+
+                        Perfil administrativo
+                        protegido
+                      </div>
+                    ) : (
+                      <>
+                        <div className="user-card-hint">
+                          {usuario.status ===
+                          'Pendente'
+                            ? 'Configure os acessos antes de liberar o usuário.'
+                            : usuario.status ===
+                                'Bloqueado'
+                              ? 'Este usuário está sem acesso ao sistema.'
+                              : 'Acesso configurável pelo administrador.'}
+                        </div>
+
+                        <div className="user-card-actions">
                           {usuario.status ===
                           'Pendente' ? (
                             <>
                               <button
                                 type="button"
-                                className="admin-action"
-                                disabled={
-                                  processando
-                                }
-                                onClick={() =>
-                                  void aprovar(
-                                    usuario,
-                                  )
-                                }
-                              >
-                                Aprovar
-                              </button>
-
-                              <button
-                                type="button"
-                                className="admin-action admin-action-danger"
+                                className="user-secondary-action user-danger-action"
                                 disabled={
                                   processando
                                 }
@@ -515,67 +814,119 @@ export function UsuariosTab({
                               >
                                 Rejeitar
                               </button>
+
+                              <button
+                                type="button"
+                                className="user-primary-action"
+                                disabled={
+                                  processando
+                                }
+                                onClick={() =>
+                                  abrirAcessos(
+                                    usuario,
+                                  )
+                                }
+                              >
+                                Configurar acesso
+                              </button>
                             </>
                           ) : null}
 
                           {usuario.status ===
                           'Ativo' ? (
-                            <button
-                              type="button"
-                              className="admin-action admin-action-danger"
-                              disabled={
-                                processando
-                              }
-                              onClick={() =>
-                                void bloquear(
-                                  usuario,
-                                )
-                              }
-                            >
-                              Bloquear
-                            </button>
+                            <>
+                              <button
+                                type="button"
+                                className="user-secondary-action user-danger-action"
+                                disabled={
+                                  processando
+                                }
+                                onClick={() =>
+                                  void bloquear(
+                                    usuario,
+                                  )
+                                }
+                              >
+                                Bloquear
+                              </button>
+
+                              <button
+                                type="button"
+                                className="user-primary-action"
+                                disabled={
+                                  processando
+                                }
+                                onClick={() =>
+                                  abrirAcessos(
+                                    usuario,
+                                  )
+                                }
+                              >
+                                Gerenciar acesso
+                              </button>
+                            </>
                           ) : null}
 
                           {usuario.status ===
                           'Bloqueado' ? (
-                            <button
-                              type="button"
-                              className="admin-action"
-                              disabled={
-                                processando
-                              }
-                              onClick={() =>
-                                void desbloquear(
-                                  usuario,
-                                )
-                              }
-                            >
-                              Desbloquear
-                            </button>
+                            <>
+                              <button
+                                type="button"
+                                className="user-secondary-action"
+                                disabled={
+                                  processando
+                                }
+                                onClick={() =>
+                                  abrirAcessos(
+                                    usuario,
+                                  )
+                                }
+                              >
+                                Gerenciar acesso
+                              </button>
+
+                              <button
+                                type="button"
+                                className="user-primary-action"
+                                disabled={
+                                  processando
+                                }
+                                onClick={() =>
+                                  void desbloquear(
+                                    usuario,
+                                  )
+                                }
+                              >
+                                Desbloquear
+                              </button>
+                            </>
                           ) : null}
                         </div>
-                      </td>
-                    </tr>
-                  )
-                },
-              )}
+                      </>
+                    )}
+                  </footer>
+                </article>
+              )
+            },
+          )}
 
-              {usuariosFiltrados.length ===
-              0 ? (
-                <tr>
-                  <td
-                    colSpan={6}
-                    className="admin-user-empty"
-                  >
-                    Nenhum usuário
-                    encontrado.
-                  </td>
-                </tr>
-              ) : null}
-            </tbody>
-          </table>
+          {usuariosFiltrados.length ===
+          0 ? (
+            <div className="users-empty">
+              <strong>
+                Nenhum usuário
+                encontrado
+              </strong>
+
+              <span>
+                Não existem usuários
+                para o filtro
+                selecionado.
+              </span>
+            </div>
+          ) : null}
         </div>
-      </div>
+      </section>
 
       {usuarioEditando ? (
         <UsuarioModal
@@ -604,6 +955,6 @@ export function UsuariosTab({
           }}
         />
       ) : null}
-    </>
+    </div>
   )
 }

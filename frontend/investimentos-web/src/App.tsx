@@ -1,7 +1,9 @@
 import {
   useEffect,
+  useMemo,
   useState,
 } from 'react'
+
 import {
   atualizarOperacao,
   obterDashboardConsolidado,
@@ -9,21 +11,57 @@ import {
   obterEvolucaoConsolidada,
   obterOperacoes,
 } from './api/dashboardApi'
-import { listarInvestidores } from './api/investidoresApi'
-import { dashboardSnapshot } from './data/dashboardSnapshot'
-import { CarteiraView } from './pages/Carteira/CarteiraView'
-import { DashboardView } from './pages/Dashboard/DashboardView'
-import { OperacoesView } from './pages/Operacoes/OperacoesView'
-import { OpcoesView } from './pages/Opcoes/OpcoesView'
-import { ProventosView } from './pages/Proventos/ProventosView'
+
+import {
+  listarInvestidores,
+} from './api/investidoresApi'
+
+import {
+  useAuth,
+} from './auth/AuthContext'
+
+import {
+  dashboardSnapshot,
+} from './data/dashboardSnapshot'
+
+import {
+  CarteiraView,
+} from './pages/Carteira/CarteiraView'
+
+import {
+  DashboardView,
+} from './pages/Dashboard/DashboardView'
+
+import {
+  OperacoesView,
+} from './pages/Operacoes/OperacoesView'
+
+import {
+  OpcoesView,
+} from './pages/Opcoes/OpcoesView'
+
+import {
+  ProventosView,
+} from './pages/Proventos/ProventosView'
+
+import {
+  AdministracaoView,
+} from './pages/Administracao/AdministracaoView'
+
 import type {
   Dashboard,
   EvolucaoInvestidor,
   OperacaoCarteira,
 } from './types/dashboard'
-import type { Investidor } from './types/investidor'
-import { definirOcultacaoValores } from './utils/formatters'
-import { AdministracaoView } from './pages/Administracao/AdministracaoView'
+
+import type {
+  Investidor,
+} from './types/investidor'
+
+import {
+  definirOcultacaoValores,
+} from './utils/formatters'
+
 import './styles/legacy.css'
 
 type Tela =
@@ -33,82 +71,305 @@ type Tela =
   | 'opcoes'
   | 'proventos'
   | 'administracao'
-  
+
+interface ConfiguracaoMenu {
+  tela: Tela
+  permissao: string
+  titulo: string
+  icone: string
+}
+
+const menuPrincipal:
+  ConfiguracaoMenu[] = [
+    {
+      tela: 'painel',
+      permissao: 'Dashboard',
+      titulo: 'Painel',
+      icone: '▣',
+    },
+    {
+      tela: 'carteira',
+      permissao: 'Carteira',
+      titulo: 'Carteira',
+      icone: '◫',
+    },
+    {
+      tela: 'operacoes',
+      permissao: 'Operacoes',
+      titulo: 'Operações',
+      icone: '↕',
+    },
+    {
+      tela: 'opcoes',
+      permissao: 'Opcoes',
+      titulo: 'Opções',
+      icone: '◌',
+    },
+    {
+      tela: 'proventos',
+      permissao: 'Proventos',
+      titulo: 'Proventos',
+      icone: '$',
+    },
+  ]
+
+const menuAdministracao:
+  ConfiguracaoMenu = {
+    tela: 'administracao',
+    permissao: 'Administracao',
+    titulo: 'Administração',
+    icone: '⚙',
+  }
+
 function App() {
+  const {
+    usuario,
+    possuiPermissao,
+  } = useAuth()
+
   const [
     telaAtual,
     setTelaAtual,
-  ] = useState<Tela>('painel')
+  ] =
+    useState<Tela>(
+      'painel',
+    )
 
   const [
-    investidores,
-    setInvestidores,
-  ] = useState<Investidor[]>(
-    [],
-  )
+    todosInvestidores,
+    setTodosInvestidores,
+  ] =
+    useState<Investidor[]>(
+      [],
+    )
 
   const [
     dashboard,
     setDashboard,
-  ] = useState<Dashboard | null>(
-    null,
-  )
+  ] =
+    useState<Dashboard | null>(
+      null,
+    )
 
+  /*
+   * Coleção exclusiva do Painel.
+   *
+   * Quando o usuário possui
+   * permissão Dashboard, esta
+   * coleção contém TODOS os
+   * investidores, independentemente
+   * dos investidores associados
+   * ao usuário.
+   */
+  const [
+    carteirasPainel,
+    setCarteirasPainel,
+  ] =
+    useState<
+      Array<{
+        nome: string
+        dashboard: Dashboard
+      }>
+    >([])
+
+  /*
+   * Coleção utilizada pelas telas
+   * que respeitam o vínculo entre
+   * usuário e investidor.
+   */
   const [
     carteirasPorInvestidor,
     setCarteirasPorInvestidor,
-  ] = useState<
-    Array<{
-      nome: string
-      dashboard: Dashboard
-    }>
-  >([])
+  ] =
+    useState<
+      Array<{
+        nome: string
+        dashboard: Dashboard
+      }>
+    >([])
 
   const [
     operacoes,
     setOperacoes,
-  ] = useState<
-    OperacaoCarteira[]
-  >([])
+  ] =
+    useState<
+      OperacaoCarteira[]
+    >([])
 
   const [
     evolucao,
     setEvolucao,
-  ] = useState<
-    EvolucaoInvestidor[]
-  >([])
+  ] =
+    useState<
+      EvolucaoInvestidor[]
+    >([])
 
   const [
     carregandoInvestidores,
     setCarregandoInvestidores,
-  ] = useState(true)
+  ] =
+    useState(true)
 
   const [
     apiDisponivel,
     setApiDisponivel,
-  ] = useState(true)
+  ] =
+    useState(true)
 
   const [
     erro,
     setErro,
-  ] = useState<string | null>(
-    null,
-  )
+  ] =
+    useState<string | null>(
+      null,
+    )
 
   const [
     investidorSelecionado,
     setInvestidorSelecionado,
-  ] = useState('')
+  ] =
+    useState('')
 
   const [
     valoresOcultos,
     setValoresOcultos,
-  ] = useState(false)
+  ] =
+    useState(false)
 
   definirOcultacaoValores(
     valoresOcultos,
   )
 
+  /*
+   * Investidores disponíveis para
+   * Carteira, Operações, Opções
+   * e Proventos.
+   *
+   * Admin vê todos.
+   * Usuário comum vê somente os
+   * investidores associados.
+   */
+  const investidores =
+    useMemo(() => {
+      if (!usuario) {
+        return []
+      }
+
+      if (
+        usuario.perfil ===
+        'Admin'
+      ) {
+        return todosInvestidores
+      }
+
+      const idsPermitidos =
+        new Set(
+          usuario.investidoresIds,
+        )
+
+      return todosInvestidores.filter(
+        (investidor) =>
+          idsPermitidos.has(
+            investidor.id,
+          ),
+      )
+    }, [
+      todosInvestidores,
+      usuario,
+    ])
+
+  const primeiraTelaPermitida =
+    useMemo(() => {
+      const configuracoes = [
+        ...menuPrincipal,
+        menuAdministracao,
+      ]
+
+      return (
+        configuracoes.find(
+          (item) =>
+            possuiPermissao(
+              item.permissao,
+            ),
+        )?.tela ??
+        null
+      )
+    }, [
+      usuario,
+      possuiPermissao,
+    ])
+
+  function telaPermitida(
+    tela: Tela,
+  ) {
+    const configuracao = [
+      ...menuPrincipal,
+      menuAdministracao,
+    ].find(
+      (item) =>
+        item.tela === tela,
+    )
+
+    if (!configuracao) {
+      return false
+    }
+
+    return possuiPermissao(
+      configuracao.permissao,
+    )
+  }
+
+  function navegar(
+    tela: Tela,
+  ) {
+    if (
+      !telaPermitida(tela)
+    ) {
+      return
+    }
+
+    setTelaAtual(tela)
+  }
+
+  /*
+   * Se o usuário estiver em uma
+   * tela que deixou de possuir,
+   * redirecionamos para a primeira
+   * tela permitida.
+   */
+  useEffect(() => {
+    if (!usuario) {
+      return
+    }
+
+    if (
+      telaPermitida(
+        telaAtual,
+      )
+    ) {
+      return
+    }
+
+    if (
+      primeiraTelaPermitida
+    ) {
+      setTelaAtual(
+        primeiraTelaPermitida,
+      )
+    }
+  }, [
+    usuario,
+    telaAtual,
+    primeiraTelaPermitida,
+  ])
+
+  /*
+   * A lista-base de investidores é
+   * carregada integralmente.
+   *
+   * A filtragem ocorre depois,
+   * conforme o módulo utilizado.
+   */
   useEffect(() => {
     async function carregarInvestidores() {
       try {
@@ -119,8 +380,10 @@ function App() {
         const dados =
           await listarInvestidores()
 
-        if (dados.length > 0) {
-          setInvestidores(
+        if (
+          dados.length > 0
+        ) {
+          setTodosInvestidores(
             dados,
           )
 
@@ -129,6 +392,7 @@ function App() {
           )
 
           setErro(null)
+
           return
         }
 
@@ -144,14 +408,30 @@ function App() {
 
         setErro(null)
 
-        setInvestidores(
-          dashboardSnapshot.investidores.map(
-            (nome) => ({
-              id: nome,
-              nome,
-            }),
-          ),
-        )
+        /*
+         * O snapshot local continua
+         * disponível apenas para o
+         * administrador.
+         */
+        if (
+          usuario?.perfil ===
+          'Admin'
+        ) {
+          setTodosInvestidores(
+            dashboardSnapshot
+              .investidores
+              .map(
+                (nome) => ({
+                  id: nome,
+                  nome,
+                }),
+              ),
+          )
+        } else {
+          setTodosInvestidores(
+            [],
+          )
+        }
       } finally {
         setCarregandoInvestidores(
           false,
@@ -159,19 +439,34 @@ function App() {
       }
     }
 
-    carregarInvestidores()
-  }, [])
+    void carregarInvestidores()
+  }, [usuario])
 
+  /*
+   * Mantém um investidor válido
+   * selecionado nas telas
+   * individuais.
+   */
   useEffect(() => {
     if (
-      investidores.length >
-        0 &&
-      !investidores.some(
+      investidores.length ===
+      0
+    ) {
+      setInvestidorSelecionado(
+        '',
+      )
+
+      return
+    }
+
+    const selecionadoValido =
+      investidores.some(
         (item) =>
           item.nome ===
           investidorSelecionado,
       )
-    ) {
+
+    if (!selecionadoValido) {
       setInvestidorSelecionado(
         investidores[0].nome,
       )
@@ -181,12 +476,20 @@ function App() {
     investidorSelecionado,
   ])
 
+  /*
+   * Operações respeitam o
+   * investidor autorizado.
+   */
   useEffect(() => {
     if (
       !apiDisponivel ||
-      !investidorSelecionado
+      !investidorSelecionado ||
+      !possuiPermissao(
+        'Operacoes',
+      )
     ) {
       setOperacoes([])
+
       return
     }
 
@@ -198,54 +501,128 @@ function App() {
       )
 
     if (!investidor) {
+      setOperacoes([])
+
       return
     }
 
     obterOperacoes(
       investidor.id,
     )
-      .then(setOperacoes)
-      .catch((error) => {
-        console.error(error)
-        setOperacoes([])
-      })
+      .then(
+        setOperacoes,
+      )
+      .catch(
+        (error) => {
+          console.error(
+            error,
+          )
+
+          setOperacoes(
+            [],
+          )
+        },
+      )
   }, [
     apiDisponivel,
     investidorSelecionado,
     investidores,
+    usuario,
   ])
 
+  /*
+   * PAINEL GLOBAL
+   *
+   * A permissão Dashboard significa
+   * acesso à mesma visão consolidada
+   * apresentada ao administrador.
+   */
   useEffect(() => {
-    if (!apiDisponivel) {
+    if (
+      !apiDisponivel ||
+      !possuiPermissao(
+        'Dashboard',
+      )
+    ) {
+      setDashboard(null)
+      setEvolucao([])
+      setCarteirasPainel([])
+
       return
     }
 
     const controller =
       new AbortController()
 
-    async function carregarDashboard() {
+    async function carregarPainel() {
       try {
         setErro(null)
 
         const [
-          dados,
+          dadosDashboard,
           dadosEvolucao,
-        ] = await Promise.all(
-          [
+          resultadosCarteiras,
+        ] =
+          await Promise.all([
             obterDashboardConsolidado(),
+
             obterEvolucaoConsolidada(),
-          ],
-        )
+
+            Promise.allSettled(
+              todosInvestidores.map(
+                async (
+                  investidor,
+                ) => ({
+                  nome:
+                    investidor.nome,
+
+                  dashboard:
+                    await obterDashboardPorInvestidor(
+                      investidor.id,
+                    ),
+                }),
+              ),
+            ),
+          ])
 
         if (
-          !controller.signal
+          controller.signal
             .aborted
         ) {
-          setDashboard(dados)
-          setEvolucao(
-            dadosEvolucao,
-          )
+          return
         }
+
+        const carteirasComSucesso =
+          resultadosCarteiras.flatMap(
+            (resultado) => {
+              if (
+                resultado.status ===
+                'fulfilled'
+              ) {
+                return [
+                  resultado.value,
+                ]
+              }
+
+              console.error(
+                resultado.reason,
+              )
+
+              return []
+            },
+          )
+
+        setDashboard(
+          dadosDashboard,
+        )
+
+        setEvolucao(
+          dadosEvolucao,
+        )
+
+        setCarteirasPainel(
+          carteirasComSucesso,
+        )
       } catch (error) {
         console.error(error)
 
@@ -253,33 +630,72 @@ function App() {
           !controller.signal
             .aborted
         ) {
-          setApiDisponivel(
-            false,
-          )
-
           setDashboard(null)
           setEvolucao([])
-          setErro(null)
+          setCarteirasPainel([])
+
+          setErro(
+            'Não foi possível carregar o painel.',
+          )
         }
       }
     }
 
-    carregarDashboard()
+    if (
+      todosInvestidores.length >
+      0
+    ) {
+      void carregarPainel()
+    }
 
     return () =>
       controller.abort()
-  }, [apiDisponivel])
+  }, [
+    apiDisponivel,
+    todosInvestidores,
+    usuario,
+  ])
 
+  /*
+   * CARTEIRAS RESTRITAS
+   *
+   * Utilizadas pelas demais telas.
+   * Aqui permanece a regra dos
+   * investidores associados ao
+   * usuário.
+   */
   useEffect(() => {
     if (
       !apiDisponivel ||
       investidores.length ===
         0
     ) {
+      setCarteirasPorInvestidor(
+        [],
+      )
+
       return
     }
 
-    async function carregarCarteirasPorInvestidor() {
+    const podeConsultarCarteiras =
+      possuiPermissao(
+        'Carteira',
+      ) ||
+      possuiPermissao(
+        'Opcoes',
+      )
+
+    if (
+      !podeConsultarCarteiras
+    ) {
+      setCarteirasPorInvestidor(
+        [],
+      )
+
+      return
+    }
+
+    async function carregarCarteirasRestritas() {
       const resultados =
         await Promise.allSettled(
           investidores.map(
@@ -322,10 +738,11 @@ function App() {
       )
     }
 
-    carregarCarteirasPorInvestidor()
+    void carregarCarteirasRestritas()
   }, [
     apiDisponivel,
     investidores,
+    usuario,
   ])
 
   async function salvarOperacao(
@@ -338,6 +755,16 @@ function App() {
       | 'taxas'
     >,
   ) {
+    if (
+      !possuiPermissao(
+        'Operacoes',
+      )
+    ) {
+      throw new Error(
+        'Você não possui permissão para alterar operações.',
+      )
+    }
+
     await atualizarOperacao(
       operacao.id,
       operacao,
@@ -357,28 +784,51 @@ function App() {
     const [
       dashboardAtualizado,
       operacoesAtualizadas,
-    ] = await Promise.all([
-      obterDashboardPorInvestidor(
-        investidor.id,
-      ),
+    ] =
+      await Promise.all([
+        obterDashboardPorInvestidor(
+          investidor.id,
+        ),
 
-      obterOperacoes(
-        investidor.id,
-      ),
-    ])
+        obterOperacoes(
+          investidor.id,
+        ),
+      ])
 
     setCarteirasPorInvestidor(
       (atuais) =>
-        atuais.map((item) =>
-          item.nome ===
-          investidorSelecionado
-            ? {
-                ...item,
+        atuais.map(
+          (item) =>
+            item.nome ===
+            investidorSelecionado
+              ? {
+                  ...item,
 
-                dashboard:
-                  dashboardAtualizado,
-              }
-            : item,
+                  dashboard:
+                    dashboardAtualizado,
+                }
+              : item,
+        ),
+    )
+
+    /*
+     * Caso o usuário também possua
+     * acesso ao Painel, mantemos a
+     * coleção global sincronizada.
+     */
+    setCarteirasPainel(
+      (atuais) =>
+        atuais.map(
+          (item) =>
+            item.nome ===
+            investidorSelecionado
+              ? {
+                  ...item,
+
+                  dashboard:
+                    dashboardAtualizado,
+                }
+              : item,
         ),
     )
 
@@ -389,9 +839,14 @@ function App() {
 
   const modoSnapshot =
     !apiDisponivel ||
-    investidores.length ===
+    todosInvestidores.length ===
       0 ||
-    dashboard === null
+    (
+      possuiPermissao(
+        'Dashboard',
+      ) &&
+      dashboard === null
+    )
 
   if (
     carregandoInvestidores
@@ -401,8 +856,20 @@ function App() {
         <div className="loader" />
 
         <p>
-          Carregando
-          investidores...
+          Carregando investidores...
+        </p>
+      </main>
+    )
+  }
+
+  if (
+    !primeiraTelaPermitida
+  ) {
+    return (
+      <main className="estado-pagina">
+        <p>
+          Seu usuário não possui
+          nenhum módulo liberado.
         </p>
       </main>
     )
@@ -420,146 +887,140 @@ function App() {
 
           <div className="marca-info">
             <strong>
-              Silvio Rocha
+              {usuario?.nome ??
+                'Investimentos'}
             </strong>
 
             <span>
-              Dashboard de Carteira
+              {usuario?.perfil ===
+              'Admin'
+                ? 'Administrador'
+                : 'Dashboard de Carteira'}
             </span>
           </div>
         </div>
 
         <nav className="menu">
-          <button
-            className={`menu-item ${
-              telaAtual ===
-              'painel'
-                ? 'ativo'
-                : ''
-            }`}
-            type="button"
-            onClick={() =>
-              setTelaAtual(
-                'painel',
+          {menuPrincipal.map(
+            (item) => {
+              const permitido =
+                possuiPermissao(
+                  item.permissao,
+                )
+
+              return (
+                <button
+                  key={
+                    item.tela
+                  }
+                  className={`menu-item ${
+                    telaAtual ===
+                    item.tela
+                      ? 'ativo'
+                      : ''
+                  } ${
+                    !permitido
+                      ? 'bloqueado'
+                      : ''
+                  }`}
+                  type="button"
+                  disabled={
+                    !permitido
+                  }
+                  title={
+                    permitido
+                      ? item.titulo
+                      : 'Módulo não liberado para este usuário'
+                  }
+                  onClick={() =>
+                    navegar(
+                      item.tela,
+                    )
+                  }
+                >
+                  <span className="menu-icone">
+                    {
+                      item.icone
+                    }
+                  </span>
+
+                  {
+                    item.titulo
+                  }
+
+                  {!permitido ? (
+                    <span
+                      className="menu-lock"
+                      aria-hidden="true"
+                    >
+                      🔒
+                    </span>
+                  ) : null}
+                </button>
               )
-            }
-          >
-            <span className="menu-icone">
-              ▣
-            </span>
-
-            Painel
-          </button>
-
-          <button
-            className={`menu-item ${
-              telaAtual ===
-              'carteira'
-                ? 'ativo'
-                : ''
-            }`}
-            type="button"
-            onClick={() =>
-              setTelaAtual(
-                'carteira',
-              )
-            }
-          >
-            <span className="menu-icone">
-              ◫
-            </span>
-
-            Carteira
-          </button>
-
-          <button
-            className={`menu-item ${
-              telaAtual ===
-              'operacoes'
-                ? 'ativo'
-                : ''
-            }`}
-            type="button"
-            onClick={() =>
-              setTelaAtual(
-                'operacoes',
-              )
-            }
-          >
-            <span className="menu-icone">
-              ↕
-            </span>
-
-            Operações
-          </button>
-
-          <button
-            className={`menu-item ${
-              telaAtual ===
-              'opcoes'
-                ? 'ativo'
-                : ''
-            }`}
-            type="button"
-            onClick={() =>
-              setTelaAtual(
-                'opcoes',
-              )
-            }
-          >
-            <span className="menu-icone">
-              ◌
-            </span>
-
-            Opções
-          </button>
-
-          <button
-            className={`menu-item ${
-              telaAtual ===
-              'proventos'
-                ? 'ativo'
-                : ''
-            }`}
-            type="button"
-            onClick={() =>
-              setTelaAtual(
-                'proventos',
-              )
-            }
-          >
-            <span className="menu-icone">
-              $
-            </span>
-
-            Proventos
-          </button>
+            },
+          )}
 
           <div className="menu-separator" />
 
-<button
-  className={`menu-item ${
-    telaAtual === 'administracao'
-      ? 'ativo'
-      : ''
-  }`}
-  type="button"
-  onClick={() =>
-    setTelaAtual('administracao')
-  }
->
-  <span className="menu-icone">
-    ⚙
-  </span>
-  Administração
-</button>
+          {(() => {
+            const permitido =
+              possuiPermissao(
+                menuAdministracao
+                  .permissao,
+              )
 
+            return (
+              <button
+                className={`menu-item ${
+                  telaAtual ===
+                  'administracao'
+                    ? 'ativo'
+                    : ''
+                } ${
+                  !permitido
+                    ? 'bloqueado'
+                    : ''
+                }`}
+                type="button"
+                disabled={
+                  !permitido
+                }
+                title={
+                  permitido
+                    ? 'Administração'
+                    : 'Módulo não liberado para este usuário'
+                }
+                onClick={() =>
+                  navegar(
+                    'administracao',
+                  )
+                }
+              >
+                <span className="menu-icone">
+                  ⚙
+                </span>
+
+                Administração
+
+                {!permitido ? (
+                  <span
+                    className="menu-lock"
+                    aria-hidden="true"
+                  >
+                    🔒
+                  </span>
+                ) : null}
+              </button>
+            )
+          })()}
         </nav>
 
         <div className="sidebar-rodape">
           <span>
             {
-              dashboardSnapshot.referencia
+              dashboardSnapshot
+                .referencia
             }
           </span>
 
@@ -613,13 +1074,16 @@ function App() {
         </div>
 
         {telaAtual ===
-        'painel' ? (
+          'painel' &&
+        possuiPermissao(
+          'Dashboard',
+        ) ? (
           <DashboardView
             dashboard={
               dashboard
             }
             carteiras={
-              carteirasPorInvestidor
+              carteirasPainel
             }
             evolucao={
               evolucao
@@ -632,7 +1096,10 @@ function App() {
         ) : null}
 
         {telaAtual ===
-        'carteira' ? (
+          'carteira' &&
+        possuiPermissao(
+          'Carteira',
+        ) ? (
           <CarteiraView
             investidores={
               investidores
@@ -647,17 +1114,28 @@ function App() {
               setInvestidorSelecionado
             }
             snapshotSeries={
-              dashboardSnapshot.timelinePorPessoa
+              usuario?.perfil ===
+              'Admin'
+                ? dashboardSnapshot
+                    .timelinePorPessoa
+                : {}
             }
             saldosDisponiveis={
-              dashboard?.saldosDisponiveis ??
-              []
+              usuario?.perfil ===
+              'Admin'
+                ? dashboard
+                    ?.saldosDisponiveis ??
+                  []
+                : []
             }
           />
         ) : null}
 
         {telaAtual ===
-        'operacoes' ? (
+          'operacoes' &&
+        possuiPermissao(
+          'Operacoes',
+        ) ? (
           <OperacoesView
             investidores={
               investidores
@@ -678,7 +1156,10 @@ function App() {
         ) : null}
 
         {telaAtual ===
-        'opcoes' ? (
+          'opcoes' &&
+        possuiPermissao(
+          'Opcoes',
+        ) ? (
           <OpcoesView
             investidores={
               investidores
@@ -696,7 +1177,10 @@ function App() {
         ) : null}
 
         {telaAtual ===
-        'proventos' ? (
+          'proventos' &&
+        possuiPermissao(
+          'Proventos',
+        ) ? (
           <ProventosView
             investidores={
               investidores
@@ -710,10 +1194,13 @@ function App() {
           />
         ) : null}
 
-        {telaAtual === 'administracao' ? (
-  <AdministracaoView />
-) : null}
-
+        {telaAtual ===
+          'administracao' &&
+        possuiPermissao(
+          'Administracao',
+        ) ? (
+          <AdministracaoView />
+        ) : null}
       </main>
     </div>
   )

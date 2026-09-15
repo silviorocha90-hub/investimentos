@@ -241,10 +241,32 @@ namespace Investimentos.Application.Usuarios.Administracao
                 usuario.Email,
                 usuario.Perfil.ToString(),
                 usuario.Status.ToString(),
-                usuario.DataCadastro,
-                usuario.DataAprovacao,
+
+                /*
+                 * Datas persistidas no banco estão
+                 * em UTC.
+                 *
+                 * SQL Server datetime2 não preserva
+                 * DateTimeKind. Ao materializar a
+                 * entidade, o EF devolve
+                 * DateTimeKind.Unspecified.
+                 *
+                 * Marcamos explicitamente como UTC
+                 * antes de serializar para que o
+                 * frontend possa converter
+                 * corretamente para o horário local.
+                 */
+                ComoUtc(
+                    usuario.DataCadastro),
+
+                ComoUtc(
+                    usuario.DataAprovacao),
+
                 usuario.AprovadoPorUsuarioId,
-                usuario.UltimoLogin,
+
+                ComoUtc(
+                    usuario.UltimoLogin),
+
                 usuario.Permissoes
                     .Select(
                         x =>
@@ -252,12 +274,43 @@ namespace Investimentos.Application.Usuarios.Administracao
                                 .ToString())
                     .OrderBy(x => x)
                     .ToArray(),
+
                 usuario.Investidores
                     .Select(
                         x =>
                             x.InvestidorId)
                     .Distinct()
                     .ToArray());
+        }
+
+        private static DateTime ComoUtc(
+            DateTime data)
+        {
+            return data.Kind switch
+            {
+                DateTimeKind.Utc =>
+                    data,
+
+                DateTimeKind.Local =>
+                    data.ToUniversalTime(),
+
+                _ =>
+                    DateTime.SpecifyKind(
+                        data,
+                        DateTimeKind.Utc)
+            };
+        }
+
+        private static DateTime? ComoUtc(
+            DateTime? data)
+        {
+            if (!data.HasValue)
+            {
+                return null;
+            }
+
+            return ComoUtc(
+                data.Value);
         }
     }
 

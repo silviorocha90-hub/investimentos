@@ -37,7 +37,11 @@ namespace Investimentos.Application.Dashboard
         IReadOnlyList<SaldoInvestidorDto>? SaldosDisponiveis = null,
         decimal DescontosFiscais = 0,
         IReadOnlyList<DistribuicaoTipoAtivoDto>? DistribuicaoPorTipo = null,
-        decimal ValorizacaoAtivos = 0)
+        decimal ValorizacaoAtivos = 0,
+        decimal ProventosBrutos = 0,
+        decimal IrProventos = 0,
+        decimal OpcoesBrutas = 0,
+        decimal IrEstimadoOpcoes = 0)
     {
         [Obsolete("Use ValorAplicado.")]
         public decimal PatrimonioPorCusto =>

@@ -525,7 +525,7 @@ export function AdministracaoView() {
             )
           }
         >
-          Carteira
+          DARF
         </button>
 
         <button

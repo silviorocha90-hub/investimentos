@@ -10,5 +10,28 @@
         decimal ValorPorUnidade,
         decimal ValorBruto,
         decimal ValorRecebido,
-        decimal ImpostoRetido);
+        decimal ImpostoRetido)
+    {
+        public decimal ValorLiquido =>
+            ValorRecebido;
+
+        public decimal IrEfetivo =>
+            ImpostoRetido;
+
+        public decimal AliquotaEfetiva
+        {
+            get
+            {
+                if (ValorBruto <= 0)
+                {
+                    return 0;
+                }
+
+                return
+                    ImpostoRetido /
+                    ValorBruto *
+                    100m;
+            }
+        }
+    }
 }

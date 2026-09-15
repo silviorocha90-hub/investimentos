@@ -4,6 +4,11 @@ import { SectionTitle } from '../../components/SectionTitle'
 import type { Dashboard } from '../../types/dashboard'
 import type { Investidor } from '../../types/investidor'
 
+import {
+  formatarMoeda,
+  formatarNumeroInteiro,
+} from '../../utils/formatters'
+
 import './Carteira.css'
 
 interface CarteiraViewProps {
@@ -25,36 +30,6 @@ interface CarteiraViewProps {
     investidor: string
     valor: number
   }>
-}
-
-function formatarMoeda(
-  valor: number | null | undefined,
-) {
-  if (
-    valor == null ||
-    Number.isNaN(valor)
-  ) {
-    return '--'
-  }
-
-  return valor.toLocaleString(
-    'pt-BR',
-    {
-      style: 'currency',
-      currency: 'BRL',
-    },
-  )
-}
-
-function formatarNumeroInteiro(
-  valor: number,
-) {
-  return valor.toLocaleString(
-    'pt-BR',
-    {
-      maximumFractionDigits: 2,
-    },
-  )
 }
 
 function classeResultado(
@@ -103,8 +78,8 @@ function ehAtivoSemMarcacaoPorCotacao(
 
   if (
     tickerNormalizado === 'CDB NEON' ||
-    tickerNormalizado === 'CDB BTG'  ||
-    tickerNormalizado === 'FMP ELETROBRAS'  
+    tickerNormalizado === 'CDB BTG' ||
+    tickerNormalizado === 'FMP ELETROBRAS'
   ) {
     return true
   }
@@ -123,7 +98,7 @@ function ehAtivoSemMarcacaoPorCotacao(
 
   return false
 }
- 
+
 export function CarteiraView({
   investidores,
   carteiras,

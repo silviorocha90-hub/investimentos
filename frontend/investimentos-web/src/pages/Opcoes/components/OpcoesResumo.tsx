@@ -32,19 +32,36 @@ export function OpcoesResumo({
       0,
     )
 
-  const resultadoTotal =
+  const resultadoBruto =
     opcoes.reduce(
       (total, opcao) =>
         total +
-        (opcao.resultadoInformado ??
-          opcao.resultadoFinal ??
+        (opcao.resultadoBruto ??
+          0),
+      0,
+    )
+
+  const irEstimado =
+    opcoes.reduce(
+      (total, opcao) =>
+        total +
+        (opcao.irEstimado ??
+          0),
+      0,
+    )
+
+  const resultadoLiquido =
+    opcoes.reduce(
+      (total, opcao) =>
+        total +
+        (opcao.resultadoLiquido ??
           0),
       0,
     )
 
   const percentualPremioGanho =
     premioTotal !== 0
-      ? (resultadoTotal /
+      ? (resultadoLiquido /
           premioTotal) *
         100
       : 0
@@ -53,20 +70,43 @@ export function OpcoesResumo({
     <div className="options-summary-grid">
       <article className="options-summary-card options-summary-highlight">
         <span>
-          Resultado
+          Resultado Líquido
         </span>
 
         <strong
           className={
-            resultadoTotal >= 0
+            resultadoLiquido >= 0
               ? 'positive'
               : 'negative'
           }
         >
           {formatarMoeda(
-            resultadoTotal,
+            resultadoLiquido,
           )}
         </strong>
+
+        <small>
+          Bruto{' '}
+          {formatarMoeda(
+            resultadoBruto,
+          )}
+        </small>
+      </article>
+
+      <article className="options-summary-card">
+        <span>
+          IR Estimado
+        </span>
+
+        <strong>
+          {formatarMoeda(
+            irEstimado,
+          )}
+        </strong>
+
+        <small>
+          Estimativa por operação
+        </small>
       </article>
 
       <article className="options-summary-card">
@@ -85,6 +125,10 @@ export function OpcoesResumo({
             percentualPremioGanho,
           )}
         </strong>
+
+        <small>
+          Sobre o resultado líquido
+        </small>
       </article>
     </div>
   )

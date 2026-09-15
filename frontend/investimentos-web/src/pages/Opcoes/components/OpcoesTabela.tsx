@@ -23,6 +23,18 @@ interface OpcoesTabelaProps {
   ) => void
 }
 
+function formatarPercentual(
+  valor: number,
+) {
+  return `${valor.toLocaleString(
+    'pt-BR',
+    {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    },
+  )}%`
+}
+
 export function OpcoesTabela({
   opcoes,
   salvando,
@@ -64,116 +76,154 @@ export function OpcoesTabela({
                 <th>Vencimento</th>
                 <th>Ticker</th>
                 <th>Tipo</th>
-                <th>Natureza</th>
                 <th>Status</th>
-                <th>Quantidade</th>
+                <th>Qtd.</th>
                 <th>Strike</th>
-                <th>Prêmio Unit.</th>
-                <th>Prêmio Total</th>
+                <th>Resultado Bruto</th>
+                <th>Regime</th>
+                <th>IR</th>
+                <th>Resultado Líquido</th>
                 <th>Ações</th>
               </tr>
             </thead>
 
             <tbody>
               {opcoes.map(
-                (opcao) => (
-                  <tr key={opcao.id}>
-                    <td>
-                      {formatarDataCurta(
-                        opcao.vencimento,
-                      )}
-                    </td>
+                (opcao) => {
+                  const resultadoBruto =
+                    opcao.resultadoBruto
 
-                    <td>
-                      <span className="ticker">
-                        {
-                          opcao.tickerOpcao
-                        }
-                      </span>
-                    </td>
+                  const resultadoLiquido =
+                    opcao.resultadoLiquido
 
-                    <td>
-                      <span
-                        className={`option-type-chip ${opcao.tipoOpcao.toLowerCase()}`}
-                      >
-                        {
-                          opcao.tipoOpcao
-                        }
-                      </span>
-                    </td>
+                  return (
+                    <tr key={opcao.id}>
+                      <td>
+                        {formatarDataCurta(
+                          opcao.vencimento,
+                        )}
+                      </td>
 
-                    <td>
-                      {
-                        opcao.natureza
-                      }
-                    </td>
-
-                    <td>
-                      <span
-                        className={`option-status-chip ${opcao.situacao.toLowerCase()}`}
-                      >
-                        {
-                          opcao.situacao
-                        }
-                      </span>
-                    </td>
-
-                    <td className="align-right">
-                      {formatarNumeroInteiro(
-                        opcao.quantidade,
-                      )}
-                    </td>
-
-                    <td className="align-right">
-                      {formatarMoeda(
-                        opcao.strike,
-                      )}
-                    </td>
-
-                    <td className="align-right">
-                      {formatarMoeda(
-                        opcao.premioUnitario,
-                      )}
-                    </td>
-
-                    <td className="align-right strong">
-                      {formatarMoeda(
-                        opcao.premioTotal,
-                      )}
-                    </td>
-
-                    <td>
-                      <div className="options-row-actions">
-                        <button
-                          type="button"
-                          className="options-edit-button"
-                          onClick={() =>
-                            onEditar(
-                              opcao,
-                            )
+                      <td>
+                        <span className="ticker">
+                          {
+                            opcao.tickerOpcao
                           }
+                        </span>
+                      </td>
+
+                      <td>
+                        <span
+                          className={`option-type-chip ${opcao.tipoOpcao.toLowerCase()}`}
                         >
-                          Editar
-                        </button>
+                          {
+                            opcao.tipoOpcao
+                          }
+                        </span>
+                      </td>
 
-                        <button
-                          type="button"
-                          className="options-delete-button"
-                          disabled={
-                            salvando
-                          }
-                          onClick={() =>
-                            onExcluir(
-                              opcao,
-                            )
-                          }
+                      <td>
+                        <span
+                          className={`option-status-chip ${opcao.situacao.toLowerCase()}`}
                         >
-                          Excluir
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ),
+                          {
+                            opcao.situacao
+                          }
+                        </span>
+                      </td>
+
+                      <td className="align-right">
+                        {formatarNumeroInteiro(
+                          opcao.quantidade,
+                        )}
+                      </td>
+
+                      <td className="align-right">
+                        {formatarMoeda(
+                          opcao.strike,
+                        )}
+                      </td>
+
+                      <td
+                        className={`align-right strong ${
+                          (resultadoBruto ??
+                            0) >= 0
+                            ? 'positive'
+                            : 'negative'
+                        }`}
+                      >
+                        {resultadoBruto != null
+                          ? formatarMoeda(
+                              resultadoBruto,
+                            )
+                          : '—'}
+                      </td>
+
+                      <td>
+                        {opcao.regimeTributario ===
+                        'DAY_TRADE'
+                          ? 'Day Trade'
+                          : 'Comum'}
+                      </td>
+
+                      <td className="align-right">
+                        {opcao.resultadoBruto != null
+                          ? `${formatarMoeda(
+                              opcao.irEstimado,
+                            )} (${formatarPercentual(
+                              opcao.aliquotaIr,
+                            )})`
+                          : '—'}
+                      </td>
+
+                      <td
+                        className={`align-right strong ${
+                          (resultadoLiquido ??
+                            0) >= 0
+                            ? 'positive'
+                            : 'negative'
+                        }`}
+                      >
+                        {resultadoLiquido != null
+                          ? formatarMoeda(
+                              resultadoLiquido,
+                            )
+                          : '—'}
+                      </td>
+
+                      <td>
+                        <div className="options-row-actions">
+                          <button
+                            type="button"
+                            className="options-edit-button"
+                            onClick={() =>
+                              onEditar(
+                                opcao,
+                              )
+                            }
+                          >
+                            Editar
+                          </button>
+
+                          <button
+                            type="button"
+                            className="options-delete-button"
+                            disabled={
+                              salvando
+                            }
+                            onClick={() =>
+                              onExcluir(
+                                opcao,
+                              )
+                            }
+                          >
+                            Excluir
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  )
+                },
               )}
             </tbody>
           </table>

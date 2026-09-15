@@ -57,31 +57,6 @@ namespace Investimentos.Application.Dashboard
                     .ObterUltimasPorTickerAsync(
                         cancellationToken);
 
-            /*
-             * ENRIQUECIMENTO DAS POSIÇÕES
-             *
-             * Ativos com cotação:
-             *
-             * Valor Atual =
-             * Quantidade x Preço Atual
-             *
-             * Valorização =
-             * Valor Atual - Custo Total
-             *
-             * Ativos patrimoniais sem marcação
-             * por cotação:
-             *
-             * - PREVIDENCIA
-             * - CDB NEON
-             * - CDB BTG
-             * - FMP ELETROBRAS
-             *
-             * Para esses ativos:
-             *
-             * Preço Atual = null
-             * Valor Atual = CustoTotal
-             * Valorização = 0
-             */
             var posicoes =
                 posicoesOriginais
                     .Select(x =>
@@ -112,29 +87,17 @@ namespace Investimentos.Application.Dashboard
                             x.Quantidade *
                             precoAtual;
 
-                        var valorizacao =
-                            valorAtual -
-                            x.CustoTotal;
-
                         return x with
                         {
                             PrecoAtual = precoAtual,
                             ValorAtual = valorAtual,
-                            Valorizacao = valorizacao
+                            Valorizacao =
+                                valorAtual -
+                                x.CustoTotal
                         };
                     })
                     .ToList();
 
-            /*
-             * VALOR APLICADO
-             *
-             * Inclui todos os investimentos
-             * atuais, exceto Previdência.
-             *
-             * CDB NEON, CDB BTG e
-             * FMP ELETROBRAS continuam sendo
-             * considerados no Valor Aplicado.
-             */
             var valorAplicado =
                 posicoes
                     .Where(x =>
@@ -144,12 +107,6 @@ namespace Investimentos.Application.Dashboard
                     .Sum(x =>
                         x.ValorAtual);
 
-            /*
-             * PREVIDÊNCIA
-             *
-             * Continua separada do Valor Aplicado
-             * e entra diretamente no patrimônio.
-             */
             var valorPrevidencia =
                 posicoes
                     .Where(x =>
@@ -159,9 +116,6 @@ namespace Investimentos.Application.Dashboard
                     .Sum(x =>
                         x.CustoTotal);
 
-            /*
-             * CAIXA
-             */
             var saldoAtual =
                 await _saldoRepository
                     .ObterAtualAsync(
@@ -171,15 +125,6 @@ namespace Investimentos.Application.Dashboard
             var caixaDisponivel =
                 saldoAtual?.Valor ?? 0;
 
-            /*
-             * PATRIMÔNIO ATUAL
-             *
-             * Não somamos novamente proventos,
-             * opções ou valorização.
-             *
-             * Eles já estão refletidos no valor
-             * atual dos ativos e/ou no caixa.
-             */
             var patrimonioEstimado =
                 valorAplicado +
                 valorPrevidencia +
@@ -187,36 +132,53 @@ namespace Investimentos.Application.Dashboard
 
             /*
              * PROVENTOS
+             *
+             * O valor recebido já é líquido da
+             * retenção registrada no lançamento.
              */
+            var proventosBrutos =
+                proventos.Sum(x =>
+                    x.ValorBruto);
+
+            var irProventos =
+                proventos.Sum(x =>
+                    x.IrEfetivo);
+
             var totalProventos =
-                proventos.Sum(
-                    x => x.ValorRecebido);
+                proventos.Sum(x =>
+                    x.ValorLiquido);
 
             /*
              * OPÇÕES
              *
-             * Consideramos somente operações
-             * finalizadas.
+             * ResultadoBruto representa o
+             * resultado operacional.
+             *
+             * IrEstimado é apenas uma estimativa
+             * por operação. A apuração fiscal
+             * mensal e compensação de prejuízos
+             * serão tratadas posteriormente.
              */
-            var premioLiquidoOpcoes =
+            var opcoesFinalizadas =
                 opcoes
                     .Where(x =>
                         x.Situacao == "ENCERRADA" ||
-                        x.Situacao == "EXECUTADA")
-                    .Sum(x =>
-                        x.ResultadoInformado ??
-                        x.ResultadoFinal ??
-                        0);
+                        x.Situacao == "EXECUTADA" ||
+                        x.Situacao == "EXPIRADA")
+                    .ToList();
 
-            /*
-             * VALORIZAÇÃO DOS ATIVOS
-             *
-             * Entram somente posições que possuem
-             * marcação por cotação.
-             *
-             * PREVIDENCIA, CDB NEON, CDB BTG e
-             * FMP ELETROBRAS não participam.
-             */
+            var opcoesBrutas =
+                opcoesFinalizadas.Sum(x =>
+                    x.ResultadoBruto ?? 0);
+
+            var irEstimadoOpcoes =
+                opcoesFinalizadas.Sum(x =>
+                    x.IrEstimado);
+
+            var premioLiquidoOpcoes =
+                opcoesFinalizadas.Sum(x =>
+                    x.ResultadoLiquido ?? 0);
+
             var valorizacaoAtivos =
                 posicoes
                     .Where(x =>
@@ -226,24 +188,11 @@ namespace Investimentos.Application.Dashboard
                     .Sum(x =>
                         x.Valorizacao);
 
-            /*
-             * RESULTADO TOTAL DA CARTEIRA
-             *
-             * Resultado =
-             * Valorização dos ativos
-             * + Proventos
-             * + Opções
-             */
             var resultadoRealizado =
                 valorizacaoAtivos +
                 totalProventos +
                 premioLiquidoOpcoes;
 
-            /*
-             * Descontos fiscais são globais.
-             * Portanto não são descontados
-             * no dashboard individual.
-             */
             const decimal descontosFiscais = 0;
 
             var quantidadeAtivos =
@@ -271,7 +220,11 @@ namespace Investimentos.Application.Dashboard
                 null,
                 descontosFiscais,
                 null,
-                valorizacaoAtivos);
+                valorizacaoAtivos,
+                proventosBrutos,
+                irProventos,
+                opcoesBrutas,
+                irEstimadoOpcoes);
         }
 
         private static bool EhAtivoSemMarcacaoPorCotacao(

@@ -20,8 +20,8 @@ export function LoginView({
   } = useAuth()
 
   const [
-    email,
-    setEmail,
+    identificador,
+    setIdentificador,
   ] =
     useState('')
 
@@ -56,7 +56,7 @@ export function LoginView({
       setErro(null)
 
       await login(
-        email.trim(),
+        identificador.trim(),
         senha,
       )
     } catch (error) {
@@ -123,18 +123,18 @@ export function LoginView({
         >
           <label>
             <span>
-              E-mail
+              Usuário ou e-mail
             </span>
 
             <input
-              type="email"
-              value={email}
-              autoComplete="email"
+              type="text"
+              value={identificador}
+              autoComplete="username"
               autoFocus
               required
-
+              placeholder="admin ou seu e-mail"
               onChange={(event) =>
-                setEmail(
+                setIdentificador(
                   event.target.value,
                 )
               }
@@ -151,7 +151,6 @@ export function LoginView({
               value={senha}
               autoComplete="current-password"
               required
-
               onChange={(event) =>
                 setSenha(
                   event.target.value,

@@ -25,6 +25,10 @@ export interface Provento {
   valorBruto: number
   valorRecebido: number
   impostoRetido: number
+
+  valorLiquido: number
+  irEfetivo: number
+  aliquotaEfetiva: number
 }
 
 export interface OperacaoOpcao {
@@ -48,6 +52,16 @@ export interface OperacaoOpcao {
   resultadoInformado?: number | null
   resultadoFinal?: number | null
   situacao: string
+
+  valorAcaoAtual?: number | null
+  resultadoBruto?: number | null
+  ehDayTrade: boolean
+  regimeTributario: string
+  aliquotaIr: number
+  irEstimado: number
+  resultadoLiquido?: number | null
+  percentualGanho?: number | null
+  percentualGanhoPremio?: number | null
 }
 
 export interface DistribuicaoTipoAtivo {
@@ -75,6 +89,11 @@ export interface Dashboard {
   descontosFiscais?: number
 
   valorizacaoAtivos?: number
+
+  proventosBrutos?: number
+  irProventos?: number
+  opcoesBrutas?: number
+  irEstimadoOpcoes?: number
 
   saldosDisponiveis?: SaldoInvestidor[]
   distribuicaoPorTipo: DistribuicaoTipoAtivo[]

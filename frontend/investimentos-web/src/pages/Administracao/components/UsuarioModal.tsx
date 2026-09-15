@@ -65,9 +65,9 @@ export function UsuarioModal({
   fechar,
   salvar,
 }: UsuarioModalProps) {
-  const admin =
-    formulario.perfil ===
-    'Admin'
+  const pendente =
+    usuario.status ===
+    'Pendente'
 
   function alternarPermissao(
     permissao:
@@ -123,13 +123,33 @@ export function UsuarioModal({
     )
   }
 
+  const semPermissoes =
+    formulario.perfil ===
+      'Usuario' &&
+    formulario.permissoes
+      .length === 0
+
+  const semInvestidores =
+    formulario.perfil ===
+      'Usuario' &&
+    formulario.investidoresIds
+      .length === 0
+
+  const formularioIncompleto =
+    semPermissoes ||
+    semInvestidores
+
   return (
     <Modal
       title={usuario.nome}
-      subtitle="Acessos do usuário"
+      subtitle={
+        pendente
+          ? 'Configurar novo usuário'
+          : 'Gerenciar acesso'
+      }
       onClose={fechar}
       closeDisabled={salvando}
-      className="admin-user-modal"
+      className="user-access-modal"
       footer={
         <>
           <button
@@ -144,30 +164,64 @@ export function UsuarioModal({
           <button
             type="button"
             className="admin-primary-button"
-            disabled={salvando}
+            disabled={
+              salvando ||
+              formularioIncompleto
+            }
             onClick={salvar}
           >
             {salvando
-              ? 'Salvando...'
-              : 'Salvar acessos'}
+              ? pendente
+                ? 'Salvando e aprovando...'
+                : 'Salvando...'
+              : pendente
+                ? 'Salvar e aprovar'
+                : 'Salvar alterações'}
           </button>
         </>
       }
     >
-      <div className="admin-user-modal-content">
-        <div className="admin-user-identification">
-          <span>
-            E-mail
+      <div className="user-modal-content">
+        <section className="user-modal-person">
+          <div className="user-modal-avatar">
+            {usuario.nome
+              .trim()
+              .charAt(0)
+              .toUpperCase()}
+          </div>
+
+          <div>
+            <strong>
+              {usuario.nome}
+            </strong>
+
+            <span>
+              {usuario.email}
+            </span>
+          </div>
+
+          <span
+            className={`user-status status-${usuario.status.toLowerCase()}`}
+          >
+            {usuario.status}
           </span>
+        </section>
 
-          <strong>
-            {usuario.email}
-          </strong>
+        {pendente ? (
+          <div className="user-modal-info">
+            <strong>
+              Liberação de acesso
+            </strong>
 
-          <small>
-            Status: {usuario.status}
-          </small>
-        </div>
+            <span>
+              Configure as telas e
+              investidores antes de
+              aprovar este cadastro.
+              Ao finalizar, o usuário
+              poderá entrar no sistema.
+            </span>
+          </div>
+        ) : null}
 
         {erro ? (
           <div className="admin-inline-error">
@@ -175,179 +229,292 @@ export function UsuarioModal({
           </div>
         ) : null}
 
-        <label className="admin-user-profile">
-          <span>
-            Perfil
-          </span>
+        <section className="user-modal-section">
+          <header>
+            <div className="user-modal-step">
+              1
+            </div>
 
-          <select
-            value={
-              formulario.perfil
-            }
-            disabled={salvando}
-            onChange={(
-              event,
-            ) => {
-              const perfil =
-                event.target
-                  .value as
-                  PerfilUsuario
+            <div>
+              <strong>
+                Perfil
+              </strong>
 
-              setFormulario(
-                (atual) => ({
-                  ...atual,
-                  perfil,
+              <span>
+                Defina o nível de
+                acesso do usuário.
+              </span>
+            </div>
+          </header>
 
-                  permissoes:
-                    perfil ===
-                    'Admin'
-                      ? [
-                          ...permissoesSistema,
-                        ]
-                      : atual
-                          .permissoes,
-
-                  investidoresIds:
-                    perfil ===
-                    'Admin'
-                      ? []
-                      : atual
-                          .investidoresIds,
-                }),
-              )
-            }}
-          >
-            <option value="Usuario">
-              Usuário
-            </option>
-
-            <option value="Admin">
-              Administrador
-            </option>
-          </select>
-        </label>
-
-        <section className="admin-user-access-section">
-          <div>
-            <strong>
-              Telas permitidas
-            </strong>
-
+          <label className="user-profile-field">
             <span>
-              Defina quais áreas
-              poderão ser acessadas.
+              Perfil do usuário
             </span>
-          </div>
 
-          <div className="admin-user-check-grid">
-            {permissoesSistema.map(
-              (permissao) => (
-                <label
-                  key={
-                    permissao
-                  }
-                  className="admin-user-check"
-                >
-                  <input
-                    type="checkbox"
-                    checked={
-                      admin ||
+            <select
+              value={
+                formulario.perfil
+              }
+              disabled={salvando}
+              onChange={(
+                event,
+              ) => {
+                const perfil =
+                  event.target
+                    .value as
+                    PerfilUsuario
+
+                setFormulario(
+                  (atual) => ({
+                    ...atual,
+
+                    perfil,
+
+                    permissoes:
+                      perfil ===
+                      'Admin'
+                        ? [
+                            ...permissoesSistema,
+                          ]
+                        : atual
+                            .permissoes,
+
+                    investidoresIds:
+                      perfil ===
+                      'Admin'
+                        ? []
+                        : atual
+                            .investidoresIds,
+                  }),
+                )
+              }}
+            >
+              <option value="Usuario">
+                Usuário
+              </option>
+
+              <option value="Admin">
+                Administrador
+              </option>
+            </select>
+
+            {formulario.perfil ===
+            'Admin' ? (
+              <small>
+                Administradores possuem
+                acesso global e, após
+                definidos como
+                administradores, seus
+                acessos passam a ser
+                protegidos.
+              </small>
+            ) : null}
+          </label>
+        </section>
+
+        {formulario.perfil ===
+        'Usuario' ? (
+          <>
+            <section className="user-modal-section">
+              <header>
+                <div className="user-modal-step">
+                  2
+                </div>
+
+                <div>
+                  <strong>
+                    Telas permitidas
+                  </strong>
+
+                  <span>
+                    Selecione as áreas
+                    que ficarão
+                    disponíveis no
+                    sistema.
+                  </span>
+                </div>
+              </header>
+
+              <div className="user-permission-grid">
+                {permissoesSistema.map(
+                  (permissao) => {
+                    const selecionada =
                       formulario
                         .permissoes
                         .includes(
                           permissao,
                         )
-                    }
-                    disabled={
-                      salvando ||
-                      admin
-                    }
-                    onChange={() =>
-                      alternarPermissao(
-                        permissao,
-                      )
-                    }
-                  />
+
+                    return (
+                      <label
+                        key={
+                          permissao
+                        }
+                        className={
+                          selecionada
+                            ? 'user-permission-option selected'
+                            : 'user-permission-option'
+                        }
+                      >
+                        <input
+                          type="checkbox"
+                          checked={
+                            selecionada
+                          }
+                          disabled={
+                            salvando
+                          }
+                          onChange={() =>
+                            alternarPermissao(
+                              permissao,
+                            )
+                          }
+                        />
+
+                        <div>
+                          <strong>
+                            {
+                              nomesPermissoes[
+                                permissao
+                              ]
+                            }
+                          </strong>
+
+                          <span>
+                            {permissao ===
+                            'Dashboard'
+                              ? 'Visão geral da carteira'
+                              : permissao ===
+                                  'Carteira'
+                                ? 'Posições e patrimônio'
+                                : permissao ===
+                                    'Operacoes'
+                                  ? 'Compras e vendas'
+                                  : permissao ===
+                                      'Opcoes'
+                                    ? 'Operações com opções'
+                                    : permissao ===
+                                        'Proventos'
+                                      ? 'Dividendos e rendimentos'
+                                      : 'Cadastros e configurações'}
+                          </span>
+                        </div>
+                      </label>
+                    )
+                  },
+                )}
+              </div>
+
+              {semPermissoes ? (
+                <small className="user-validation-message">
+                  Selecione pelo menos
+                  uma tela.
+                </small>
+              ) : null}
+            </section>
+
+            <section className="user-modal-section">
+              <header>
+                <div className="user-modal-step">
+                  3
+                </div>
+
+                <div>
+                  <strong>
+                    Investidores
+                  </strong>
 
                   <span>
-                    {
-                      nomesPermissoes[
-                        permissao
-                      ]
-                    }
+                    Escolha quais
+                    carteiras poderão
+                    ser consultadas.
                   </span>
-                </label>
-              ),
-            )}
-          </div>
+                </div>
+              </header>
 
-          {admin ? (
-            <small className="admin-user-note">
-              Administradores possuem
-              acesso a todas as telas.
-            </small>
-          ) : null}
-        </section>
-
-        <section className="admin-user-access-section">
-          <div>
-            <strong>
-              Investidores
-            </strong>
-
-            <span>
-              Defina quais carteiras
-              este usuário poderá
-              consultar.
-            </span>
-          </div>
-
-          {admin ? (
-            <div className="admin-user-note">
-              Administradores possuem
-              acesso global aos
-              investidores.
-            </div>
-          ) : (
-            <div className="admin-user-check-grid">
-              {investidores.map(
-                (investidor) => (
-                  <label
-                    key={
-                      investidor.id
-                    }
-                    className="admin-user-check"
-                  >
-                    <input
-                      type="checkbox"
-                      checked={
-                        formulario
-                          .investidoresIds
-                          .includes(
-                            investidor.id,
-                          )
-                      }
-                      disabled={
-                        salvando
-                      }
-                      onChange={() =>
-                        alternarInvestidor(
+              <div className="user-investor-grid">
+                {investidores.map(
+                  (investidor) => {
+                    const selecionado =
+                      formulario
+                        .investidoresIds
+                        .includes(
                           investidor.id,
                         )
-                      }
-                    />
 
-                    <span>
-                      {
-                        investidor.nome
-                      }
-                    </span>
-                  </label>
-                ),
-              )}
+                    return (
+                      <label
+                        key={
+                          investidor.id
+                        }
+                        className={
+                          selecionado
+                            ? 'user-investor-option selected'
+                            : 'user-investor-option'
+                        }
+                      >
+                        <input
+                          type="checkbox"
+                          checked={
+                            selecionado
+                          }
+                          disabled={
+                            salvando
+                          }
+                          onChange={() =>
+                            alternarInvestidor(
+                              investidor.id,
+                            )
+                          }
+                        />
+
+                        <div>
+                          <strong>
+                            {
+                              investidor.nome
+                            }
+                          </strong>
+
+                          <span>
+                            Carteira de
+                            investimentos
+                          </span>
+                        </div>
+                      </label>
+                    )
+                  },
+                )}
+              </div>
+
+              {semInvestidores ? (
+                <small className="user-validation-message">
+                  Selecione pelo menos
+                  um investidor.
+                </small>
+              ) : null}
+            </section>
+          </>
+        ) : (
+          <section className="user-admin-access-info">
+            <div>
+              ✓
             </div>
-          )}
-        </section>
+
+            <div>
+              <strong>
+                Acesso administrativo
+                completo
+              </strong>
+
+              <span>
+                Este perfil terá acesso
+                a todas as telas e a
+                todos os investidores.
+              </span>
+            </div>
+          </section>
+        )}
       </div>
     </Modal>
   )
