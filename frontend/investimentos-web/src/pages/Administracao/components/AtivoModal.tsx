@@ -185,11 +185,6 @@ export function AtivoModal({
                   >
                     {
                       tipo.nome
-                    }{' '}
-                    —{' '}
-                    {
-                      tipo
-                        .classeAtivoNome
                     }
                   </option>
                 ),
