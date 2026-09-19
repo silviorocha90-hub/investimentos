@@ -385,7 +385,7 @@ function EditarOpcaoModal({
 
         <div className="options-form-grid">
           <label>
-            <span>Data</span>
+            <span>Data inicial</span>
 
             <input
               type="date"
@@ -395,13 +395,7 @@ function EditarOpcaoModal({
                   10,
                 )
               }
-              onChange={(event) =>
-                setForm({
-                  ...form,
-                  dataOperacao:
-                    event.target.value,
-                })
-              }
+              disabled
             />
           </label>
 
@@ -530,7 +524,13 @@ function EditarOpcaoModal({
               value={
                 form.situacao
               }
-              disabled
+              onChange={(event) =>
+                setForm({
+                  ...form,
+                  situacao:
+                    event.target.value,
+                })
+              }
             >
               <option value="EXECUTADA">
                 EXECUTADA
@@ -539,7 +539,36 @@ function EditarOpcaoModal({
               <option value="ENCERRADA">
                 ENCERRADA
               </option>
+
+              <option value="EXPIRADA">
+                EXPIRADA
+              </option>
             </select>
+          </label>
+
+          <label>
+            <span>Resultado informado</span>
+
+            <input
+              type="number"
+              step="0.01"
+              value={
+                form.resultadoInformado ??
+                ''
+              }
+              onChange={(event) =>
+                setForm({
+                  ...form,
+                  resultadoInformado:
+                    event.target.value === ''
+                      ? null
+                      : Number(
+                          event.target.value,
+                        ),
+                })
+              }
+              placeholder="Opcional"
+            />
           </label>
         </div>
       </div>
