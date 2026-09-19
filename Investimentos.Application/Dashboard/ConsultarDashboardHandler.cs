@@ -139,7 +139,7 @@ namespace Investimentos.Application.Dashboard
                         x.TipoAtivoCodigo ==
                             "PREVIDENCIA")
                     .Sum(x =>
-                        x.CustoTotal);
+                        x.ValorAtual);
 
             var saldoAtual =
                 await _saldoRepository
