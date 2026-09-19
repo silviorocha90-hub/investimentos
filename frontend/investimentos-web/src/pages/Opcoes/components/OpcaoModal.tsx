@@ -63,6 +63,41 @@ function hojeLocal() {
   return `${ano}-${mes}-${dia}`
 }
 
+function formatarMoedaEntrada(
+  valor: string,
+) {
+  const digitos =
+    valor.replace(/\D/g, '')
+
+  if (!digitos) {
+    return ''
+  }
+
+  return (
+    Number(digitos) / 100
+  ).toLocaleString(
+    'pt-BR',
+    {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    },
+  )
+}
+
+function moedaParaNumero(
+  valor: string,
+) {
+  if (!valor) {
+    return 0
+  }
+
+  return Number(
+    valor
+      .replace(/\./g, '')
+      .replace(',', '.'),
+  )
+}
+
 function criarNovaOpcao():
   NovaOpcaoForm {
   const hoje = hojeLocal()
@@ -98,7 +133,7 @@ function NovoOpcaoModal({
     Number(form.strike) > 0 &&
     form.vencimento.length > 0 &&
     form.premioUnitario !== '' &&
-    Number(
+    moedaParaNumero(
       form.premioUnitario,
     ) >= 0
 
@@ -291,21 +326,24 @@ function NovoOpcaoModal({
           <label>
             <span>Prêmio Unit.</span>
 
-            <input
-              type="number"
-              min="0"
-              step="0.01"
-              value={
-                form.premioUnitario
-              }
-              onChange={(event) =>
-                setForm({
-                  ...form,
-                  premioUnitario:
-                    event.target.value,
-                })
-              }
-            />
+            <div className="admin-money-input">
+              <span>R$</span>
+              <input
+                inputMode="numeric"
+                value={
+                  form.premioUnitario
+                }
+                onChange={(event) =>
+                  setForm({
+                    ...form,
+                    premioUnitario:
+                      formatarMoedaEntrada(
+                        event.target.value,
+                      ),
+                  })
+                }
+              />
+            </div>
           </label>
 
           <label className="options-status-field">
@@ -498,23 +536,32 @@ function EditarOpcaoModal({
           <label>
             <span>Prêmio Unit.</span>
 
-            <input
-              type="number"
-              min="0"
-              step="0.01"
-              value={
-                form.premioUnitario
-              }
-              onChange={(event) =>
-                setForm({
-                  ...form,
-                  premioUnitario:
-                    Number(
-                      event.target.value,
-                    ),
-                })
-              }
-            />
+            <div className="admin-money-input">
+              <span>R$</span>
+              <input
+                inputMode="numeric"
+                value={
+                  form.premioUnitario.toLocaleString(
+                    'pt-BR',
+                    {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    },
+                  )
+                }
+                onChange={(event) =>
+                  setForm({
+                    ...form,
+                    premioUnitario:
+                      moedaParaNumero(
+                        formatarMoedaEntrada(
+                          event.target.value,
+                        ),
+                      ),
+                  })
+                }
+              />
+            </div>
           </label>
 
           <label>
