@@ -631,21 +631,43 @@ export function OpcoesView({
          * para desserializar aqui. Atualizamos a opção localmente
          * com os mesmos dados que acabaram de ser persistidos.
          */
-        setOpcoesLocais(
-          (atuais) =>
-            (
-              atuais ??
-              carteira?.opcoes ??
-              []
-            ).map(
-              (item) =>
-                item.id === opcao.id
-                  ? {
-                      ...item,
-                      ...opcao,
-                    }
-                  : item,
+        /*
+         * Campos exibidos na tabela, como Resultado Bruto,
+         * Resultado Líquido e IR, são calculados pelo backend.
+         * Portanto, após o PUT precisamos consultar novamente
+         * as opções do investidor em vez de apenas copiar os
+         * campos editados para o estado local.
+         */
+        const investidor =
+          obterInvestidor()
+
+        if (!investidor) {
+          throw new Error(
+            'Investidor não selecionado.',
+          )
+        }
+
+        const responseAtualizada =
+          await fetch(
+            `${apiUrl}/api/opcoes/${investidor.id}?_=${Date.now()}`,
+            {
+              cache: 'no-store',
+            },
+          )
+
+        if (!responseAtualizada.ok) {
+          throw new Error(
+            await lerErroApi(
+              responseAtualizada,
             ),
+          )
+        }
+
+        const opcoesAtualizadas =
+          await responseAtualizada.json() as OperacaoOpcao[]
+
+        setOpcoesLocais(
+          opcoesAtualizadas,
         )
 
         setOpcaoEmEdicao(null)
