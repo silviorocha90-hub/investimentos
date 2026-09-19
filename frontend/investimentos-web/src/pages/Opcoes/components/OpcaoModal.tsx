@@ -543,6 +543,10 @@ function EditarOpcaoModal({
               <option value="ENCERRADA">
                 ENCERRADA
               </option>
+
+              <option value="EXPIRADA">
+                EXPIRADA
+              </option>
             </select>
           </label>
 
