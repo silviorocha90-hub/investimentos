@@ -12,19 +12,24 @@ namespace Investimentos.Application.Dashboard
         private readonly ConsultarOpcoesHandler _opcoesHandler;
         private readonly ICotacaoAtivoRepository _cotacaoRepository;
         private readonly ISaldoDisponivelRepository _saldoRepository;
+        private readonly IValorPatrimonialAtivoRepository _valorPatrimonialRepository;
 
         public ConsultarDashboardHandler(
             ConsultarCarteiraHandler carteiraHandler,
             ConsultarProventosHandler proventosHandler,
             ConsultarOpcoesHandler opcoesHandler,
             ICotacaoAtivoRepository cotacaoRepository,
-            ISaldoDisponivelRepository saldoRepository)
+            ISaldoDisponivelRepository saldoRepository,
+            IValorPatrimonialAtivoRepository? valorPatrimonialRepository = null)
         {
             _carteiraHandler = carteiraHandler;
             _proventosHandler = proventosHandler;
             _opcoesHandler = opcoesHandler;
             _cotacaoRepository = cotacaoRepository;
             _saldoRepository = saldoRepository;
+            _valorPatrimonialRepository =
+                valorPatrimonialRepository ??
+                new ValorPatrimonialAtivoRepositoryVazio();
         }
 
         public async Task<DashboardDto> HandleAsync(
@@ -63,17 +68,31 @@ namespace Investimentos.Application.Dashboard
                     .ObterUltimasPorTickerAsync(
                         cancellationToken);
 
+            var valoresPatrimoniais =
+                await _valorPatrimonialRepository
+                    .ObterUltimosPorTickerAsync(
+                        cancellationToken);
+
             var posicoes =
                 posicoesOriginais
                     .Select(x =>
                     {
                         if (EhAtivoSemMarcacaoPorCotacao(x))
                         {
+                            var valorAtual =
+                                valoresPatrimoniais.TryGetValue(
+                                    x.Ticker,
+                                    out var valorInformado)
+                                    ? valorInformado
+                                    : x.CustoTotal;
+
                             return x with
                             {
                                 PrecoAtual = null,
-                                ValorAtual = x.CustoTotal,
-                                Valorizacao = 0
+                                ValorAtual = valorAtual,
+                                Valorizacao =
+                                    valorAtual -
+                                    x.CustoTotal
                             };
                         }
 
@@ -245,6 +264,21 @@ namespace Investimentos.Application.Dashboard
                 opcoesBrutas,
                 irEstimadoOpcoes,
                 resultadoRealizadoAcoes);
+        }
+
+        private sealed class ValorPatrimonialAtivoRepositoryVazio
+            : IValorPatrimonialAtivoRepository
+        {
+            public Task<IReadOnlyDictionary<string, decimal>>
+                ObterUltimosPorTickerAsync(
+                    CancellationToken cancellationToken = default)
+            {
+                IReadOnlyDictionary<string, decimal> vazio =
+                    new Dictionary<string, decimal>(
+                        StringComparer.OrdinalIgnoreCase);
+
+                return Task.FromResult(vazio);
+            }
         }
 
         private static bool EhAtivoSemMarcacaoPorCotacao(
