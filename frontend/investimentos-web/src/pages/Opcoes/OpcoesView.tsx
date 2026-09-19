@@ -583,6 +583,10 @@ export function OpcoesView({
                   valorExecucao:
                     opcao.valorExecucao ??
                     null,
+
+                  resultadoInformado:
+                    opcao.resultadoInformado ??
+                    null,
                 }),
             },
           )
