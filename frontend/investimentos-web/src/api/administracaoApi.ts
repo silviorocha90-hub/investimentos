@@ -218,3 +218,52 @@ export async function excluirHistoricoPatrimonio(
     )
   }
 }
+
+export interface SalvarDescontoFiscalAdministracao {
+  dataPagamento: string
+  valor: number
+  descricao?: string | null
+}
+
+export async function atualizarDescontoFiscal(
+  id: string,
+  request: SalvarDescontoFiscalAdministracao,
+): Promise<void> {
+  const response =
+    await fetch(
+      `${apiUrl}/api/descontos-fiscais/${id}`,
+      {
+        method: 'PUT',
+        headers: {
+          'Content-Type':
+            'application/json',
+        },
+        body:
+          JSON.stringify(request),
+      },
+    )
+
+  if (!response.ok) {
+    throw new Error(
+      await lerErro(response),
+    )
+  }
+}
+
+export async function excluirDescontoFiscal(
+  id: string,
+): Promise<void> {
+  const response =
+    await fetch(
+      `${apiUrl}/api/descontos-fiscais/${id}`,
+      {
+        method: 'DELETE',
+      },
+    )
+
+  if (!response.ok) {
+    throw new Error(
+      await lerErro(response),
+    )
+  }
+}
