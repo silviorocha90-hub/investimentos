@@ -100,7 +100,9 @@ export function ProventoModal({
         provento.tipo,
       )
 
-      setDescricao('')
+      setDescricao(
+        provento.descricao ?? '',
+      )
 
       setDataCom(
         paraDataInput(
@@ -498,7 +500,7 @@ export function ProventoModal({
               Descrição
             </span>
 
-            <input
+            <select
               value={
                 descricao
               }
@@ -510,8 +512,19 @@ export function ProventoModal({
                     .value,
                 )
               }
-              placeholder="Opcional"
-            />
+            >
+              <option value="">
+                Selecione
+              </option>
+
+              <option value="Ação">
+                Ação
+              </option>
+
+              <option value="FII">
+                FII
+              </option>
+            </select>
           </label>
         </div>
 
