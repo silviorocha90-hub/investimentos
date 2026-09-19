@@ -959,6 +959,9 @@ export function AdministracaoView({
           dados={
             dados
           }
+          recarregar={
+            carregar
+          }
         />
       ) : null}
 
