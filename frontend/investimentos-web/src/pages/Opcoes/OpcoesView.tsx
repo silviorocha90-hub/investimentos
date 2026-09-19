@@ -142,9 +142,11 @@ export function OpcoesView({
   >(null)
 
   const [
-    versaoOpcoes,
-    setVersaoOpcoes,
-  ] = useState(0)
+    opcoesLocais,
+    setOpcoesLocais,
+  ] = useState<
+    OperacaoOpcao[] | null
+  >(null)
 
   const carteira =
     carteiras.find(
@@ -157,6 +159,7 @@ export function OpcoesView({
     useMemo(
       () =>
         (
+          opcoesLocais ??
           carteira?.opcoes ??
           []
         ).filter(
@@ -170,8 +173,18 @@ export function OpcoesView({
             opcao.situacao ===
               'EXPIRADA',
         ),
-      [carteira?.opcoes, versaoOpcoes],
+      [carteira?.opcoes, opcoesLocais],
     )
+
+  useEffect(() => {
+    setOpcoesLocais(
+      carteira?.opcoes
+        ? [...carteira.opcoes]
+        : [],
+    )
+  }, [
+    carteira?.opcoes,
+  ])
 
   useEffect(() => {
     setTickerSelecionado(
@@ -618,35 +631,21 @@ export function OpcoesView({
          * para desserializar aqui. Atualizamos a opção localmente
          * com os mesmos dados que acabaram de ser persistidos.
          */
-        const carteiraAtual =
-          carteiras.find(
-            (item) =>
-              item.nome ===
-              selectedInvestor,
-          )
-
-        if (carteiraAtual) {
-          const indice =
-            carteiraAtual.dashboard.opcoes.findIndex(
+        setOpcoesLocais(
+          (atuais) =>
+            (
+              atuais ??
+              carteira?.opcoes ??
+              []
+            ).map(
               (item) =>
-                item.id ===
-                opcao.id,
-            )
-
-          if (indice >= 0) {
-            carteiraAtual.dashboard.opcoes[
-              indice
-            ] = {
-              ...carteiraAtual.dashboard.opcoes[
-                indice
-              ],
-              ...opcao,
-            }
-          }
-        }
-
-        setVersaoOpcoes(
-          (versao) => versao + 1,
+                item.id === opcao.id
+                  ? {
+                      ...item,
+                      ...opcao,
+                    }
+                  : item,
+            ),
         )
 
         setOpcaoEmEdicao(null)
