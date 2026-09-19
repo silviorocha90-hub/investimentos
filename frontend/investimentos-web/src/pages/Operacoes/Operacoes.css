@@ -1097,3 +1097,49 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* =========================================================
+   AÇÕES - PADRÃO DA ADMINISTRAÇÃO
+   ========================================================= */
+
+.operacoes-view .operation-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.operacoes-view .operation-actions .table-action {
+  min-height: 28px;
+  padding: 0 10px;
+  border: 1px solid rgba(99, 230, 200, 0.3);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--accent);
+  font: inherit;
+  font-size: 0.65rem;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.operacoes-view .operation-actions .table-action:hover:not(:disabled) {
+  border-color: rgba(99, 230, 200, 0.6);
+  background: rgba(99, 230, 200, 0.08);
+}
+
+.operacoes-view .operation-actions .operation-delete-button {
+  border-color: rgba(255, 88, 108, 0.3);
+  color: var(--negative);
+}
+
+.operacoes-view .operation-actions .operation-delete-button:hover:not(:disabled) {
+  border-color: rgba(255, 88, 108, 0.55);
+  background: rgba(255, 88, 108, 0.08);
+}
+
+.operacoes-view .operation-actions .table-action:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
