@@ -95,6 +95,8 @@ export interface FormularioAtivo {
   tipoAtivoId: string
   cotacao: string
   dataCotacao: string
+  valorPatrimonial: string
+  dataValorPatrimonial: string
 }
 
 interface AdministracaoViewProps {
@@ -248,6 +250,11 @@ export function AdministracaoView({
       cotacao: '',
       dataCotacao:
         hoje,
+
+      valorPatrimonial: '',
+
+      dataValorPatrimonial:
+        hoje,
     })
 
   async function carregar() {
@@ -355,6 +362,21 @@ export function AdministracaoView({
       cotacao: '',
 
       dataCotacao:
+        hoje,
+
+      valorPatrimonial:
+        ativo.valorPatrimonialAtual == null
+          ? ''
+          : ativo.valorPatrimonialAtual
+              .toLocaleString(
+                'pt-BR',
+                {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                },
+              ),
+
+      dataValorPatrimonial:
         hoje,
     })
 
@@ -526,6 +548,30 @@ export function AdministracaoView({
         'ELETROBRAS',
       )
 
+    const valorPatrimonial =
+      !outroInvestimento ||
+      formularioAtivo.valorPatrimonial.trim() === ''
+        ? null
+        : Number(
+            formularioAtivo.valorPatrimonial
+              .replace(/\./g, '')
+              .replace(',', '.'),
+          )
+
+    if (
+      valorPatrimonial != null &&
+      (
+        Number.isNaN(valorPatrimonial) ||
+        valorPatrimonial < 0
+      )
+    ) {
+      setErro(
+        'Informe um valor atual válido.',
+      )
+
+      return
+    }
+
     const cotacao =
       outroInvestimento ||
       formularioAtivo
@@ -597,6 +643,14 @@ export function AdministracaoView({
               ? null
               : formularioAtivo
                   .dataCotacao,
+
+          valorPatrimonial,
+
+          dataValorPatrimonial:
+            valorPatrimonial == null
+              ? null
+              : formularioAtivo
+                  .dataValorPatrimonial,
         })
       } else {
         await atualizarAtivo(
@@ -618,6 +672,14 @@ export function AdministracaoView({
                 ? null
                 : formularioAtivo
                     .dataCotacao,
+
+            valorPatrimonial,
+
+            dataValorPatrimonial:
+              valorPatrimonial == null
+                ? null
+                : formularioAtivo
+                    .dataValorPatrimonial,
           },
         )
       }
