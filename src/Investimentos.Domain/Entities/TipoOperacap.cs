@@ -3,8 +3,8 @@ namespace Investimentos.Domain.Entities
     public class TipoOperacao
     {
         public int Id { get; private set; }
-        public string Codigo { get; private set; }
-        public string Nome { get; private set; }
+        public string Codigo { get; private set; } = null!;
+        public string Nome { get; private set; } = null!;
         public bool Ativo { get; private set; }
 
         private TipoOperacao()
