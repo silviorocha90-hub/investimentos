@@ -4,6 +4,7 @@
         Guid Id,
         string Ticker,
         string Tipo,
+        string? Descricao,
         DateTime? DataCom,
         DateTime DataPagamento,
         decimal QuantidadeBase,
