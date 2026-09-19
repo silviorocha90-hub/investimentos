@@ -19,6 +19,7 @@
         string ClasseAtivoCodigo,
         string ClasseAtivoNome,
         decimal Quantidade,
+        decimal ValorAtual,
         IReadOnlyList<PosicaoInvestidorAtivoAdministracaoDto>
             PosicoesInvestidores,
         decimal? CotacaoAtual,
@@ -27,7 +28,8 @@
     public record PosicaoInvestidorAtivoAdministracaoDto(
         Guid InvestidorId,
         string InvestidorNome,
-        decimal Quantidade);
+        decimal Quantidade,
+        decimal ValorAtual);
 
     public record InvestidorAdministracaoDto(
         Guid Id,
