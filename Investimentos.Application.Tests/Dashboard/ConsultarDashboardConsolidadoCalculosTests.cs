@@ -599,6 +599,25 @@ namespace Investimentos.Application.Tests.Dashboard
                     descontos);
             }
 
+            public Task<DescontoFiscal?> ObterPorIdAsync(
+                Guid id,
+                CancellationToken cancellationToken = default)
+            {
+                return Task.FromResult<DescontoFiscal?>(
+                    null);
+            }
+
+            public void Excluir(
+                DescontoFiscal desconto)
+            {
+            }
+
+            public Task SalvarAlteracoesAsync(
+                CancellationToken cancellationToken = default)
+            {
+                return Task.CompletedTask;
+            }
+
             public Task<decimal> ObterTotalAsync(
                 CancellationToken cancellationToken = default)
             {
