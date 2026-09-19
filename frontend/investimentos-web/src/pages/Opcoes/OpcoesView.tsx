@@ -401,7 +401,9 @@ export function OpcoesView({
 
       if (
         Number(
-          novaOpcao.strike,
+          novaOpcao.strike
+            .replace(/\./g, '')
+            .replace(',', '.'),
         ) <= 0
       ) {
         setErroOpcao(
@@ -471,8 +473,9 @@ export function OpcoesView({
 
                   strike:
                     Number(
-                      novaOpcao
-                        .strike,
+                      novaOpcao.strike
+                        .replace(/\./g, '')
+                        .replace(',', '.'),
                     ),
 
                   vencimento:
