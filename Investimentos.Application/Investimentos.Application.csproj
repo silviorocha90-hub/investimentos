@@ -11,6 +11,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="Interfaces\IValorPatrimonialAtivoRepository.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\src\Investimentos.Domain\Investimentos.Domain.csproj" />
   </ItemGroup>
 
