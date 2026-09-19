@@ -79,7 +79,7 @@ namespace Investimentos.Application.Dashboard
                     {
                         if (EhAtivoSemMarcacaoPorCotacao(x))
                         {
-                            var valorAtualPosicao =
+                            var valorPatrimonialAtual =
                                 valoresPatrimoniais.TryGetValue(
                                     x.Ticker,
                                     out var valorInformado)
@@ -89,9 +89,9 @@ namespace Investimentos.Application.Dashboard
                             return x with
                             {
                                 PrecoAtual = null,
-                                ValorAtual = valorAtualPosicao,
+                                ValorAtual = valorPatrimonialAtual,
                                 Valorizacao =
-                                    valorAtualPosicao -
+                                    valorPatrimonialAtual -
                                     x.CustoTotal
                             };
                         }
