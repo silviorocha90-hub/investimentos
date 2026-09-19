@@ -14,7 +14,8 @@ namespace Investimentos.Application.Opcoes.AtualizarOperacaoOpcao
         string Situacao,
         DateTime? DataFinalizacao,
         decimal? PrecoRecompraUnitario,
-        decimal? ValorExecucao);
+        decimal? ValorExecucao,
+        decimal? ResultadoInformado);
 
     public class AtualizarOperacaoOpcaoHandler
     {
@@ -49,6 +50,9 @@ namespace Investimentos.Application.Opcoes.AtualizarOperacaoOpcao
                 command.Quantidade,
                 command.PremioUnitario,
                 command.Taxas);
+
+            opcao.AtualizarResultadoInformado(
+                command.ResultadoInformado);
 
             var situacao =
                 command.Situacao
