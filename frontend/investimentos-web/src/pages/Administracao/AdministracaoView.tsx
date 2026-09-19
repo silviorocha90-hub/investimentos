@@ -658,34 +658,59 @@ export function AdministracaoView({
                   .dataValorPatrimonial,
         })
       } else {
-        await atualizarAtivo(
-          modalAtivo
-            .ativo!.id,
-          {
-            nome,
+        const ativoAtualizado =
+          await atualizarAtivo(
+            modalAtivo
+              .ativo!.id,
+            {
+              nome,
 
-            tipoAtivoId:
-              Number(
-                formularioAtivo
-                  .tipoAtivoId,
-              ),
+              tipoAtivoId:
+                Number(
+                  formularioAtivo
+                    .tipoAtivoId,
+                ),
 
-            cotacao,
+              cotacao,
 
-            dataCotacao:
-              cotacao == null
-                ? null
-                : formularioAtivo
-                    .dataCotacao,
+              dataCotacao:
+                cotacao == null
+                  ? null
+                  : formularioAtivo
+                      .dataCotacao,
 
-            valorPatrimonial,
+              valorPatrimonial,
 
-            dataValorPatrimonial:
-              valorPatrimonial == null
-                ? null
-                : formularioAtivo
-                    .dataValorPatrimonial,
-          },
+              dataValorPatrimonial:
+                valorPatrimonial == null
+                  ? null
+                  : formularioAtivo
+                      .dataValorPatrimonial,
+            },
+          )
+
+        setDados(
+          (atual) =>
+            atual == null
+              ? atual
+              : {
+                  ...atual,
+                  ativos:
+                    atual.ativos.map(
+                      (ativo) =>
+                        ativo.id ===
+                        ativoAtualizado.id
+                          ? {
+                              ...ativo,
+                              ...ativoAtualizado,
+                              quantidade:
+                                ativo.quantidade,
+                              posicoesInvestidores:
+                                ativo.posicoesInvestidores,
+                            }
+                          : ativo,
+                    ),
+                },
         )
       }
 
