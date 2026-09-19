@@ -100,6 +100,11 @@ export function OperacoesView({
   ] = useState('TODOS')
 
   const [
+    tipoSelecionado,
+    setTipoSelecionado,
+  ] = useState('TODOS')
+
+  const [
     adicionandoOperacao,
     setAdicionandoOperacao,
   ] = useState(false)
@@ -153,16 +158,26 @@ export function OperacoesView({
   const operacoesFiltradas =
     useMemo(
       () =>
-        ativoSelecionado ===
-        'TODOS'
-          ? operacoes
-          : operacoes.filter(
-              (operacao) =>
-                operacao.ticker ===
-                ativoSelecionado,
+        operacoes.filter(
+          (operacao) =>
+            (
+              ativoSelecionado ===
+                'TODOS' ||
+              operacao.ticker ===
+                ativoSelecionado
+            ) &&
+            (
+              tipoSelecionado ===
+                'TODOS' ||
+              operacao.tipoOperacao
+                .trim()
+                .toUpperCase() ===
+                tipoSelecionado
             ),
+        ),
       [
         ativoSelecionado,
+        tipoSelecionado,
         operacoes,
       ],
     )
@@ -469,6 +484,35 @@ export function OperacoesView({
                     </option>
                   ),
                 )}
+              </select>
+            </label>
+
+            <label className="operations-asset-filter">
+              <span>
+                Tipo
+              </span>
+
+              <select
+                value={
+                  tipoSelecionado
+                }
+                onChange={(
+                  event,
+                ) =>
+                  setTipoSelecionado(
+                    event.target.value,
+                  )
+                }
+              >
+                <option value="TODOS">
+                  Todos
+                </option>
+                <option value="COMPRA">
+                  Compra
+                </option>
+                <option value="VENDA">
+                  Venda
+                </option>
               </select>
             </label>
 
