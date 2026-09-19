@@ -674,6 +674,64 @@ app.MapPost(
             new { desconto.Id });
     });
 
+app.MapPut(
+    "/api/descontos-fiscais/{id:guid}",
+    async (
+        Guid id,
+        AtualizarDescontoFiscalRequest request,
+        IDescontoFiscalRepository repository,
+        CancellationToken cancellationToken) =>
+    {
+        var desconto =
+            await repository.ObterPorIdAsync(
+                id,
+                cancellationToken);
+
+        if (desconto is null)
+        {
+            return Results.NotFound(
+                new { detail = "Imposto não encontrado." });
+        }
+
+        desconto.Atualizar(
+            "DARF",
+            request.DataPagamento,
+            request.Valor,
+            request.Descricao);
+
+        await repository.SalvarAlteracoesAsync(
+            cancellationToken);
+
+        return Results.NoContent();
+    });
+
+app.MapDelete(
+    "/api/descontos-fiscais/{id:guid}",
+    async (
+        Guid id,
+        IDescontoFiscalRepository repository,
+        CancellationToken cancellationToken) =>
+    {
+        var desconto =
+            await repository.ObterPorIdAsync(
+                id,
+                cancellationToken);
+
+        if (desconto is null)
+        {
+            return Results.NotFound(
+                new { detail = "Imposto não encontrado." });
+        }
+
+        repository.Excluir(
+            desconto);
+
+        await repository.SalvarAlteracoesAsync(
+            cancellationToken);
+
+        return Results.NoContent();
+    });
+
 app.MapGet(
     "/api/admin",
     async (
@@ -882,6 +940,11 @@ public record CadastrarProventoRequest(
 
 public record CadastrarDescontoFiscalRequest(
     string Tipo,
+    DateTime DataPagamento,
+    decimal Valor,
+    string? Descricao);
+
+public record AtualizarDescontoFiscalRequest(
     DateTime DataPagamento,
     decimal Valor,
     string? Descricao);
