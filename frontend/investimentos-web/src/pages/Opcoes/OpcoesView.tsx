@@ -608,7 +608,37 @@ export function OpcoesView({
           )
         }
 
-        window.location.reload()
+        const opcaoAtualizada =
+          await response.json() as OperacaoOpcao
+
+        setOpcaoEmEdicao(null)
+
+        /*
+         * Atualiza somente a opção na carteira em memória.
+         * Evita recarregar a aplicação inteira e, com isso,
+         * retornar da Administração para o Painel.
+         */
+        const carteiraAtual =
+          carteiras.find(
+            (item) =>
+              item.nome ===
+              selectedInvestor,
+          )
+
+        if (carteiraAtual) {
+          const indice =
+            carteiraAtual.dashboard.opcoes.findIndex(
+              (item) =>
+                item.id ===
+                opcaoAtualizada.id,
+            )
+
+          if (indice >= 0) {
+            carteiraAtual.dashboard.opcoes[
+              indice
+            ] = opcaoAtualizada
+          }
+        }
       } catch (error) {
         setErroOpcao(
           error instanceof Error
