@@ -68,6 +68,15 @@ export function ProventosView({
     modo === 'administracao'
 
   const [
+    investidoresComProventos,
+    setInvestidoresComProventos,
+  ] = useState<Investidor[]>(
+    modoAdministracao
+      ? [...investidores]
+      : [],
+  )
+
+  const [
     proventos,
     setProventos,
   ] = useState<Provento[]>(
@@ -189,6 +198,61 @@ export function ProventosView({
     void carregar()
   }, [
     investidor?.id,
+  ])
+
+  useEffect(() => {
+    if (modoAdministracao) {
+      setInvestidoresComProventos(
+        [...investidores],
+      )
+      return
+    }
+
+    let ativo = true
+
+    void Promise.all(
+      investidores.map(
+        async (item) => ({
+          investidor: item,
+          proventos:
+            await listarProventos(
+              item.id,
+            ),
+        }),
+      ),
+    ).then(
+      (resultados) => {
+        if (!ativo) {
+          return
+        }
+
+        setInvestidoresComProventos(
+          resultados
+            .filter(
+              (item) =>
+                item.proventos.length >
+                0,
+            )
+            .map(
+              (item) =>
+                item.investidor,
+            ),
+        )
+      },
+    ).catch(
+      (error) =>
+        console.error(
+          'Não foi possível filtrar investidores com proventos.',
+          error,
+        ),
+    )
+
+    return () => {
+      ativo = false
+    }
+  }, [
+    investidores,
+    modoAdministracao,
   ])
 
   useEffect(() => {
@@ -566,7 +630,7 @@ export function ProventosView({
             : 'Proventos'
         }
         investidores={
-          investidores
+          investidoresComProventos
         }
         selectedInvestor={
           selectedInvestor
