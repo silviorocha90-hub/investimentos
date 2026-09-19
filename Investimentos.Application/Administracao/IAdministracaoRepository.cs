@@ -13,5 +13,9 @@
             Guid ativoId,
             AtualizarAtivoAdministracaoRequest request,
             CancellationToken cancellationToken = default);
+
+        Task<bool> ExcluirAtivoAsync(
+            Guid ativoId,
+            CancellationToken cancellationToken = default);
     }
 }
