@@ -608,15 +608,10 @@ export function OpcoesView({
           )
         }
 
-        const opcaoAtualizada =
-          await response.json() as OperacaoOpcao
-
-        setOpcaoEmEdicao(null)
-
         /*
-         * Atualiza somente a opção na carteira em memória.
-         * Evita recarregar a aplicação inteira e, com isso,
-         * retornar da Administração para o Painel.
+         * O PUT retorna 204 No Content. Portanto não há JSON
+         * para desserializar aqui. Atualizamos a opção localmente
+         * com os mesmos dados que acabaram de ser persistidos.
          */
         const carteiraAtual =
           carteiras.find(
@@ -630,15 +625,22 @@ export function OpcoesView({
             carteiraAtual.dashboard.opcoes.findIndex(
               (item) =>
                 item.id ===
-                opcaoAtualizada.id,
+                opcao.id,
             )
 
           if (indice >= 0) {
             carteiraAtual.dashboard.opcoes[
               indice
-            ] = opcaoAtualizada
+            ] = {
+              ...carteiraAtual.dashboard.opcoes[
+                indice
+              ],
+              ...opcao,
+            }
           }
         }
+
+        setOpcaoEmEdicao(null)
       } catch (error) {
         setErroOpcao(
           error instanceof Error
