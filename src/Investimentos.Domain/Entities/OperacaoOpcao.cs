@@ -207,6 +207,13 @@
             Taxas = taxas;
         }
 
+        public void AtualizarResultadoInformado(
+            decimal? resultadoInformado)
+        {
+            ResultadoInformado =
+                resultadoInformado;
+        }
+
         public void Encerrar(
             DateTime dataFinalizacao,
             decimal precoRecompraUnitario)
