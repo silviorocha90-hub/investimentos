@@ -157,9 +157,13 @@ export function OpcoesView({
         ).filter(
           (opcao) =>
             opcao.situacao ===
+              'ABERTA' ||
+            opcao.situacao ===
               'EXECUTADA' ||
             opcao.situacao ===
-              'ENCERRADA',
+              'ENCERRADA' ||
+            opcao.situacao ===
+              'EXPIRADA',
         ),
       [carteira?.opcoes],
     )
