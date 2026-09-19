@@ -44,6 +44,9 @@ export async function obterAdministracao():
   const response =
     await fetch(
       `${apiUrl}/api/admin`,
+      {
+        cache: 'no-store',
+      },
     )
 
   if (!response.ok) {
