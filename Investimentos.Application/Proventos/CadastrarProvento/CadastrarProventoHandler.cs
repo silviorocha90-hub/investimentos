@@ -52,7 +52,7 @@ namespace Investimentos.Application.Proventos.CadastrarProvento
                     investidor,
                     ativo,
                     command.Tipo,
-                    null,
+                    command.Descricao,
                     command.DataCom,
                     command.DataPagamento,
                     command.QuantidadeBase,
