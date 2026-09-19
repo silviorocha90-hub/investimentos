@@ -54,6 +54,36 @@ export function AtivoModal({
   fechar,
   salvar,
 }: AtivoModalProps) {
+  const tipoSelecionado =
+    tipos.find(
+      (tipo) =>
+        String(tipo.id) ===
+        formularioAtivo.tipoAtivoId,
+    )
+
+  const tickerNormalizado =
+    formularioAtivo.ticker
+      .trim()
+      .toUpperCase()
+
+  const tipoNormalizado =
+    tipoSelecionado?.codigo
+      .trim()
+      .toUpperCase() ??
+    ''
+
+  const outroInvestimento =
+    tipoNormalizado ===
+      'PREVIDENCIA' ||
+    tipoNormalizado ===
+      'FMP' ||
+    tickerNormalizado.includes(
+      'CDB',
+    ) ||
+    tickerNormalizado.includes(
+      'ELETROBRAS',
+    )
+
   return (
     <div className="admin-modal-backdrop">
       <form
@@ -190,64 +220,82 @@ export function AtivoModal({
             </select>
           </label>
 
-          <label>
-            <span>
-              Cotação
-            </span>
+          {outroInvestimento ? (
+            <div className="admin-modal-info">
+              <span>
+                Valor do investimento
+              </span>
 
-            <input
-              type="number"
-              step="0.01"
-              min="0"
-              value={
-                formularioAtivo
-                  .cotacao
-              }
-              onChange={(
-                event,
-              ) =>
-                setFormularioAtivo(
-                  {
-                    ...formularioAtivo,
+              <strong>
+                Gerenciado pelas operações
+              </strong>
 
-                    cotacao:
-                      event
-                        .target
-                        .value,
-                  },
-                )
-              }
-              placeholder="0,00"
-            />
-          </label>
+              <small>
+                Este tipo é apresentado pelo valor total e não utiliza cotação.
+              </small>
+            </div>
+          ) : (
+            <>
+              <label>
+                <span>
+                  Cotação
+                </span>
 
-          <label>
-            <span>
-              Data Cotação
-            </span>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={
+                    formularioAtivo
+                      .cotacao
+                  }
+                  onChange={(
+                    event,
+                  ) =>
+                    setFormularioAtivo(
+                      {
+                        ...formularioAtivo,
 
-            <input
-              type="date"
-              value={
-                formularioAtivo
-                  .dataCotacao
-              }
-              onChange={(
-                event,
-              ) =>
-                setFormularioAtivo(
-                  {
-                    ...formularioAtivo,
+                        cotacao:
+                          event
+                            .target
+                            .value,
+                      },
+                    )
+                  }
+                  placeholder="0,00"
+                />
+              </label>
 
-                    dataCotacao:
-                      event
-                        .target
-                        .value,
-                  },
-                )
-              }
-            />
-          </label>
+              <label>
+                <span>
+                  Data Cotação
+                </span>
+
+                <input
+                  type="date"
+                  value={
+                    formularioAtivo
+                      .dataCotacao
+                  }
+                  onChange={(
+                    event,
+                  ) =>
+                    setFormularioAtivo(
+                      {
+                        ...formularioAtivo,
+
+                        dataCotacao:
+                          event
+                            .target
+                            .value,
+                      },
+                    )
+                  }
+                />
+              </label>
+            </>
+          )}
         </div>
 
         {erro ? (
