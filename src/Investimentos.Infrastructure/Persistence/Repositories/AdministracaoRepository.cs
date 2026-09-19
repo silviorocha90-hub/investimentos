@@ -64,6 +64,19 @@ namespace Investimentos.Infrastructure.Persistence.Repositories
                         x => x.DataReferencia)
                     .ToListAsync(cancellationToken);
 
+            var valoresPatrimoniaisBanco =
+                await _context.ValoresPatrimoniaisAtivos
+                    .AsNoTracking()
+                    .OrderByDescending(x => x.DataReferencia)
+                    .ToListAsync(cancellationToken);
+
+            var ultimoValorPatrimonialPorAtivo =
+                valoresPatrimoniaisBanco
+                    .GroupBy(x => x.AtivoId)
+                    .ToDictionary(
+                        x => x.Key,
+                        x => x.First());
+
             var investidoresBanco =
                 await _context.Investidores
                     .AsNoTracking()
@@ -281,7 +294,12 @@ namespace Investimentos.Infrastructure.Persistence.Repositories
                     posicoesInvestidores.Sum(
                         x => x.Quantidade);
 
+                ultimoValorPatrimonialPorAtivo.TryGetValue(
+                    ativo.Id,
+                    out var valorPatrimonial);
+
                 var valorAtual =
+                    valorPatrimonial?.Valor ??
                     posicoesInvestidores.Sum(
                         x => x.ValorAtual);
 
@@ -298,6 +316,8 @@ namespace Investimentos.Infrastructure.Persistence.Repositories
                         classeAtivo.Nome,
                         quantidade,
                         valorAtual,
+                        valorPatrimonial?.Valor,
+                        valorPatrimonial?.DataReferencia,
                         posicoesInvestidores,
                         cotacao?.Preco,
                         cotacao?.DataReferencia));
@@ -521,6 +541,20 @@ namespace Investimentos.Infrastructure.Persistence.Repositories
                     cotacao);
             }
 
+            ValorPatrimonialAtivo? valorPatrimonial = null;
+
+            if (request.ValorPatrimonial.HasValue)
+            {
+                valorPatrimonial =
+                    new ValorPatrimonialAtivo(
+                        ativo,
+                        (request.DataValorPatrimonial ?? DateTime.Today).Date,
+                        request.ValorPatrimonial.Value);
+
+                _context.ValoresPatrimoniaisAtivos.Add(
+                    valorPatrimonial);
+            }
+
             await _context.SaveChangesAsync(
                 cancellationToken);
 
@@ -535,7 +569,9 @@ namespace Investimentos.Infrastructure.Persistence.Repositories
                 classeAtivo.Codigo,
                 classeAtivo.Nome,
                 0,
-                0,
+                valorPatrimonial?.Valor ?? 0,
+                valorPatrimonial?.Valor,
+                valorPatrimonial?.DataReferencia,
                 Array.Empty<
                     PosicaoInvestidorAtivoAdministracaoDto>(),
                 cotacao?.Preco,
@@ -661,6 +697,49 @@ namespace Investimentos.Infrastructure.Persistence.Repositories
                         .FirstOrDefault();
             }
 
+            ValorPatrimonialAtivo? valorPatrimonial = null;
+
+            if (request.ValorPatrimonial.HasValue)
+            {
+                var dataValor =
+                    (request.DataValorPatrimonial ?? DateTime.Today).Date;
+
+                valorPatrimonial =
+                    await _context.ValoresPatrimoniaisAtivos
+                        .FirstOrDefaultAsync(
+                            x =>
+                                x.AtivoId == ativo.Id &&
+                                x.DataReferencia == dataValor,
+                            cancellationToken);
+
+                if (valorPatrimonial is null)
+                {
+                    valorPatrimonial =
+                        new ValorPatrimonialAtivo(
+                            ativo,
+                            dataValor,
+                            request.ValorPatrimonial.Value);
+
+                    _context.ValoresPatrimoniaisAtivos.Add(
+                        valorPatrimonial);
+                }
+                else
+                {
+                    valorPatrimonial.Atualizar(
+                        dataValor,
+                        request.ValorPatrimonial.Value);
+                }
+            }
+            else
+            {
+                valorPatrimonial =
+                    await _context.ValoresPatrimoniaisAtivos
+                        .AsNoTracking()
+                        .Where(x => x.AtivoId == ativo.Id)
+                        .OrderByDescending(x => x.DataReferencia)
+                        .FirstOrDefaultAsync(cancellationToken);
+            }
+
             await _context.SaveChangesAsync(
                 cancellationToken);
 
@@ -675,7 +754,9 @@ namespace Investimentos.Infrastructure.Persistence.Repositories
                 classeAtivo.Codigo,
                 classeAtivo.Nome,
                 0,
-                0,
+                valorPatrimonial?.Valor ?? 0,
+                valorPatrimonial?.Valor,
+                valorPatrimonial?.DataReferencia,
                 Array.Empty<
                     PosicaoInvestidorAtivoAdministracaoDto>(),
                 cotacao?.Preco,
