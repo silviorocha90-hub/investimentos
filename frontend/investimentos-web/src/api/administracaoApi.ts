@@ -108,6 +108,24 @@ export async function atualizarAtivo(
   return response.json()
 }
 
+export async function excluirAtivo(
+  id: string,
+): Promise<void> {
+  const response =
+    await fetch(
+      `${apiUrl}/api/admin/ativos/${id}`,
+      {
+        method: 'DELETE',
+      },
+    )
+
+  if (!response.ok) {
+    throw new Error(
+      await lerErro(response),
+    )
+  }
+}
+
 export async function atualizarInvestidor(
   id: string,
   request: AtualizarInvestidorAdministracao,
