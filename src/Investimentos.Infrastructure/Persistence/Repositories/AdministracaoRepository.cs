@@ -75,7 +75,12 @@ namespace Investimentos.Infrastructure.Persistence.Repositories
                     .GroupBy(x => x.AtivoId)
                     .ToDictionary(
                         x => x.Key,
-                        x => x.First());
+                        x => x
+                            .OrderByDescending(
+                                valor => valor.DataReferencia)
+                            .ThenByDescending(
+                                valor => valor.Id)
+                            .First());
 
             var investidoresBanco =
                 await _context.Investidores
