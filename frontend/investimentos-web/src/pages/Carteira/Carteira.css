@@ -18,6 +18,10 @@
   gap: 14px;
 }
 
+.carteira-page .portfolio-metrics .portfolio-metric strong {
+  color: var(--accent);
+}
+
 /* =========================================================
    PAINÉIS DE INVESTIMENTOS
    ========================================================= */
