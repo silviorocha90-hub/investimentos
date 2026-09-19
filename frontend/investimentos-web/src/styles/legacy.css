@@ -289,6 +289,36 @@ a {
   cursor: pointer;
 }
 
+/*
+ * Padrão visual dos filtros nas telas de consulta.
+ * Mantém rótulos e campos com a mesma escala entre
+ * Carteira, Opções, Proventos e demais visualizações.
+ */
+.portfolio-view .investor-select-label {
+  gap: 6px;
+  width: 210px;
+  min-width: 210px;
+  font-size: 0.67rem;
+  font-weight: 700;
+}
+
+.portfolio-view .investor-select-label select,
+.portfolio-view .options-filters select,
+.portfolio-view .proventos-filters input,
+.portfolio-view .proventos-filters select {
+  height: 38px;
+  min-height: 38px;
+  padding: 0 10px;
+  border-radius: 9px;
+  font-size: 0.74rem;
+}
+
+.portfolio-view .options-filters label > span,
+.portfolio-view .proventos-filters label > span {
+  font-size: 0.67rem;
+  font-weight: 700;
+}
+
 .portfolio-metrics {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
