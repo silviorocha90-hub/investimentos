@@ -225,7 +225,8 @@ namespace Investimentos.Infrastructure.Persistence.Repositories
                         new PosicaoInvestidorAtivoAdministracaoDto(
                             investidor.Id,
                             investidor.Nome,
-                            posicao.Quantidade));
+                            posicao.Quantidade,
+                            posicao.CustoTotal));
                 }
             }
 
@@ -280,6 +281,10 @@ namespace Investimentos.Infrastructure.Persistence.Repositories
                     posicoesInvestidores.Sum(
                         x => x.Quantidade);
 
+                var valorAtual =
+                    posicoesInvestidores.Sum(
+                        x => x.ValorAtual);
+
                 ativos.Add(
                     new AtivoAdministracaoDto(
                         ativo.Id,
@@ -292,6 +297,7 @@ namespace Investimentos.Infrastructure.Persistence.Repositories
                         classeAtivo.Codigo,
                         classeAtivo.Nome,
                         quantidade,
+                        valorAtual,
                         posicoesInvestidores,
                         cotacao?.Preco,
                         cotacao?.DataReferencia));
@@ -529,6 +535,7 @@ namespace Investimentos.Infrastructure.Persistence.Repositories
                 classeAtivo.Codigo,
                 classeAtivo.Nome,
                 0,
+                0,
                 Array.Empty<
                     PosicaoInvestidorAtivoAdministracaoDto>(),
                 cotacao?.Preco,
@@ -672,6 +679,68 @@ namespace Investimentos.Infrastructure.Persistence.Repositories
                     PosicaoInvestidorAtivoAdministracaoDto>(),
                 cotacao?.Preco,
                 cotacao?.DataReferencia);
+        }
+
+        public async Task<bool> ExcluirAtivoAsync(
+            Guid ativoId,
+            CancellationToken cancellationToken = default)
+        {
+            var ativo =
+                await _context.Ativos
+                    .FirstOrDefaultAsync(
+                        x => x.Id == ativoId,
+                        cancellationToken);
+
+            if (ativo is null)
+            {
+                return false;
+            }
+
+            var possuiOperacoes =
+                await _context.Operacoes
+                    .AnyAsync(
+                        x => x.AtivoId == ativoId,
+                        cancellationToken);
+
+            var possuiProventos =
+                await _context.Proventos
+                    .AnyAsync(
+                        x => x.AtivoId == ativoId,
+                        cancellationToken);
+
+            var possuiOpcoes =
+                await _context.OperacoesOpcoes
+                    .AnyAsync(
+                        x => x.AtivoId == ativoId,
+                        cancellationToken);
+
+            if (
+                possuiOperacoes ||
+                possuiProventos ||
+                possuiOpcoes)
+            {
+                throw new InvalidOperationException(
+                    "O ativo possui histórico de operações, proventos ou opções e não pode ser excluído.");
+            }
+
+            var cotacoes =
+                await _context.CotacoesAtivos
+                    .Where(x => x.AtivoId == ativoId)
+                    .ToListAsync(cancellationToken);
+
+            if (cotacoes.Count > 0)
+            {
+                _context.CotacoesAtivos.RemoveRange(
+                    cotacoes);
+            }
+
+            _context.Ativos.Remove(
+                ativo);
+
+            await _context.SaveChangesAsync(
+                cancellationToken);
+
+            return true;
         }
     }
 }
