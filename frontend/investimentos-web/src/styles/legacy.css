@@ -2804,3 +2804,19 @@ a {
   background: var(--border);
   opacity: 0.7;
 }
+
+/* Destaque padronizado dos indicadores das telas de visualização */
+.portfolio-view .portfolio-metrics .portfolio-metric {
+  border-color: rgba(99, 230, 200, 0.24);
+  background: rgba(99, 230, 200, 0.08);
+}
+
+.portfolio-view .portfolio-metrics .portfolio-metric strong,
+.portfolio-view .options-summary-card strong {
+  color: var(--accent);
+}
+
+.portfolio-view .options-summary-card {
+  border-color: rgba(99, 230, 200, 0.24);
+  background: rgba(99, 230, 200, 0.08);
+}
