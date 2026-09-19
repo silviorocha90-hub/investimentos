@@ -675,6 +675,7 @@ namespace Investimentos.Infrastructure.Persistence.Repositories
                 classeAtivo.Codigo,
                 classeAtivo.Nome,
                 0,
+                0,
                 Array.Empty<
                     PosicaoInvestidorAtivoAdministracaoDto>(),
                 cotacao?.Preco,
