@@ -18,6 +18,7 @@ export interface Provento {
   id: string
   ticker: string
   tipo: string
+  descricao?: string | null
   dataCom?: string | null
   dataPagamento: string
   quantidadeBase: number
