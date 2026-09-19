@@ -409,16 +409,16 @@ export function AdministracaoView({
         hoje,
 
       valorPatrimonial:
-        ativo.valorPatrimonialAtual == null
-          ? ''
-          : ativo.valorPatrimonialAtual
-              .toLocaleString(
-                'pt-BR',
-                {
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2,
-                },
-              ),
+        (
+          ativo.valorPatrimonialAtual ??
+          ativo.valorAtual
+        ).toLocaleString(
+          'pt-BR',
+          {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          },
+        ),
 
       dataValorPatrimonial:
         hoje,
