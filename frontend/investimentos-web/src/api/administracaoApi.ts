@@ -267,3 +267,106 @@ export async function excluirDescontoFiscal(
     )
   }
 }
+
+
+export interface AtualizarParametroAdministracao {
+  codigo: string
+  nome: string
+  ativo: boolean
+}
+
+export interface AtualizarTipoAtivoParametroAdministracao
+  extends AtualizarParametroAdministracao {
+  classeAtivoId: number
+}
+
+async function enviarParametro(
+  url: string,
+  method: 'PUT' | 'DELETE',
+  body?: unknown,
+): Promise<void> {
+  const response =
+    await fetch(
+      `${apiUrl}${url}`,
+      {
+        method,
+        headers:
+          body === undefined
+            ? undefined
+            : {
+                'Content-Type':
+                  'application/json',
+              },
+        body:
+          body === undefined
+            ? undefined
+            : JSON.stringify(body),
+      },
+    )
+
+  if (!response.ok) {
+    throw new Error(
+      await lerErro(response),
+    )
+  }
+}
+
+export function atualizarClasseAtivo(
+  id: number,
+  request: AtualizarParametroAdministracao,
+) {
+  return enviarParametro(
+    `/api/admin/classes-ativo/${id}`,
+    'PUT',
+    request,
+  )
+}
+
+export function excluirClasseAtivo(
+  id: number,
+) {
+  return enviarParametro(
+    `/api/admin/classes-ativo/${id}`,
+    'DELETE',
+  )
+}
+
+export function atualizarTipoAtivoParametro(
+  id: number,
+  request: AtualizarTipoAtivoParametroAdministracao,
+) {
+  return enviarParametro(
+    `/api/admin/tipos-ativo/${id}`,
+    'PUT',
+    request,
+  )
+}
+
+export function excluirTipoAtivoParametro(
+  id: number,
+) {
+  return enviarParametro(
+    `/api/admin/tipos-ativo/${id}`,
+    'DELETE',
+  )
+}
+
+export function atualizarTipoOperacaoParametro(
+  id: number,
+  request: AtualizarParametroAdministracao,
+) {
+  return enviarParametro(
+    `/api/admin/tipos-operacao/${id}`,
+    'PUT',
+    request,
+  )
+}
+
+export function excluirTipoOperacaoParametro(
+  id: number,
+) {
+  return enviarParametro(
+    `/api/admin/tipos-operacao/${id}`,
+    'DELETE',
+  )
+}
