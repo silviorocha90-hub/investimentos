@@ -179,10 +179,11 @@ export function ProventosTabela({
 
                   {modoAdministracao ? (
                     <td>
-                      <div className="provento-actions">
+                      <div className="admin-row-actions">
                         {onEditar ? (
                           <button
                             type="button"
+                            className="admin-action"
                             onClick={() =>
                               onEditar(
                                 item,
@@ -196,7 +197,7 @@ export function ProventosTabela({
                         {onExcluir ? (
                           <button
                             type="button"
-                            className="danger"
+                            className="admin-action admin-action-danger"
                             onClick={() =>
                               onExcluir(
                                 item,
