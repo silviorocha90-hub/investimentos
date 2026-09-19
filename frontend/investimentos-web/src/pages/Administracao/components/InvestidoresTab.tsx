@@ -62,6 +62,49 @@ interface ModalHistoricoState {
     HistoricoPatrimonioAdministracao
 }
 
+function formatarEntradaMoeda(
+  texto: string,
+) {
+  const digitos =
+    texto.replace(/\D/g, '')
+
+  if (!digitos) {
+    return ''
+  }
+
+  return (
+    Number(digitos) / 100
+  ).toLocaleString(
+    'pt-BR',
+    {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    },
+  )
+}
+
+function formatarValorParaEntrada(
+  valor: number,
+) {
+  return valor.toLocaleString(
+    'pt-BR',
+    {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    },
+  )
+}
+
+function converterMoedaParaNumero(
+  texto: string,
+) {
+  return Number(
+    texto
+      .replace(/\./g, '')
+      .replace(',', '.'),
+  )
+}
+
 export function InvestidoresTab({
   dados,
   investidorSelecionadoId,
@@ -131,7 +174,7 @@ export function InvestidoresTab({
     }
 
     setSaldoDisponivel(
-      String(
+      formatarValorParaEntrada(
         investidorSelecionado
           .saldoDisponivel ??
           0,
@@ -158,9 +201,8 @@ export function InvestidoresTab({
     }
 
     const saldo =
-      Number(
-        saldoDisponivel
-          .replace(',', '.'),
+      converterMoedaParaNumero(
+        saldoDisponivel,
       )
 
     if (
@@ -232,7 +274,7 @@ export function InvestidoresTab({
           .slice(0, 10),
 
       valorCarteira:
-        String(
+        formatarValorParaEntrada(
           historico
             .valorCarteira,
         ),
@@ -271,10 +313,9 @@ export function InvestidoresTab({
     }
 
     const valor =
-      Number(
+      converterMoedaParaNumero(
         formularioHistorico
-          .valorCarteira
-          .replace(',', '.'),
+          .valorCarteira,
       )
 
     if (
@@ -495,8 +536,8 @@ export function InvestidoresTab({
                 </span>
 
                 <input
-                  type="number"
-                  step="0.01"
+                  type="text"
+                  inputMode="decimal"
                   value={
                     saldoDisponivel
                   }
@@ -504,9 +545,9 @@ export function InvestidoresTab({
                     event,
                   ) =>
                     setSaldoDisponivel(
-                      event
-                        .target
-                        .value,
+                      formatarEntradaMoeda(
+                        event.target.value,
+                      ),
                     )
                   }
                 />
@@ -602,31 +643,31 @@ export function InvestidoresTab({
                             </td>
 
                             <td>
-                              <button
-                                type="button"
-                                className="admin-action"
-                                onClick={() =>
-                                  abrirEditarHistorico(
-                                    historico,
-                                  )
-                                }
-                              >
-                                Editar
-                              </button>
+                              <div className="admin-row-actions">
+                                <button
+                                  type="button"
+                                  className="admin-action"
+                                  onClick={() =>
+                                    abrirEditarHistorico(
+                                      historico,
+                                    )
+                                  }
+                                >
+                                  Editar
+                                </button>
 
-                              {' '}
-
-                              <button
-                                type="button"
-                                className="admin-action"
-                                onClick={() =>
-                                  excluirHistorico(
-                                    historico,
-                                  )
-                                }
-                              >
-                                Excluir
-                              </button>
+                                <button
+                                  type="button"
+                                  className="admin-action admin-action-danger"
+                                  onClick={() =>
+                                    excluirHistorico(
+                                      historico,
+                                    )
+                                  }
+                                >
+                                  Excluir
+                                </button>
+                              </div>
                             </td>
                           </tr>
                         ),
@@ -709,9 +750,8 @@ export function InvestidoresTab({
                 </span>
 
                 <input
-                  type="number"
-                  step="0.01"
-                  min="0"
+                  type="text"
+                  inputMode="decimal"
                   value={
                     formularioHistorico
                       .valorCarteira
@@ -723,9 +763,9 @@ export function InvestidoresTab({
                       {
                         ...formularioHistorico,
                         valorCarteira:
-                          event
-                            .target
-                            .value,
+                          formatarEntradaMoeda(
+                            event.target.value,
+                          ),
                       },
                     )
                   }
