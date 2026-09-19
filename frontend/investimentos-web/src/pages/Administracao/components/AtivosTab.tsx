@@ -342,6 +342,21 @@ export function AtivosTab({
   function obterValorAtual(
     ativo: AtivoAdministracao,
   ) {
+    /*
+     * Outros investimentos possuem valor patrimonial manual.
+     * Esse é o valor corrente do ativo e deve prevalecer sobre
+     * o custo calculado pelas operações, inclusive quando um
+     * investidor específico estiver selecionado.
+     */
+    if (
+      ehOutroInvestimento(
+        ativo,
+      ) &&
+      ativo.valorPatrimonialAtual != null
+    ) {
+      return ativo.valorPatrimonialAtual
+    }
+
     if (
       filtroInvestidor ===
       'TODOS'
