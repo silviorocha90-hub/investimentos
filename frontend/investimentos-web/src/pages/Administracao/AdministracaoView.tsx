@@ -11,6 +11,7 @@ import type {
 import {
   atualizarAtivo,
   criarAtivo,
+  excluirAtivo,
   obterAdministracao,
 } from '../../api/administracaoApi'
 
@@ -181,6 +182,14 @@ export function AdministracaoView({
     useState<
       string | null
     >(null)
+
+  const [
+    filtroInvestidor,
+    setFiltroInvestidor,
+  ] =
+    useState(
+      'TODOS',
+    )
 
   const [
     filtroAtivo,
@@ -385,12 +394,7 @@ export function AdministracaoView({
             ),
 
       dataCotacao:
-        ativo.dataCotacao
-          ? ativo.dataCotacao.slice(
-              0,
-              10,
-            )
-          : hoje,
+        hoje,
     })
 
     setErro(
@@ -403,6 +407,46 @@ export function AdministracaoView({
 
       ativo,
     })
+  }
+
+  async function excluirAtivoSelecionado(
+    ativo:
+      AtivoAdministracao,
+  ) {
+    const confirmado =
+      window.confirm(
+        `Excluir o ativo ${ativo.ticker}? Esta ação só será permitida se ele não possuir histórico de operações, proventos ou opções.`,
+      )
+
+    if (!confirmado) {
+      return
+    }
+
+    try {
+      setSalvando(
+        true,
+      )
+
+      setErro(
+        null,
+      )
+
+      await excluirAtivo(
+        ativo.id,
+      )
+
+      await carregar()
+    } catch (error) {
+      setErro(
+        error instanceof Error
+          ? error.message
+          : 'Não foi possível excluir o ativo.',
+      )
+    } finally {
+      setSalvando(
+        false,
+      )
+    }
   }
 
   function fecharModalAtivo() {
@@ -747,6 +791,9 @@ export function AdministracaoView({
           erro={
             erro
           }
+          filtroInvestidor={
+            filtroInvestidor
+          }
           filtroAtivo={
             filtroAtivo
           }
@@ -758,6 +805,9 @@ export function AdministracaoView({
           }
           pagina={
             pagina
+          }
+          setFiltroInvestidor={
+            setFiltroInvestidor
           }
           setFiltroAtivo={
             setFiltroAtivo
@@ -776,6 +826,12 @@ export function AdministracaoView({
           }
           abrirEditarAtivo={
             abrirEditarAtivo
+          }
+          excluirAtivo={
+            excluirAtivoSelecionado
+          }
+          excluindo={
+            salvando
           }
         />
       ) : null}
