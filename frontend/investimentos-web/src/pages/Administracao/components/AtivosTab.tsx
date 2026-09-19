@@ -21,11 +21,15 @@ interface AtivosTabProps {
   dados: Administracao
   erro: string | null
 
+  filtroInvestidor: string
   filtroAtivo: string
   filtroClasse: string
   filtroTipo: string
 
   pagina: number
+
+  setFiltroInvestidor:
+    Dispatch<SetStateAction<string>>
 
   setFiltroAtivo:
     Dispatch<SetStateAction<string>>
@@ -45,18 +49,66 @@ interface AtivosTabProps {
     (
       ativo: AtivoAdministracao,
     ) => void
+
+  excluirAtivo:
+    (
+      ativo: AtivoAdministracao,
+    ) => Promise<void>
+
+  excluindo: boolean
+}
+
+function ehOutroInvestimento(
+  ativo: AtivoAdministracao,
+) {
+  const ticker =
+    ativo.ticker
+      .trim()
+      .toUpperCase()
+
+  const tipo =
+    ativo.tipoAtivoCodigo
+      .trim()
+      .toUpperCase()
+
+  if (tipo === 'PREVIDENCIA') {
+    return true
+  }
+
+  if (
+    ticker === 'CDB NEON' ||
+    ticker === 'CDB BTG' ||
+    ticker === 'FMP ELETROBRAS'
+  ) {
+    return true
+  }
+
+  return (
+    ticker.includes(
+      'FMP ELETROBRAS',
+    ) ||
+    ticker.includes(
+      'ELETROBRAS',
+    ) ||
+    ticker.includes(
+      'CDB',
+    ) ||
+    tipo === 'FMP'
+  )
 }
 
 export function AtivosTab({
   dados,
   erro,
 
+  filtroInvestidor,
   filtroAtivo,
   filtroClasse,
   filtroTipo,
 
   pagina,
 
+  setFiltroInvestidor,
   setFiltroAtivo,
   setFiltroClasse,
   setFiltroTipo,
@@ -64,38 +116,49 @@ export function AtivosTab({
 
   abrirNovoAtivo,
   abrirEditarAtivo,
+  excluirAtivo,
+  excluindo,
 }: AtivosTabProps) {
   const itensPorPagina = 12
 
-  /*
-   * Somente ativos que fazem parte
-   * efetivamente da carteira.
-   */
-  const ativosComPosicao =
+  const investidoresDisponiveis =
+    useMemo(
+      () =>
+        dados.investidores
+          .slice()
+          .sort(
+            (a, b) =>
+              a.nome.localeCompare(
+                b.nome,
+                'pt-BR',
+              ),
+          ),
+      [dados.investidores],
+    )
+
+  const ativosDoInvestidor =
     useMemo(
       () =>
         dados.ativos.filter(
           (ativo) =>
+            filtroInvestidor ===
+              'TODOS' ||
             ativo
               .posicoesInvestidores
               .some(
                 (posicao) =>
+                  posicao.investidorId ===
+                    filtroInvestidor &&
                   posicao.quantidade >
-                  0,
+                    0,
               ),
         ),
-      [dados.ativos],
+      [
+        dados.ativos,
+        filtroInvestidor,
+      ],
     )
 
-  /*
-   * CLASSES
-   *
-   * Primeiro nível do filtro.
-   *
-   * Exibimos somente classes ativas
-   * que possuem pelo menos um ativo
-   * presente na carteira.
-   */
   const classesDisponiveis =
     useMemo(
       () =>
@@ -103,7 +166,7 @@ export function AtivosTab({
           .filter(
             (classe) =>
               classe.ativo &&
-              ativosComPosicao.some(
+              ativosDoInvestidor.some(
                 (ativo) =>
                   ativo.classeAtivoId ===
                   classe.id,
@@ -119,21 +182,10 @@ export function AtivosTab({
           ),
       [
         dados.classesAtivo,
-        ativosComPosicao,
+        ativosDoInvestidor,
       ],
     )
 
-  /*
-   * TIPOS
-   *
-   * Segundo nível.
-   *
-   * Só existem opções quando uma
-   * classe foi selecionada.
-   *
-   * Também eliminamos tipos que não
-   * possuem nenhum ativo na carteira.
-   */
   const tiposDisponiveis =
     useMemo(() => {
       if (
@@ -151,14 +203,10 @@ export function AtivosTab({
               tipo.classeAtivoId,
             ) ===
               filtroClasse &&
-            ativosComPosicao.some(
+            ativosDoInvestidor.some(
               (ativo) =>
                 ativo.tipoAtivoId ===
-                tipo.id &&
-                String(
-                  ativo.classeAtivoId,
-                ) ===
-                  filtroClasse,
+                  tipo.id,
             ),
         )
         .slice()
@@ -171,19 +219,10 @@ export function AtivosTab({
         )
     }, [
       dados.tiposAtivo,
-      ativosComPosicao,
+      ativosDoInvestidor,
       filtroClasse,
     ])
 
-  /*
-   * ATIVOS
-   *
-   * Terceiro nível.
-   *
-   * Somente ativos pertencentes
-   * simultaneamente à Classe e ao
-   * Tipo selecionados.
-   */
   const ativosDisponiveis =
     useMemo(() => {
       if (
@@ -195,7 +234,7 @@ export function AtivosTab({
         return []
       }
 
-      return ativosComPosicao
+      return ativosDoInvestidor
         .filter(
           (ativo) =>
             String(
@@ -216,23 +255,15 @@ export function AtivosTab({
             ),
         )
     }, [
-      ativosComPosicao,
+      ativosDoInvestidor,
       filtroClasse,
       filtroTipo,
     ])
 
-  /*
-   * Resultado apresentado na tabela.
-   *
-   * Os filtros são aplicados
-   * hierarquicamente:
-   *
-   * Classe -> Tipo -> Ativo
-   */
   const ativosFiltrados =
     useMemo(
       () =>
-        ativosComPosicao.filter(
+        ativosDoInvestidor.filter(
           (ativo) =>
             (
               filtroClasse ===
@@ -258,7 +289,7 @@ export function AtivosTab({
             ),
         ),
       [
-        ativosComPosicao,
+        ativosDoInvestidor,
         filtroClasse,
         filtroTipo,
         filtroAtivo,
@@ -291,12 +322,67 @@ export function AtivosTab({
         itensPorPagina,
     )
 
-  /*
-   * Mudança de Classe.
-   *
-   * Tipo e Ativo deixam de ser
-   * válidos e precisam ser zerados.
-   */
+  const rendaVariavel =
+    ativosPagina.filter(
+      (ativo) =>
+        !ehOutroInvestimento(
+          ativo,
+        ),
+    )
+
+  const outrosInvestimentos =
+    ativosPagina.filter(
+      (ativo) =>
+        ehOutroInvestimento(
+          ativo,
+        ),
+    )
+
+  function obterValorAtual(
+    ativo: AtivoAdministracao,
+  ) {
+    if (
+      filtroInvestidor ===
+      'TODOS'
+    ) {
+      return ativo.valorAtual
+    }
+
+    return (
+      ativo
+        .posicoesInvestidores
+        .find(
+          (posicao) =>
+            posicao.investidorId ===
+            filtroInvestidor,
+        )
+        ?.valorAtual ??
+      0
+    )
+  }
+
+  function alterarInvestidor(
+    investidorId: string,
+  ) {
+    setFiltroInvestidor(
+      investidorId,
+    )
+
+    setFiltroClasse(
+      'TODOS',
+    )
+
+    setFiltroTipo(
+      'TODOS',
+    )
+
+    setFiltroAtivo(
+      'TODOS',
+    )
+
+    setPagina(1)
+  }
+
   function alterarClasse(
     classeId: string,
   ) {
@@ -315,12 +401,6 @@ export function AtivosTab({
     setPagina(1)
   }
 
-  /*
-   * Mudança de Tipo.
-   *
-   * O ativo anteriormente escolhido
-   * pode não pertencer ao novo tipo.
-   */
   function alterarTipo(
     tipoId: string,
   ) {
@@ -346,6 +426,10 @@ export function AtivosTab({
   }
 
   function limparFiltros() {
+    setFiltroInvestidor(
+      'TODOS',
+    )
+
     setFiltroClasse(
       'TODOS',
     )
@@ -359,6 +443,44 @@ export function AtivosTab({
     )
 
     setPagina(1)
+  }
+
+  function renderAcoes(
+    ativo: AtivoAdministracao,
+  ) {
+    return (
+      <div className="admin-row-actions">
+        <button
+          type="button"
+          className="admin-action"
+          onClick={() =>
+            abrirEditarAtivo(
+              ativo,
+            )
+          }
+          disabled={
+            excluindo
+          }
+        >
+          Editar
+        </button>
+
+        <button
+          type="button"
+          className="admin-action admin-action-danger"
+          onClick={() =>
+            void excluirAtivo(
+              ativo,
+            )
+          }
+          disabled={
+            excluindo
+          }
+        >
+          Excluir
+        </button>
+      </div>
+    )
   }
 
   return (
@@ -380,7 +502,46 @@ export function AtivosTab({
       </div>
 
       <div className="admin-asset-filters">
-        {/* CLASSE */}
+        <label>
+          <span>
+            Investidor
+          </span>
+
+          <select
+            value={
+              filtroInvestidor
+            }
+            onChange={(
+              event,
+            ) =>
+              alterarInvestidor(
+                event.target.value,
+              )
+            }
+          >
+            <option value="TODOS">
+              Todos
+            </option>
+
+            {investidoresDisponiveis.map(
+              (investidor) => (
+                <option
+                  key={
+                    investidor.id
+                  }
+                  value={
+                    investidor.id
+                  }
+                >
+                  {
+                    investidor.nome
+                  }
+                </option>
+              ),
+            )}
+          </select>
+        </label>
+
         <label>
           <span>
             Classe
@@ -421,7 +582,6 @@ export function AtivosTab({
           </select>
         </label>
 
-        {/* TIPO */}
         <label>
           <span>
             Tipo
@@ -466,7 +626,6 @@ export function AtivosTab({
           </select>
         </label>
 
-        {/* ATIVO */}
         <label>
           <span>
             Ativo
@@ -520,6 +679,8 @@ export function AtivosTab({
             limparFiltros
           }
           disabled={
+            filtroInvestidor ===
+              'TODOS' &&
             filtroClasse ===
               'TODOS' &&
             filtroTipo ===
@@ -538,116 +699,176 @@ export function AtivosTab({
         </div>
       ) : null}
 
-      <div className="admin-table-wrap">
-        <table className="data-table admin-table admin-assets-table">
-          <thead>
-            <tr>
-              <th>
-                Ativo
-              </th>
+      <div className="admin-asset-section">
+        <div className="admin-asset-section-title">
+          <strong>
+            Renda Variável
+          </strong>
 
-              <th>
-                Classe
-              </th>
+          <span>
+            Ações, FIIs e ativos com cotação de mercado
+          </span>
+        </div>
 
-              <th>
-                Tipo
-              </th>
+        <div className="admin-table-wrap">
+          <table className="data-table admin-table admin-assets-table">
+            <thead>
+              <tr>
+                <th>Ativo</th>
+                <th>Classe</th>
+                <th>Tipo</th>
+                <th>Cotação</th>
+                <th>Data Cotação</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
 
-              <th>
-                Cotação
-              </th>
+            <tbody>
+              {rendaVariavel.map(
+                (ativo) => (
+                  <tr
+                    key={
+                      ativo.id
+                    }
+                  >
+                    <td>
+                      <span className="ticker">
+                        {
+                          ativo.ticker
+                        }
+                      </span>
+                    </td>
 
-              <th>
-                Data Cotação
-              </th>
-
-              <th>
-                Ações
-              </th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {ativosPagina.map(
-              (ativo) => (
-                <tr
-                  key={
-                    ativo.id
-                  }
-                >
-                  <td>
-                    <span className="ticker">
+                    <td>
                       {
-                        ativo.ticker
+                        ativo.classeAtivoNome
                       }
-                    </span>
-                  </td>
+                    </td>
 
-                  <td>
-                    {
-                      ativo
-                        .classeAtivoNome
-                    }
-                  </td>
-
-                  <td>
-                    {
-                      ativo
-                        .tipoAtivoNome
-                    }
-                  </td>
-
-                  <td>
-                    {ativo
-                      .cotacaoAtual ==
-                    null
-                      ? '—'
-                      : formatarMoeda(
-                          ativo
-                            .cotacaoAtual,
-                        )}
-                  </td>
-
-                  <td>
-                    {ativo
-                      .dataCotacao
-                      ? formatarDataCurta(
-                          ativo
-                            .dataCotacao,
-                        )
-                      : '—'}
-                  </td>
-
-                  <td>
-                    <button
-                      type="button"
-                      className="admin-action"
-                      onClick={() =>
-                        abrirEditarAtivo(
-                          ativo,
-                        )
+                    <td>
+                      {
+                        ativo.tipoAtivoNome
                       }
-                    >
-                      Editar
-                    </button>
+                    </td>
+
+                    <td>
+                      {ativo.cotacaoAtual ==
+                      null
+                        ? '—'
+                        : formatarMoeda(
+                            ativo.cotacaoAtual,
+                          )}
+                    </td>
+
+                    <td>
+                      {ativo.dataCotacao
+                        ? formatarDataCurta(
+                            ativo.dataCotacao,
+                          )
+                        : '—'}
+                    </td>
+
+                    <td>
+                      {renderAcoes(
+                        ativo,
+                      )}
+                    </td>
+                  </tr>
+                ),
+              )}
+
+              {rendaVariavel.length ===
+              0 ? (
+                <tr>
+                  <td colSpan={6}>
+                    Nenhum ativo de renda variável encontrado.
                   </td>
                 </tr>
-              ),
-            )}
+              ) : null}
+            </tbody>
+          </table>
+        </div>
+      </div>
 
-            {ativosPagina.length ===
-            0 ? (
+      <div className="admin-asset-section">
+        <div className="admin-asset-section-title">
+          <strong>
+            Outros Investimentos
+          </strong>
+
+          <span>
+            Renda fixa, FMP e previdência pelo valor total
+          </span>
+        </div>
+
+        <div className="admin-table-wrap">
+          <table className="data-table admin-table admin-assets-table admin-other-assets-table">
+            <thead>
               <tr>
-                <td colSpan={6}>
-                  Nenhum ativo encontrado
-                  para os filtros
-                  selecionados.
-                </td>
+                <th>Investimento</th>
+                <th>Classe</th>
+                <th>Tipo</th>
+                <th>Valor Total</th>
+                <th>Ações</th>
               </tr>
-            ) : null}
-          </tbody>
-        </table>
+            </thead>
+
+            <tbody>
+              {outrosInvestimentos.map(
+                (ativo) => (
+                  <tr
+                    key={
+                      ativo.id
+                    }
+                  >
+                    <td>
+                      <span className="ticker">
+                        {
+                          ativo.ticker
+                        }
+                      </span>
+                    </td>
+
+                    <td>
+                      {
+                        ativo.classeAtivoNome
+                      }
+                    </td>
+
+                    <td>
+                      {
+                        ativo.tipoAtivoNome
+                      }
+                    </td>
+
+                    <td>
+                      {formatarMoeda(
+                        obterValorAtual(
+                          ativo,
+                        ),
+                      )}
+                    </td>
+
+                    <td>
+                      {renderAcoes(
+                        ativo,
+                      )}
+                    </td>
+                  </tr>
+                ),
+              )}
+
+              {outrosInvestimentos.length ===
+              0 ? (
+                <tr>
+                  <td colSpan={5}>
+                    Nenhum outro investimento encontrado.
+                  </td>
+                </tr>
+              ) : null}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       <Pagination
