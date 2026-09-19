@@ -20,6 +20,8 @@
         string ClasseAtivoNome,
         decimal Quantidade,
         decimal ValorAtual,
+        decimal? ValorPatrimonialAtual,
+        DateTime? DataValorPatrimonial,
         IReadOnlyList<PosicaoInvestidorAtivoAdministracaoDto>
             PosicoesInvestidores,
         decimal? CotacaoAtual,
@@ -79,11 +81,15 @@
         string Nome,
         int TipoAtivoId,
         decimal? Cotacao,
-        DateTime? DataCotacao);
+        DateTime? DataCotacao,
+        decimal? ValorPatrimonial,
+        DateTime? DataValorPatrimonial);
 
     public record AtualizarAtivoAdministracaoRequest(
         string Nome,
         int TipoAtivoId,
         decimal? Cotacao,
-        DateTime? DataCotacao);
+        DateTime? DataCotacao,
+        decimal? ValorPatrimonial,
+        DateTime? DataValorPatrimonial);
 }
