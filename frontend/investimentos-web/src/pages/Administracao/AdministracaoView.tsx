@@ -496,7 +496,38 @@ export function AdministracaoView({
       return
     }
 
+    const tipoSelecionado =
+      tiposAtivos.find(
+        (tipo) =>
+          String(tipo.id) ===
+          formularioAtivo.tipoAtivoId,
+      )
+
+    const tickerNormalizado =
+      formularioAtivo.ticker
+        .trim()
+        .toUpperCase()
+
+    const tipoNormalizado =
+      tipoSelecionado?.codigo
+        .trim()
+        .toUpperCase() ??
+      ''
+
+    const outroInvestimento =
+      tipoNormalizado ===
+        'PREVIDENCIA' ||
+      tipoNormalizado ===
+        'FMP' ||
+      tickerNormalizado.includes(
+        'CDB',
+      ) ||
+      tickerNormalizado.includes(
+        'ELETROBRAS',
+      )
+
     const cotacao =
+      outroInvestimento ||
       formularioAtivo
         .cotacao
         .trim() === ''
