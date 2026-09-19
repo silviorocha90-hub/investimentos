@@ -682,6 +682,175 @@ namespace Investimentos.Infrastructure.Persistence.Repositories
                 cotacao?.DataReferencia);
         }
 
+        public async Task<bool> AtualizarClasseAtivoAsync(
+            int id,
+            string codigo,
+            string nome,
+            bool ativo,
+            CancellationToken cancellationToken = default)
+        {
+            var item =
+                await _context.ClassesAtivos
+                    .FirstOrDefaultAsync(
+                        x => x.Id == id,
+                        cancellationToken);
+
+            if (item is null)
+                return false;
+
+            item.Atualizar(
+                codigo,
+                nome,
+                ativo);
+
+            await _context.SaveChangesAsync(
+                cancellationToken);
+
+            return true;
+        }
+
+        public async Task<bool> ExcluirClasseAtivoAsync(
+            int id,
+            CancellationToken cancellationToken = default)
+        {
+            var item =
+                await _context.ClassesAtivos
+                    .FirstOrDefaultAsync(
+                        x => x.Id == id,
+                        cancellationToken);
+
+            if (item is null)
+                return false;
+
+            if (await _context.TiposAtivos.AnyAsync(
+                    x => x.ClasseAtivoId == id,
+                    cancellationToken))
+            {
+                throw new InvalidOperationException(
+                    "A classe possui tipos de ativo vinculados e não pode ser excluída.");
+            }
+
+            _context.ClassesAtivos.Remove(item);
+            await _context.SaveChangesAsync(cancellationToken);
+            return true;
+        }
+
+        public async Task<bool> AtualizarTipoAtivoAsync(
+            int id,
+            string codigo,
+            string nome,
+            int classeAtivoId,
+            bool ativo,
+            CancellationToken cancellationToken = default)
+        {
+            var item =
+                await _context.TiposAtivos
+                    .FirstOrDefaultAsync(
+                        x => x.Id == id,
+                        cancellationToken);
+
+            if (item is null)
+                return false;
+
+            var classe =
+                await _context.ClassesAtivos
+                    .FirstOrDefaultAsync(
+                        x => x.Id == classeAtivoId,
+                        cancellationToken);
+
+            if (classe is null)
+            {
+                throw new ArgumentException(
+                    "Classe de ativo não encontrada.");
+            }
+
+            item.Atualizar(
+                codigo,
+                nome,
+                ativo,
+                classe);
+
+            await _context.SaveChangesAsync(cancellationToken);
+            return true;
+        }
+
+        public async Task<bool> ExcluirTipoAtivoAsync(
+            int id,
+            CancellationToken cancellationToken = default)
+        {
+            var item =
+                await _context.TiposAtivos
+                    .FirstOrDefaultAsync(
+                        x => x.Id == id,
+                        cancellationToken);
+
+            if (item is null)
+                return false;
+
+            if (await _context.Ativos.AnyAsync(
+                    x => x.TipoAtivoId == id,
+                    cancellationToken))
+            {
+                throw new InvalidOperationException(
+                    "O tipo possui ativos vinculados e não pode ser excluído.");
+            }
+
+            _context.TiposAtivos.Remove(item);
+            await _context.SaveChangesAsync(cancellationToken);
+            return true;
+        }
+
+        public async Task<bool> AtualizarTipoOperacaoAsync(
+            int id,
+            string codigo,
+            string nome,
+            bool ativo,
+            CancellationToken cancellationToken = default)
+        {
+            var item =
+                await _context.TiposOperacoes
+                    .FirstOrDefaultAsync(
+                        x => x.Id == id,
+                        cancellationToken);
+
+            if (item is null)
+                return false;
+
+            item.Atualizar(
+                codigo,
+                nome,
+                ativo);
+
+            await _context.SaveChangesAsync(cancellationToken);
+            return true;
+        }
+
+        public async Task<bool> ExcluirTipoOperacaoAsync(
+            int id,
+            CancellationToken cancellationToken = default)
+        {
+            var item =
+                await _context.TiposOperacoes
+                    .FirstOrDefaultAsync(
+                        x => x.Id == id,
+                        cancellationToken);
+
+            if (item is null)
+                return false;
+
+            if (await _context.Operacoes.AnyAsync(
+                    x => x.TipoOperacaoId == id,
+                    cancellationToken))
+            {
+                throw new InvalidOperationException(
+                    "O tipo de operação possui operações vinculadas e não pode ser excluído.");
+            }
+
+            _context.TiposOperacoes.Remove(item);
+            await _context.SaveChangesAsync(cancellationToken);
+            return true;
+        }
+
         public async Task<bool> ExcluirAtivoAsync(
             Guid ativoId,
             CancellationToken cancellationToken = default)
