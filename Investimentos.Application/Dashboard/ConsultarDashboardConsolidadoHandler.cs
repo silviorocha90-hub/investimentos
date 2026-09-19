@@ -180,7 +180,7 @@ namespace Investimentos.Application.Dashboard
                         x.TipoAtivoCodigo ==
                             "PREVIDENCIA")
                     .Sum(x =>
-                        x.CustoTotal);
+                        x.ValorAtual);
 
             /*
              * CAIXA
