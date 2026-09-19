@@ -554,3 +554,18 @@
     font-size: 0.62rem;
   }
 }
+
+/* Destaque padronizado dos indicadores da visualização */
+.proventos-page .provento-kpi {
+  border-color: rgba(70, 211, 178, 0.28);
+  background:
+    linear-gradient(
+      135deg,
+      rgba(24, 116, 102, 0.2),
+      var(--panel)
+    );
+}
+
+.proventos-page .provento-kpi strong {
+  color: var(--accent);
+}
