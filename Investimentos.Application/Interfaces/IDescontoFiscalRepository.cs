@@ -11,6 +11,16 @@ namespace Investimentos.Application.Interfaces
         Task<IReadOnlyList<DescontoFiscal>> ListarAsync(
             CancellationToken cancellationToken = default);
 
+        Task<DescontoFiscal?> ObterPorIdAsync(
+            Guid id,
+            CancellationToken cancellationToken = default);
+
+        void Excluir(
+            DescontoFiscal desconto);
+
+        Task SalvarAlteracoesAsync(
+            CancellationToken cancellationToken = default);
+
         Task<decimal> ObterTotalAsync(
             CancellationToken cancellationToken = default);
     }
