@@ -84,10 +84,15 @@ namespace Investimentos.Application.Opcoes.AtualizarOperacaoOpcao
                     opcao.MarcarExercida(
                         command.ValorExecucao);
                 }
+                else if (situacao == "EXPIRADA")
+                {
+                    opcao.MarcarExpirada(
+                        command.DataFinalizacao);
+                }
                 else if (situacao != "ABERTA")
                 {
                     throw new ArgumentException(
-                        "A situação deve ser ABERTA, ENCERRADA ou EXECUTADA.");
+                        "A situação deve ser ABERTA, ENCERRADA, EXECUTADA ou EXPIRADA.");
                 }
             }
             else if (situacao != opcao.Situacao)
