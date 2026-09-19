@@ -413,8 +413,9 @@ export function OpcoesView({
 
       if (
         Number(
-          novaOpcao
-            .premioUnitario,
+          novaOpcao.premioUnitario
+            .replace(/\./g, '')
+            .replace(',', '.'),
         ) < 0
       ) {
         setErroOpcao(
@@ -480,8 +481,9 @@ export function OpcoesView({
 
                   premioUnitario:
                     Number(
-                      novaOpcao
-                        .premioUnitario,
+                      novaOpcao.premioUnitario
+                        .replace(/\./g, '')
+                        .replace(',', '.'),
                     ),
                 }),
             },
