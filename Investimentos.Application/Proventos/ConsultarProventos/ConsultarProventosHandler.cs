@@ -32,6 +32,7 @@ namespace Investimentos.Application.Proventos.ConsultarProventos
                         x.Id,
                         x.Ativo.Ticker.Codigo,
                         x.Tipo,
+                        x.Descricao,
                         x.DataCom,
                         x.DataPagamento,
                         x.QuantidadeBase,
