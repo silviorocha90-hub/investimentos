@@ -164,7 +164,8 @@ namespace Investimentos.Api.Endpoints
                             request.Situacao,
                             request.DataFinalizacao,
                             request.PrecoRecompraUnitario,
-                            request.ValorExecucao);
+                            request.ValorExecucao,
+                            request.ResultadoInformado);
 
                     await handler.HandleAsync(
                         command,
@@ -247,5 +248,6 @@ namespace Investimentos.Api.Endpoints
         string Situacao,
         DateTime? DataFinalizacao,
         decimal? PrecoRecompraUnitario,
-        decimal? ValorExecucao);
+        decimal? ValorExecucao,
+        decimal? ResultadoInformado);
 }
