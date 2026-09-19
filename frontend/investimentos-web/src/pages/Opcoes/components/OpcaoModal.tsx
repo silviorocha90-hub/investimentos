@@ -290,19 +290,22 @@ function NovoOpcaoModal({
           <label>
             <span>Strike</span>
 
-            <input
-              type="number"
-              min="0"
-              step="0.01"
-              value={form.strike}
-              onChange={(event) =>
-                setForm({
-                  ...form,
-                  strike:
-                    event.target.value,
-                })
-              }
-            />
+            <div className="admin-money-input">
+              <span>R$</span>
+              <input
+                inputMode="numeric"
+                value={form.strike}
+                onChange={(event) =>
+                  setForm({
+                    ...form,
+                    strike:
+                      formatarMoedaEntrada(
+                        event.target.value,
+                      ),
+                  })
+                }
+              />
+            </div>
           </label>
 
           <label>
@@ -495,21 +498,32 @@ function EditarOpcaoModal({
           <label>
             <span>Strike</span>
 
-            <input
-              type="number"
-              min="0"
-              step="0.01"
-              value={form.strike}
-              onChange={(event) =>
-                setForm({
-                  ...form,
-                  strike:
-                    Number(
-                      event.target.value,
-                    ),
-                })
-              }
-            />
+            <div className="admin-money-input">
+              <span>R$</span>
+              <input
+                inputMode="numeric"
+                value={
+                  form.strike.toLocaleString(
+                    'pt-BR',
+                    {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    },
+                  )
+                }
+                onChange={(event) =>
+                  setForm({
+                    ...form,
+                    strike:
+                      moedaParaNumero(
+                        formatarMoedaEntrada(
+                          event.target.value,
+                        ),
+                      ),
+                  })
+                }
+              />
+            </div>
           </label>
 
           <label>
@@ -600,26 +614,40 @@ function EditarOpcaoModal({
           <label>
             <span>Resultado informado</span>
 
-            <input
-              type="number"
-              step="0.01"
-              value={
-                form.resultadoInformado ??
-                ''
-              }
-              onChange={(event) =>
-                setForm({
-                  ...form,
-                  resultadoInformado:
-                    event.target.value === ''
-                      ? null
-                      : Number(
-                          event.target.value,
-                        ),
-                })
-              }
-              placeholder="Opcional"
-            />
+            <div className="admin-money-input">
+              <span>R$</span>
+              <input
+                inputMode="numeric"
+                value={
+                  form.resultadoInformado == null
+                    ? ''
+                    : form.resultadoInformado.toLocaleString(
+                        'pt-BR',
+                        {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        },
+                      )
+                }
+                onChange={(event) => {
+                  const valor =
+                    formatarMoedaEntrada(
+                      event.target.value,
+                    )
+
+                  setForm({
+                    ...form,
+                    resultadoInformado:
+                      valor === ''
+                        ? null
+                        : moedaParaNumero(
+                            valor,
+                          ),
+                  })
+                }}
+                placeholder="Opcional"
+              />
+            </div>
           </label>
         </div>
       </div>
