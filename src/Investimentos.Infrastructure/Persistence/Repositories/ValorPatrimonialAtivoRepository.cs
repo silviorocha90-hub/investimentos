@@ -23,6 +23,7 @@ namespace Investimentos.Infrastructure.Persistence.Repositories
                     .AsNoTracking()
                     .Include(x => x.Ativo)
                     .OrderByDescending(x => x.DataReferencia)
+                    .ThenByDescending(x => x.Id)
                     .ToListAsync(cancellationToken);
 
             return valores
