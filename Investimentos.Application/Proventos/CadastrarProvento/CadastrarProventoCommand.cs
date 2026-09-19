@@ -8,5 +8,6 @@
         DateTime DataPagamento,
         decimal QuantidadeBase,
         decimal ValorPorUnidade,
-        decimal ValorRecebido);
+        decimal ValorRecebido,
+        string? Descricao);
 }
