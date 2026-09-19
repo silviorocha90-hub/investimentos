@@ -45,6 +45,30 @@ namespace Investimentos.Infrastructure.Persistence.Repositories
                     cancellationToken);
         }
 
+        public async Task<DescontoFiscal?> ObterPorIdAsync(
+            Guid id,
+            CancellationToken cancellationToken = default)
+        {
+            return await _context.DescontosFiscais
+                .FirstOrDefaultAsync(
+                    x => x.Id == id,
+                    cancellationToken);
+        }
+
+        public void Excluir(
+            DescontoFiscal desconto)
+        {
+            _context.DescontosFiscais.Remove(
+                desconto);
+        }
+
+        public async Task SalvarAlteracoesAsync(
+            CancellationToken cancellationToken = default)
+        {
+            await _context.SaveChangesAsync(
+                cancellationToken);
+        }
+
         public async Task<decimal> ObterTotalAsync(
             CancellationToken cancellationToken = default)
         {
