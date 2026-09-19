@@ -709,13 +709,21 @@ namespace Investimentos.Infrastructure.Persistence.Repositories
                 var dataValor =
                     (request.DataValorPatrimonial ?? DateTime.Today).Date;
 
-                valorPatrimonial =
+                /*
+                 * Para Administração, Valor atual representa o estado
+                 * corrente do investimento. Mantemos um único registro
+                 * patrimonial por ativo para evitar que valores antigos
+                 * concorram com a edição recém-salva.
+                 */
+                var valoresExistentes =
                     await _context.ValoresPatrimoniaisAtivos
-                        .FirstOrDefaultAsync(
-                            x =>
-                                x.AtivoId == ativo.Id &&
-                                x.DataReferencia == dataValor,
-                            cancellationToken);
+                        .Where(x => x.AtivoId == ativo.Id)
+                        .OrderByDescending(x => x.DataReferencia)
+                        .ThenByDescending(x => x.Id)
+                        .ToListAsync(cancellationToken);
+
+                valorPatrimonial =
+                    valoresExistentes.FirstOrDefault();
 
                 if (valorPatrimonial is null)
                 {
@@ -733,6 +741,12 @@ namespace Investimentos.Infrastructure.Persistence.Repositories
                     valorPatrimonial.Atualizar(
                         dataValor,
                         request.ValorPatrimonial.Value);
+
+                    if (valoresExistentes.Count > 1)
+                    {
+                        _context.ValoresPatrimoniaisAtivos.RemoveRange(
+                            valoresExistentes.Skip(1));
+                    }
                 }
             }
             else
@@ -742,6 +756,7 @@ namespace Investimentos.Infrastructure.Persistence.Repositories
                         .AsNoTracking()
                         .Where(x => x.AtivoId == ativo.Id)
                         .OrderByDescending(x => x.DataReferencia)
+                        .ThenByDescending(x => x.Id)
                         .FirstOrDefaultAsync(cancellationToken);
             }
 
