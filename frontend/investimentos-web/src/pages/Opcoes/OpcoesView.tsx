@@ -88,6 +88,43 @@ export function OpcoesView({
   const modoAdministracao =
     modo === 'administracao'
 
+  const investidoresComOpcoes =
+    useMemo(
+      () => {
+        if (modoAdministracao) {
+          return investidores
+        }
+
+        const nomesComMovimento =
+          new Set(
+            carteiras
+              .filter(
+                (item) =>
+                  (
+                    item.dashboard.opcoes ??
+                    []
+                  ).length > 0,
+              )
+              .map(
+                (item) =>
+                  item.nome,
+              ),
+          )
+
+        return investidores.filter(
+          (investidor) =>
+            nomesComMovimento.has(
+              investidor.nome,
+            ),
+        )
+      },
+      [
+        investidores,
+        carteiras,
+        modoAdministracao,
+      ],
+    )
+
   const apiUrl =
     import.meta.env.VITE_API_URL ??
     'https://localhost:7237'
@@ -856,7 +893,7 @@ export function OpcoesView({
               )
             }
           >
-            {investidores.map(
+            {investidoresComOpcoes.map(
               (
                 investidor,
               ) => (
