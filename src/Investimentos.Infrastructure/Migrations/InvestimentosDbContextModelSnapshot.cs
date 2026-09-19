@@ -406,6 +406,30 @@ namespace Investimentos.Infrastructure.Migrations
                     b.ToTable("SaldoDisponivel", (string)null);
                 });
 
+            modelBuilder.Entity("Investimentos.Domain.Entities.ValorPatrimonialAtivo", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("AtivoId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("DataReferencia")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("Valor")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AtivoId", "DataReferencia")
+                        .IsUnique();
+
+                    b.ToTable("ValorPatrimonialAtivo", (string)null);
+                });
+
             modelBuilder.Entity("Investimentos.Domain.Entities.TipoAtivo", b =>
                 {
                     b.Property<int>("Id")
@@ -853,6 +877,17 @@ namespace Investimentos.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Investidor");
+                });
+
+            modelBuilder.Entity("Investimentos.Domain.Entities.ValorPatrimonialAtivo", b =>
+                {
+                    b.HasOne("Investimentos.Domain.Entities.Ativo", "Ativo")
+                        .WithMany()
+                        .HasForeignKey("AtivoId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Ativo");
                 });
 
             modelBuilder.Entity("Investimentos.Domain.Entities.TipoAtivo", b =>
