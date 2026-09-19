@@ -2,6 +2,7 @@ export interface PosicaoInvestidorAtivoAdministracao {
   investidorId: string
   investidorNome: string
   quantidade: number
+  valorAtual: number
 }
 
 export interface AtivoAdministracao {
@@ -15,6 +16,7 @@ export interface AtivoAdministracao {
   classeAtivoCodigo: string
   classeAtivoNome: string
   quantidade: number
+  valorAtual: number
   posicoesInvestidores:
     PosicaoInvestidorAtivoAdministracao[]
   cotacaoAtual?: number | null
