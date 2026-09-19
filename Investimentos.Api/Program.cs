@@ -154,7 +154,7 @@ app.UseAuthorization();
 
 app.MapPost(
     "/api/investidores",
-    (Delegate)(async (
+    async (
         CadastrarInvestidorRequest request,
         CadastrarInvestidorHandler handler,
         CancellationToken cancellationToken) =>
@@ -171,11 +171,11 @@ app.MapPost(
         return Results.Created(
             $"/api/investidores/{id}",
             new { id });
-    }));
+    });
 
 app.MapGet(
     "/api/investidores",
-    (Delegate)(async (
+    async (
         ListarInvestidoresHandler handler,
         CancellationToken cancellationToken) =>
     {
@@ -184,11 +184,11 @@ app.MapGet(
                 cancellationToken);
 
         return Results.Ok(resultado);
-    }));
+    });
 
 app.MapPost(
     "/api/ativos",
-    (Delegate)(async (
+    async (
         CadastrarAtivoRequest request,
         CadastrarAtivoHandler handler,
         CancellationToken cancellationToken) =>
@@ -207,11 +207,11 @@ app.MapPost(
         return Results.Created(
             $"/api/ativos/{id}",
             new { id });
-    }));
+    });
 
 app.MapPost(
     "/api/operacoes",
-    (Delegate)(async (
+    async (
         CadastrarOperacaoRequest request,
         CadastrarOperacaoHandler handler,
         CancellationToken cancellationToken) =>
@@ -234,11 +234,11 @@ app.MapPost(
         return Results.Created(
             $"/api/operacoes/{id}",
             new { id });
-    }));
+    });
 
 app.MapGet(
     "/api/operacoes/{investidorId:guid}",
-    (Delegate)(async (
+    async (
         Guid investidorId,
         ICarteiraRepository repository,
         CancellationToken cancellationToken) =>
@@ -249,11 +249,11 @@ app.MapGet(
                 cancellationToken);
 
         return Results.Ok(resultado);
-    }));
+    });
 
 app.MapPut(
     "/api/operacoes/{id:guid}",
-    (Delegate)(async (
+    async (
         Guid id,
         AtualizarOperacaoRequest request,
         AtualizarOperacaoHandler handler,
@@ -269,11 +269,11 @@ app.MapPut(
             cancellationToken);
 
         return Results.NoContent();
-    }));
+    });
 
 app.MapDelete(
     "/api/operacoes/{id:guid}",
-    (Delegate)(async (
+    async (
         Guid id,
         ExcluirOperacaoHandler handler,
         CancellationToken cancellationToken) =>
@@ -283,11 +283,11 @@ app.MapDelete(
             cancellationToken);
 
         return Results.NoContent();
-    }));
+    });
 
 app.MapGet(
     "/api/carteira/{investidorId:guid}",
-    (Delegate)(async (
+    async (
         Guid investidorId,
         ConsultarCarteiraHandler handler,
         CancellationToken cancellationToken) =>
@@ -298,11 +298,11 @@ app.MapGet(
                 cancellationToken);
 
         return Results.Ok(resultado);
-    }));
+    });
 
 app.MapPost(
     "/api/proventos",
-    (Delegate)(async (
+    async (
         CadastrarProventoRequest request,
         CadastrarProventoHandler handler,
         CancellationToken cancellationToken) =>
@@ -327,11 +327,11 @@ app.MapPost(
         return Results.Created(
             $"/api/proventos/{id}",
             new { id });
-    }));
+    });
 
 app.MapGet(
     "/api/proventos/{investidorId:guid}",
-    (Delegate)(async (
+    async (
         Guid investidorId,
         ConsultarProventosHandler handler,
         CancellationToken cancellationToken) =>
@@ -342,7 +342,7 @@ app.MapGet(
                 cancellationToken);
 
         return Results.Ok(resultado);
-    }));
+    });
 
 /*
  * OPÇÕES
@@ -357,7 +357,7 @@ app.MapGet(
  */
 app.MapPost(
     "/api/opcoes",
-    (Delegate)(async (
+    async (
         CadastrarOperacaoOpcaoRequest request,
         CadastrarOperacaoOpcaoHandler cadastrarHandler,
         IOperacaoOpcaoRepository repository,
@@ -523,11 +523,11 @@ app.MapPost(
                 id,
                 situacao = "EXECUTADA"
             });
-    }));
+    });
 
 app.MapGet(
     "/api/opcoes/{investidorId:guid}",
-    (Delegate)(async (
+    async (
         Guid investidorId,
         ConsultarOpcoesHandler handler,
         CancellationToken cancellationToken) =>
@@ -538,11 +538,11 @@ app.MapGet(
                 cancellationToken);
 
         return Results.Ok(resultado);
-    }));
+    });
 
 app.MapPut(
     "/api/opcoes/{id:guid}",
-    (Delegate)(async (
+    async (
         Guid id,
         AtualizarOperacaoOpcaoRequest request,
         AtualizarOperacaoOpcaoHandler handler,
@@ -569,11 +569,11 @@ app.MapPut(
             cancellationToken);
 
         return Results.NoContent();
-    }));
+    });
 
 app.MapDelete(
     "/api/opcoes/{id:guid}",
-    (Delegate)(async (
+    async (
         Guid id,
         ExcluirOperacaoOpcaoHandler handler,
         CancellationToken cancellationToken) =>
@@ -583,11 +583,11 @@ app.MapDelete(
             cancellationToken);
 
         return Results.NoContent();
-    }));
+    });
 
 app.MapGet(
     "/api/dashboard/evolucao",
-    (Delegate)(async (
+    async (
         IHistoricoPatrimonioRepository repository,
         CancellationToken cancellationToken) =>
     {
@@ -596,11 +596,11 @@ app.MapGet(
                 cancellationToken);
 
         return Results.Ok(resultado);
-    }));
+    });
 
 app.MapGet(
     "/api/dashboard",
-    (Delegate)(async (
+    async (
         ConsultarDashboardConsolidadoHandler handler,
         CancellationToken cancellationToken) =>
     {
@@ -609,11 +609,11 @@ app.MapGet(
                 cancellationToken);
 
         return Results.Ok(resultado);
-    }));
+    });
 
 app.MapGet(
     "/api/dashboard/{investidorId:guid}",
-    (Delegate)(async (
+    async (
         Guid investidorId,
         ConsultarDashboardHandler handler,
         CancellationToken cancellationToken) =>
@@ -624,11 +624,11 @@ app.MapGet(
                 cancellationToken);
 
         return Results.Ok(resultado);
-    }));
+    });
 
 app.MapGet(
     "/api/descontos-fiscais",
-    (Delegate)(async (
+    async (
         IDescontoFiscalRepository repository,
         CancellationToken cancellationToken) =>
     {
@@ -645,12 +645,12 @@ app.MapGet(
                     x.DataPagamento,
                     x.Valor,
                     x.Descricao
-                }));
-    }));
+                });
+    });
 
 app.MapPost(
     "/api/descontos-fiscais",
-    (Delegate)(async (
+    async (
         CadastrarDescontoFiscalRequest request,
         IDescontoFiscalRepository repository,
         CancellationToken cancellationToken) =>
@@ -671,11 +671,11 @@ app.MapPost(
         return Results.Created(
             $"/api/descontos-fiscais/{desconto.Id}",
             new { desconto.Id });
-    }));
+    });
 
 app.MapPut(
     "/api/descontos-fiscais/{id:guid}",
-    (Delegate)(async (
+    async (
         Guid id,
         AtualizarDescontoFiscalRequest request,
         IDescontoFiscalRepository repository,
@@ -702,11 +702,11 @@ app.MapPut(
             cancellationToken);
 
         return Results.NoContent();
-    }));
+    });
 
 app.MapDelete(
     "/api/descontos-fiscais/{id:guid}",
-    (Delegate)(async (
+    async (
         Guid id,
         IDescontoFiscalRepository repository,
         CancellationToken cancellationToken) =>
@@ -729,11 +729,11 @@ app.MapDelete(
             cancellationToken);
 
         return Results.NoContent();
-    }));
+    });
 
 app.MapGet(
     "/api/admin",
-    (Delegate)(async (
+    async (
         IAdministracaoRepository repository,
         CancellationToken cancellationToken) =>
     {
@@ -742,11 +742,11 @@ app.MapGet(
                 cancellationToken);
 
         return Results.Ok(resultado);
-    }));
+    });
 
 app.MapPost(
     "/api/admin/ativos",
-    (Delegate)(async (
+    async (
         CriarAtivoAdministracaoRequest request,
         IAdministracaoRepository repository,
         CancellationToken cancellationToken) =>
@@ -778,11 +778,11 @@ app.MapPost(
                     detail = ex.Message
                 });
         }
-    }));
+    });
 
 app.MapPut(
     "/api/admin/ativos/{id:guid}",
-    (Delegate)(async (
+    async (
         Guid id,
         AtualizarAtivoAdministracaoRequest request,
         IAdministracaoRepository repository,
@@ -816,11 +816,11 @@ app.MapPut(
                     detail = ex.Message
                 });
         }
-    }));
+    });
 
 app.MapDelete(
     "/api/admin/ativos/{id:guid}",
-    (Delegate)(async (
+    async (
         Guid id,
         IAdministracaoRepository repository,
         CancellationToken cancellationToken) =>
@@ -852,11 +852,11 @@ app.MapDelete(
                     detail = ex.Message
                 });
         }
-    }));
+    });
 
 app.MapPut(
     "/api/admin/classes-ativo/{id:int}",
-    (Delegate)(async (
+    async (
         int id,
         AtualizarParametroRequest request,
         IAdministracaoRepository repository,
@@ -873,11 +873,11 @@ app.MapPut(
         return atualizado
             ? Results.NoContent()
             : Results.NotFound();
-    }));
+    });
 
 app.MapDelete(
     "/api/admin/classes-ativo/{id:int}",
-    (Delegate)(async (
+    async (
         int id,
         IAdministracaoRepository repository,
         CancellationToken cancellationToken) =>
@@ -898,11 +898,11 @@ app.MapDelete(
             return Results.Conflict(
                 new { detail = ex.Message });
         }
-    }));
+    });
 
 app.MapPut(
     "/api/admin/tipos-ativo/{id:int}",
-    (Delegate)(async (
+    async (
         int id,
         AtualizarTipoAtivoParametroRequest request,
         IAdministracaoRepository repository,
@@ -920,11 +920,11 @@ app.MapPut(
         return atualizado
             ? Results.NoContent()
             : Results.NotFound();
-    }));
+    });
 
 app.MapDelete(
     "/api/admin/tipos-ativo/{id:int}",
-    (Delegate)(async (
+    async (
         int id,
         IAdministracaoRepository repository,
         CancellationToken cancellationToken) =>
@@ -945,11 +945,11 @@ app.MapDelete(
             return Results.Conflict(
                 new { detail = ex.Message });
         }
-    }));
+    });
 
 app.MapPut(
     "/api/admin/tipos-operacao/{id:int}",
-    (Delegate)(async (
+    async (
         int id,
         AtualizarParametroRequest request,
         IAdministracaoRepository repository,
@@ -966,11 +966,11 @@ app.MapPut(
         return atualizado
             ? Results.NoContent()
             : Results.NotFound();
-    }));
+    });
 
 app.MapDelete(
     "/api/admin/tipos-operacao/{id:int}",
-    (Delegate)(async (
+    async (
         int id,
         IAdministracaoRepository repository,
         CancellationToken cancellationToken) =>
@@ -991,7 +991,7 @@ app.MapDelete(
             return Results.Conflict(
                 new { detail = ex.Message });
         }
-    }));
+    });
 
 app.MapAdministracaoInvestidoresEndpoints();
 
