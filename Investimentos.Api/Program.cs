@@ -317,7 +317,8 @@ app.MapPost(
                 request.DataPagamento,
                 request.QuantidadeBase,
                 request.ValorPorUnidade,
-                request.ValorRecebido);
+                request.ValorRecebido,
+                request.Descricao);
 
         var id =
             await handler.HandleAsync(
@@ -561,7 +562,8 @@ app.MapPut(
                 request.Situacao,
                 request.DataFinalizacao,
                 request.PrecoRecompraUnitario,
-                request.ValorExecucao);
+                request.ValorExecucao,
+                request.ResultadoInformado);
 
         await handler.HandleAsync(
             command,
@@ -875,7 +877,8 @@ public record CadastrarProventoRequest(
     DateTime DataPagamento,
     decimal QuantidadeBase,
     decimal ValorPorUnidade,
-    decimal ValorRecebido);
+    decimal ValorRecebido,
+    string? Descricao);
 
 public record CadastrarDescontoFiscalRequest(
     string Tipo,
@@ -915,4 +918,5 @@ public record AtualizarOperacaoOpcaoRequest(
     string Situacao,
     DateTime? DataFinalizacao,
     decimal? PrecoRecompraUnitario,
-    decimal? ValorExecucao);
+    decimal? ValorExecucao,
+    decimal? ResultadoInformado);
