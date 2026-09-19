@@ -1,4 +1,4 @@
-﻿namespace Investimentos.Domain.Entities
+namespace Investimentos.Domain.Entities
 {
     public class TipoOperacao
     {
@@ -13,23 +13,15 @@
             Nome = null!;
         }
 
-        public TipoOperacao(string codigo, string nome)
+        public TipoOperacao(
+            string codigo,
+            string nome)
         {
-            if (string.IsNullOrWhiteSpace(codigo))
-            {
-                throw new ArgumentException(
-                    "O código do tipo de operação é obrigatório.");
-            }
-
-            if (string.IsNullOrWhiteSpace(nome))
-            {
-                throw new ArgumentException(
-                    "O nome do tipo de operação é obrigatório.");
-            }
-
-            Codigo = codigo.Trim().ToUpperInvariant();
-            Nome = nome.Trim();
-            Ativo = true;
+            Atualizar(
+                codigo,
+                nome,
+                true);
+        }
 
         public void Atualizar(
             string codigo,
@@ -37,18 +29,21 @@
             bool ativo)
         {
             if (string.IsNullOrWhiteSpace(codigo))
+            {
                 throw new ArgumentException(
                     "O código do tipo de operação é obrigatório.");
+            }
 
             if (string.IsNullOrWhiteSpace(nome))
+            {
                 throw new ArgumentException(
                     "O nome do tipo de operação é obrigatório.");
+            }
 
             Codigo =
                 codigo.Trim().ToUpperInvariant();
             Nome = nome.Trim();
             Ativo = ativo;
-        }
         }
     }
 }
