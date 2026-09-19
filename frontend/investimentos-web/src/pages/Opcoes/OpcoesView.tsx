@@ -141,6 +141,11 @@ export function OpcoesView({
     OperacaoOpcao | null
   >(null)
 
+  const [
+    versaoOpcoes,
+    setVersaoOpcoes,
+  ] = useState(0)
+
   const carteira =
     carteiras.find(
       (item) =>
@@ -165,7 +170,7 @@ export function OpcoesView({
             opcao.situacao ===
               'EXPIRADA',
         ),
-      [carteira?.opcoes],
+      [carteira?.opcoes, versaoOpcoes],
     )
 
   useEffect(() => {
@@ -639,6 +644,10 @@ export function OpcoesView({
             }
           }
         }
+
+        setVersaoOpcoes(
+          (versao) => versao + 1,
+        )
 
         setOpcaoEmEdicao(null)
       } catch (error) {
