@@ -30,6 +30,25 @@
             Codigo = codigo.Trim().ToUpperInvariant();
             Nome = nome.Trim();
             Ativo = true;
+
+        public void Atualizar(
+            string codigo,
+            string nome,
+            bool ativo)
+        {
+            if (string.IsNullOrWhiteSpace(codigo))
+                throw new ArgumentException(
+                    "O código do classe do ativo é obrigatório.");
+
+            if (string.IsNullOrWhiteSpace(nome))
+                throw new ArgumentException(
+                    "O nome do classe do ativo é obrigatório.");
+
+            Codigo =
+                codigo.Trim().ToUpperInvariant();
+            Nome = nome.Trim();
+            Ativo = ativo;
+        }
         }
     }
 }
