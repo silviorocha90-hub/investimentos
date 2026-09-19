@@ -298,8 +298,15 @@ a {
   gap: 6px;
   width: 210px;
   min-width: 210px;
+  color: var(--accent);
   font-size: 0.67rem;
   font-weight: 700;
+}
+
+.portfolio-view .investor-select-label > span,
+.portfolio-view .options-filters label > span,
+.portfolio-view .proventos-filters label > span {
+  color: var(--accent);
 }
 
 .portfolio-view .investor-select-label select,
