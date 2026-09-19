@@ -13,19 +13,19 @@ namespace Investimentos.Api.Endpoints
         {
             endpoints.MapPut(
                 "/api/admin/investidores/{id:guid}",
-                AtualizarInvestidorAsync);
+                (Delegate)AtualizarInvestidorAsync);
 
             endpoints.MapPost(
                 "/api/admin/investidores/{investidorId:guid}/historico-patrimonial",
-                CriarHistoricoAsync);
+                (Delegate)CriarHistoricoAsync);
 
             endpoints.MapPut(
                 "/api/admin/historico-patrimonial/{id:guid}",
-                AtualizarHistoricoAsync);
+                (Delegate)AtualizarHistoricoAsync);
 
             endpoints.MapDelete(
                 "/api/admin/historico-patrimonial/{id:guid}",
-                ExcluirHistoricoAsync);
+                (Delegate)ExcluirHistoricoAsync);
 
             return endpoints;
         }
