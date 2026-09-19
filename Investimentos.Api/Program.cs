@@ -23,7 +23,6 @@ using Investimentos.Domain.Entities;
 using Investimentos.Infrastructure;
 using Investimentos.Infrastructure.Persistence.Repositories;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Investimentos.Application.Usuarios.Administracao;
 
 var builder = WebApplication.CreateBuilder(args);
 
