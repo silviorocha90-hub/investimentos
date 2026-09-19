@@ -17,6 +17,8 @@ export interface AtivoAdministracao {
   classeAtivoNome: string
   quantidade: number
   valorAtual: number
+  valorPatrimonialAtual?: number | null
+  dataValorPatrimonial?: string | null
   posicoesInvestidores:
     PosicaoInvestidorAtivoAdministracao[]
   cotacaoAtual?: number | null
@@ -87,6 +89,8 @@ export interface CriarAtivoAdministracao {
   tipoAtivoId: number
   cotacao?: number | null
   dataCotacao?: string | null
+  valorPatrimonial?: number | null
+  dataValorPatrimonial?: string | null
 }
 
 export interface AtualizarAtivoAdministracao {
@@ -94,6 +98,8 @@ export interface AtualizarAtivoAdministracao {
   tipoAtivoId: number
   cotacao?: number | null
   dataCotacao?: string | null
+  valorPatrimonial?: number | null
+  dataValorPatrimonial?: string | null
 }
 
 export interface AtualizarInvestidorAdministracao {
