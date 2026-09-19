@@ -535,22 +535,27 @@ export function InvestidoresTab({
                   Saldo disponível
                 </span>
 
-                <input
-                  type="text"
-                  inputMode="decimal"
-                  value={
-                    saldoDisponivel
-                  }
-                  onChange={(
-                    event,
-                  ) =>
-                    setSaldoDisponivel(
-                      formatarEntradaMoeda(
-                        event.target.value,
-                      ),
-                    )
-                  }
-                />
+                <div className="admin-money-input">
+                  <span>R$</span>
+
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    value={
+                      saldoDisponivel
+                    }
+                    placeholder="0,00"
+                    onChange={(
+                      event,
+                    ) =>
+                      setSaldoDisponivel(
+                        formatarEntradaMoeda(
+                          event.target.value,
+                        ),
+                      )
+                    }
+                  />
+                </div>
               </label>
 
               <div className="admin-modal-actions">
