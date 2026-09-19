@@ -1,4 +1,4 @@
-﻿namespace Investimentos.Domain.Entities
+namespace Investimentos.Domain.Entities
 {
     public class TipoAtivo
     {
@@ -22,28 +22,20 @@
             string nome,
             ClasseAtivo classeAtivo)
         {
-            if (string.IsNullOrWhiteSpace(codigo))
-            {
-                throw new ArgumentException(
-                    "O código do tipo do ativo é obrigatório.");
-            }
-
-            if (string.IsNullOrWhiteSpace(nome))
-            {
-                throw new ArgumentException(
-                    "O nome do tipo do ativo é obrigatório.");
-            }
-
             if (classeAtivo is null)
             {
                 throw new ArgumentException(
                     "A classe do ativo é obrigatória.");
             }
 
-            Codigo = codigo.Trim().ToUpperInvariant();
-            Nome = nome.Trim();
             ClasseAtivo = classeAtivo;
-            Ativo = true;
+            ClasseAtivoId = classeAtivo.Id;
+
+            Atualizar(
+                codigo,
+                nome,
+                true);
+        }
 
         public void Atualizar(
             string codigo,
@@ -51,18 +43,21 @@
             bool ativo)
         {
             if (string.IsNullOrWhiteSpace(codigo))
+            {
                 throw new ArgumentException(
                     "O código do tipo do ativo é obrigatório.");
+            }
 
             if (string.IsNullOrWhiteSpace(nome))
+            {
                 throw new ArgumentException(
                     "O nome do tipo do ativo é obrigatório.");
+            }
 
             Codigo =
                 codigo.Trim().ToUpperInvariant();
             Nome = nome.Trim();
             Ativo = ativo;
-        }
         }
     }
 }
