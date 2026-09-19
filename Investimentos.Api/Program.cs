@@ -645,7 +645,7 @@ app.MapGet(
                     x.DataPagamento,
                     x.Valor,
                     x.Descricao
-                });
+                }));
     });
 
 app.MapPost(
