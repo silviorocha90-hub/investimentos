@@ -855,6 +855,145 @@ app.MapDelete(
         }
     });
 
+app.MapPut(
+    "/api/admin/classes-ativo/{id:int}",
+    async (
+        int id,
+        AtualizarParametroRequest request,
+        IAdministracaoRepository repository,
+        CancellationToken cancellationToken) =>
+    {
+        var atualizado =
+            await repository.AtualizarClasseAtivoAsync(
+                id,
+                request.Codigo,
+                request.Nome,
+                request.Ativo,
+                cancellationToken);
+
+        return atualizado
+            ? Results.NoContent()
+            : Results.NotFound();
+    });
+
+app.MapDelete(
+    "/api/admin/classes-ativo/{id:int}",
+    async (
+        int id,
+        IAdministracaoRepository repository,
+        CancellationToken cancellationToken) =>
+    {
+        try
+        {
+            var excluido =
+                await repository.ExcluirClasseAtivoAsync(
+                    id,
+                    cancellationToken);
+
+            return excluido
+                ? Results.NoContent()
+                : Results.NotFound();
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Results.Conflict(
+                new { detail = ex.Message });
+        }
+    });
+
+app.MapPut(
+    "/api/admin/tipos-ativo/{id:int}",
+    async (
+        int id,
+        AtualizarTipoAtivoParametroRequest request,
+        IAdministracaoRepository repository,
+        CancellationToken cancellationToken) =>
+    {
+        var atualizado =
+            await repository.AtualizarTipoAtivoAsync(
+                id,
+                request.Codigo,
+                request.Nome,
+                request.ClasseAtivoId,
+                request.Ativo,
+                cancellationToken);
+
+        return atualizado
+            ? Results.NoContent()
+            : Results.NotFound();
+    });
+
+app.MapDelete(
+    "/api/admin/tipos-ativo/{id:int}",
+    async (
+        int id,
+        IAdministracaoRepository repository,
+        CancellationToken cancellationToken) =>
+    {
+        try
+        {
+            var excluido =
+                await repository.ExcluirTipoAtivoAsync(
+                    id,
+                    cancellationToken);
+
+            return excluido
+                ? Results.NoContent()
+                : Results.NotFound();
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Results.Conflict(
+                new { detail = ex.Message });
+        }
+    });
+
+app.MapPut(
+    "/api/admin/tipos-operacao/{id:int}",
+    async (
+        int id,
+        AtualizarParametroRequest request,
+        IAdministracaoRepository repository,
+        CancellationToken cancellationToken) =>
+    {
+        var atualizado =
+            await repository.AtualizarTipoOperacaoAsync(
+                id,
+                request.Codigo,
+                request.Nome,
+                request.Ativo,
+                cancellationToken);
+
+        return atualizado
+            ? Results.NoContent()
+            : Results.NotFound();
+    });
+
+app.MapDelete(
+    "/api/admin/tipos-operacao/{id:int}",
+    async (
+        int id,
+        IAdministracaoRepository repository,
+        CancellationToken cancellationToken) =>
+    {
+        try
+        {
+            var excluido =
+                await repository.ExcluirTipoOperacaoAsync(
+                    id,
+                    cancellationToken);
+
+            return excluido
+                ? Results.NoContent()
+                : Results.NotFound();
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Results.Conflict(
+                new { detail = ex.Message });
+        }
+    });
+
 app.MapAdministracaoInvestidoresEndpoints();
 
 app.MapAuthEndpoints();
@@ -983,3 +1122,14 @@ public record AtualizarOperacaoOpcaoRequest(
     decimal? PrecoRecompraUnitario,
     decimal? ValorExecucao,
     decimal? ResultadoInformado);
+
+public record AtualizarParametroRequest(
+    string Codigo,
+    string Nome,
+    bool Ativo);
+
+public record AtualizarTipoAtivoParametroRequest(
+    string Codigo,
+    string Nome,
+    int ClasseAtivoId,
+    bool Ativo);
