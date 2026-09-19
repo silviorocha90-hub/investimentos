@@ -40,7 +40,8 @@ namespace Investimentos.Domain.Entities
         public void Atualizar(
             string codigo,
             string nome,
-            bool ativo)
+            bool ativo,
+            ClasseAtivo? classeAtivo = null)
         {
             if (string.IsNullOrWhiteSpace(codigo))
             {
@@ -58,6 +59,12 @@ namespace Investimentos.Domain.Entities
                 codigo.Trim().ToUpperInvariant();
             Nome = nome.Trim();
             Ativo = ativo;
+
+            if (classeAtivo is not null)
+            {
+                ClasseAtivo = classeAtivo;
+                ClasseAtivoId = classeAtivo.Id;
+            }
         }
     }
 }
