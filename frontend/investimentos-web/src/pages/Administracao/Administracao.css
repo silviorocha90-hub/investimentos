@@ -953,4 +953,5 @@
   background: transparent;
   color: var(--text);
   font: inherit;
+  font-size: 0.72rem;
 }
