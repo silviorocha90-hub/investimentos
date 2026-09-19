@@ -72,6 +72,10 @@ namespace Investimentos.Infrastructure
                 CotacaoAtivoRepository>();
 
             services.AddScoped<
+                IValorPatrimonialAtivoRepository,
+                ValorPatrimonialAtivoRepository>();
+
+            services.AddScoped<
                 IUsuarioRepository,
                 UsuarioRepository>();
 
