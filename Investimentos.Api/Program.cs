@@ -759,6 +759,42 @@ app.MapPut(
         }
     });
 
+app.MapDelete(
+    "/api/admin/ativos/{id:guid}",
+    async (
+        Guid id,
+        IAdministracaoRepository repository,
+        CancellationToken cancellationToken) =>
+    {
+        try
+        {
+            var excluido =
+                await repository.ExcluirAtivoAsync(
+                    id,
+                    cancellationToken);
+
+            if (!excluido)
+            {
+                return Results.NotFound(
+                    new
+                    {
+                        detail =
+                            "Ativo não encontrado."
+                    });
+            }
+
+            return Results.NoContent();
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Results.Conflict(
+                new
+                {
+                    detail = ex.Message
+                });
+        }
+    });
+
 app.MapAdministracaoInvestidoresEndpoints();
 
 app.MapAuthEndpoints();
