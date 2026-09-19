@@ -33,10 +33,6 @@ import {
 } from './pages/Dashboard/DashboardView'
 
 import {
-  OperacoesView,
-} from './pages/Operacoes/OperacoesView'
-
-import {
   OpcoesView,
 } from './pages/Opcoes/OpcoesView'
 
@@ -67,7 +63,6 @@ import './styles/legacy.css'
 type Tela =
   | 'painel'
   | 'carteira'
-  | 'operacoes'
   | 'opcoes'
   | 'proventos'
   | 'administracao'
@@ -92,12 +87,6 @@ const menuPrincipal:
       permissao: 'Carteira',
       titulo: 'Carteira',
       icone: '◫',
-    },
-    {
-      tela: 'operacoes',
-      permissao: 'Operacoes',
-      titulo: 'Operações',
-      icone: '↕',
     },
     {
       tela: 'opcoes',
@@ -151,16 +140,6 @@ function App() {
       null,
     )
 
-  /*
-   * Coleção exclusiva do Painel.
-   *
-   * Quando o usuário possui
-   * permissão Dashboard, esta
-   * coleção contém TODOS os
-   * investidores, independentemente
-   * dos investidores associados
-   * ao usuário.
-   */
   const [
     carteirasPainel,
     setCarteirasPainel,
@@ -172,11 +151,6 @@ function App() {
       }>
     >([])
 
-  /*
-   * Coleção utilizada pelas telas
-   * que respeitam o vínculo entre
-   * usuário e investidor.
-   */
   const [
     carteirasPorInvestidor,
     setCarteirasPorInvestidor,
@@ -240,15 +214,6 @@ function App() {
     valoresOcultos,
   )
 
-  /*
-   * Investidores disponíveis para
-   * Carteira, Operações, Opções
-   * e Proventos.
-   *
-   * Admin vê todos.
-   * Usuário comum vê somente os
-   * investidores associados.
-   */
   const investidores =
     useMemo(() => {
       if (!usuario) {
@@ -331,12 +296,6 @@ function App() {
     setTelaAtual(tela)
   }
 
-  /*
-   * Se o usuário estiver em uma
-   * tela que deixou de possuir,
-   * redirecionamos para a primeira
-   * tela permitida.
-   */
   useEffect(() => {
     if (!usuario) {
       return
@@ -363,13 +322,6 @@ function App() {
     primeiraTelaPermitida,
   ])
 
-  /*
-   * A lista-base de investidores é
-   * carregada integralmente.
-   *
-   * A filtragem ocorre depois,
-   * conforme o módulo utilizado.
-   */
   useEffect(() => {
     async function carregarInvestidores() {
       try {
@@ -408,11 +360,6 @@ function App() {
 
         setErro(null)
 
-        /*
-         * O snapshot local continua
-         * disponível apenas para o
-         * administrador.
-         */
         if (
           usuario?.perfil ===
           'Admin'
@@ -442,11 +389,6 @@ function App() {
     void carregarInvestidores()
   }, [usuario])
 
-  /*
-   * Mantém um investidor válido
-   * selecionado nas telas
-   * individuais.
-   */
   useEffect(() => {
     if (
       investidores.length ===
@@ -477,8 +419,10 @@ function App() {
   ])
 
   /*
-   * Operações respeitam o
-   * investidor autorizado.
+   * Operações continuam sendo
+   * carregadas normalmente, mas
+   * agora sua manutenção acontece
+   * dentro de Administração.
    */
   useEffect(() => {
     if (
@@ -530,13 +474,6 @@ function App() {
     usuario,
   ])
 
-  /*
-   * PAINEL GLOBAL
-   *
-   * A permissão Dashboard significa
-   * acesso à mesma visão consolidada
-   * apresentada ao administrador.
-   */
   useEffect(() => {
     if (
       !apiDisponivel ||
@@ -656,14 +593,6 @@ function App() {
     usuario,
   ])
 
-  /*
-   * CARTEIRAS RESTRITAS
-   *
-   * Utilizadas pelas demais telas.
-   * Aqui permanece a regra dos
-   * investidores associados ao
-   * usuário.
-   */
   useEffect(() => {
     if (
       !apiDisponivel ||
@@ -677,12 +606,20 @@ function App() {
       return
     }
 
+    /*
+     * Administração também utiliza
+     * os dashboards individuais
+     * para a manutenção de opções.
+     */
     const podeConsultarCarteiras =
       possuiPermissao(
         'Carteira',
       ) ||
       possuiPermissao(
         'Opcoes',
+      ) ||
+      possuiPermissao(
+        'Administracao',
       )
 
     if (
@@ -811,11 +748,6 @@ function App() {
         ),
     )
 
-    /*
-     * Caso o usuário também possua
-     * acesso ao Painel, mantemos a
-     * coleção global sincronizada.
-     */
     setCarteirasPainel(
       (atuais) =>
         atuais.map(
@@ -1132,30 +1064,6 @@ function App() {
         ) : null}
 
         {telaAtual ===
-          'operacoes' &&
-        possuiPermissao(
-          'Operacoes',
-        ) ? (
-          <OperacoesView
-            investidores={
-              investidores
-            }
-            selectedInvestor={
-              investidorSelecionado
-            }
-            onSelectInvestor={
-              setInvestidorSelecionado
-            }
-            operacoes={
-              operacoes
-            }
-            onSaveOperation={
-              salvarOperacao
-            }
-          />
-        ) : null}
-
-        {telaAtual ===
           'opcoes' &&
         possuiPermissao(
           'Opcoes',
@@ -1173,6 +1081,7 @@ function App() {
             onSelectInvestor={
               setInvestidorSelecionado
             }
+            modo="consulta"
           />
         ) : null}
 
@@ -1191,6 +1100,7 @@ function App() {
             onSelectInvestor={
               setInvestidorSelecionado
             }
+            modo="consulta"
           />
         ) : null}
 
@@ -1199,7 +1109,26 @@ function App() {
         possuiPermissao(
           'Administracao',
         ) ? (
-          <AdministracaoView />
+          <AdministracaoView
+            investidores={
+              investidores
+            }
+            carteiras={
+              carteirasPorInvestidor
+            }
+            selectedInvestor={
+              investidorSelecionado
+            }
+            onSelectInvestor={
+              setInvestidorSelecionado
+            }
+            operacoes={
+              operacoes
+            }
+            onSaveOperation={
+              salvarOperacao
+            }
+          />
         ) : null}
       </main>
     </div>

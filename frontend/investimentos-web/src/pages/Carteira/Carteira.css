@@ -5,11 +5,11 @@
 
 .carteira-page {
   min-height: calc(100vh - 42px);
-  grid-template-rows: auto auto auto auto;
+  grid-template-rows: auto auto auto auto auto;
 }
 
 /* =========================================================
-   INDICADORES
+   INDICADORES PRINCIPAIS
    ========================================================= */
 
 .carteira-page .portfolio-metrics {
@@ -19,224 +19,286 @@
 }
 
 /* =========================================================
-   PAINEL DE POSIÇÕES
+   PAINÉIS DE INVESTIMENTOS
    ========================================================= */
 
-.carteira-page .portfolio-positions {
+.carteira-page .portfolio-positions,
+.carteira-page .carteira-other-investments {
   min-width: 0;
   min-height: 0;
-
-  height: clamp(340px, 45vh, 500px);
-  max-height: clamp(340px, 45vh, 500px);
-
   box-sizing: border-box;
-
   display: flex;
   flex-direction: column;
-
   overflow: hidden;
 }
 
-/*
- * A rolagem da carteira deve ser somente vertical.
- * A tabela inteira precisa caber na largura do painel.
- */
-.carteira-page .portfolio-positions .table-wrap {
+.carteira-page .portfolio-positions {
+  height: clamp(340px, 43vh, 500px);
+  max-height: clamp(340px, 43vh, 500px);
+}
+
+.carteira-page .carteira-other-investments {
+  min-height: 190px;
+  max-height: 330px;
+}
+
+.carteira-page .portfolio-positions .table-wrap,
+.carteira-page .carteira-other-investments .table-wrap {
   flex: 1;
   min-width: 0;
   min-height: 0;
-
   width: 100%;
   max-width: 100%;
-
   margin-top: 4px;
-
   overflow-y: auto;
   overflow-x: hidden;
-
   scrollbar-gutter: stable;
 }
 
 /* =========================================================
-   TABELA DE POSIÇÕES
+   TABELA - RENDA VARIÁVEL
    ========================================================= */
 
-.carteira-page .portfolio-positions .data-table {
+.carteira-page .carteira-positions-table {
   width: 100%;
   max-width: 100%;
-
   table-layout: fixed;
   border-collapse: collapse;
+  font-size: 0.7rem;
+}
 
+/*
+ * Ativo        20%
+ * Quantidade   11%
+ * Preço Médio  13%
+ * Preço Atual  13%
+ * Custo Total  14%
+ * Valor Atual  14%
+ * Valorização  15%
+ * Total       100%
+ */
+
+.carteira-page .carteira-positions-table th:nth-child(1),
+.carteira-page .carteira-positions-table td:nth-child(1) {
+  width: 20%;
+  text-align: left;
+}
+
+.carteira-page .carteira-positions-table th:nth-child(2),
+.carteira-page .carteira-positions-table td:nth-child(2) {
+  width: 11%;
+  text-align: right;
+}
+
+.carteira-page .carteira-positions-table th:nth-child(3),
+.carteira-page .carteira-positions-table td:nth-child(3) {
+  width: 13%;
+  text-align: right;
+}
+
+.carteira-page .carteira-positions-table th:nth-child(4),
+.carteira-page .carteira-positions-table td:nth-child(4) {
+  width: 13%;
+  text-align: right;
+}
+
+.carteira-page .carteira-positions-table th:nth-child(5),
+.carteira-page .carteira-positions-table td:nth-child(5) {
+  width: 14%;
+  text-align: right;
+}
+
+.carteira-page .carteira-positions-table th:nth-child(6),
+.carteira-page .carteira-positions-table td:nth-child(6) {
+  width: 14%;
+  text-align: right;
+}
+
+.carteira-page .carteira-positions-table th:nth-child(7),
+.carteira-page .carteira-positions-table td:nth-child(7) {
+  width: 15%;
+  text-align: right;
+}
+
+/* =========================================================
+   TABELA - OUTROS INVESTIMENTOS
+   ========================================================= */
+
+.carteira-page .carteira-other-table {
+  width: 100%;
+  max-width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
   font-size: 0.72rem;
 }
 
-/*
- * Distribuição das cinco colunas:
- *
- * Ativo       36%
- * Tipo        18%
- * Quantidade  12%
- * Preço médio 17%
- * Custo total 17%
- *
- * Total = 100%
- */
-
-.carteira-page .portfolio-positions .data-table th:nth-child(1),
-.carteira-page .portfolio-positions .data-table td:nth-child(1) {
-  width: 10%;
+.carteira-page .carteira-other-table th:nth-child(1),
+.carteira-page .carteira-other-table td:nth-child(1) {
+  width: 50%;
   text-align: left;
 }
 
-.carteira-page .portfolio-positions .data-table th:nth-child(2),
-.carteira-page .portfolio-positions .data-table td:nth-child(2) {
-  width: 10%;
+.carteira-page .carteira-other-table th:nth-child(2),
+.carteira-page .carteira-other-table td:nth-child(2) {
+  width: 25%;
   text-align: left;
 }
 
-.carteira-page .portfolio-positions .data-table th:nth-child(3),
-.carteira-page .portfolio-positions .data-table td:nth-child(3) {
-  width: 10%;
+.carteira-page .carteira-other-table th:nth-child(3),
+.carteira-page .carteira-other-table td:nth-child(3) {
+  width: 25%;
   text-align: right;
 }
 
-.carteira-page .portfolio-positions .data-table th:nth-child(4),
-.carteira-page .portfolio-positions .data-table td:nth-child(4) {
-  width: 10%;
-  text-align: right;
-}
-
-.carteira-page .portfolio-positions .data-table th:nth-child(5),
-.carteira-page .portfolio-positions .data-table td:nth-child(5) {
-  width: 10%;
-  text-align: right;
+.investment-category {
+  display: inline-flex;
+  align-items: center;
+  min-height: 26px;
+  padding: 0 9px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.035);
+  color: var(--muted-strong);
+  font-size: 0.66rem;
+  font-weight: 700;
+  white-space: nowrap;
 }
 
 /* =========================================================
-   CABEÇALHO
+   CABEÇALHOS E CÉLULAS
    ========================================================= */
 
-.carteira-page .portfolio-positions .data-table thead {
+.carteira-page .carteira-positions-table thead,
+.carteira-page .carteira-other-table thead {
   position: sticky;
   top: 0;
   z-index: 4;
-
   background: var(--panel);
 }
 
-.carteira-page .portfolio-positions .data-table th {
-  padding: 10px 10px;
-
+.carteira-page .carteira-positions-table th,
+.carteira-page .carteira-other-table th {
+  padding: 10px 8px;
   background: var(--panel);
-
-  font-size: 0.62rem;
+  font-size: 0.6rem;
   white-space: nowrap;
 }
 
-/* =========================================================
-   CÉLULAS
-   ========================================================= */
-
-.carteira-page .portfolio-positions .data-table td {
+.carteira-page .carteira-positions-table td,
+.carteira-page .carteira-other-table td {
   min-width: 0;
-
-  padding: 8px 10px;
-
+  padding: 8px 8px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-/*
- * O ativo pode conter ticker + nome.
- * Evita que um nome grande force a largura da tabela.
- */
-.carteira-page .portfolio-positions .data-table td:first-child {
+.carteira-page .carteira-positions-table td:first-child,
+.carteira-page .carteira-other-table td:first-child {
   overflow: hidden;
 }
 
-.carteira-page .portfolio-positions .data-table td:first-child .ticker {
+.carteira-page .carteira-positions-table td:first-child .ticker,
+.carteira-page .carteira-other-table td:first-child .ticker {
   flex-shrink: 0;
 }
 
-.carteira-page .portfolio-positions .data-table .subtle-inline {
+.carteira-page .carteira-positions-table .subtle-inline,
+.carteira-page .carteira-other-table .subtle-inline {
   display: inline;
-
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-/* Valores numéricos nunca quebram linha. */
-
-.carteira-page .portfolio-positions .data-table td:nth-child(3),
-.carteira-page .portfolio-positions .data-table td:nth-child(4),
-.carteira-page .portfolio-positions .data-table td:nth-child(5) {
-  white-space: nowrap;
-}
-
 /* =========================================================
-   ESTADO VAZIO
+   ESTADOS VAZIOS
    ========================================================= */
 
 .carteira-page .portfolio-positions .empty-state {
   flex: 1;
-
   min-height: 220px;
-
   display: grid;
   place-items: center;
 }
 
+.carteira-page .carteira-other-empty {
+  min-height: 110px;
+}
+
 /* =========================================================
-   CARDS INFERIORES
+   RESULTADOS
    ========================================================= */
 
-.carteira-page .portfolio-secondary-metrics {
+.carteira-page .carteira-result-metrics {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 14px;
 }
 
-.carteira-page .portfolio-secondary-metrics .portfolio-metric {
+.carteira-page .carteira-result-metrics .portfolio-metric {
   min-height: 82px;
   box-sizing: border-box;
+}
+
+.carteira-page .portfolio-total-result {
+  border-color: rgba(99, 230, 200, 0.24);
+  background: rgba(99, 230, 200, 0.06);
 }
 
 /* =========================================================
    RESPONSIVIDADE
    ========================================================= */
 
+@media (max-width: 1200px) {
+  .carteira-page .carteira-result-metrics {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
 @media (max-width: 1000px) {
-  .carteira-page .portfolio-positions .data-table th,
-  .carteira-page .portfolio-positions .data-table td {
-    padding-left: 7px;
-    padding-right: 7px;
+  .carteira-page .carteira-positions-table th,
+  .carteira-page .carteira-positions-table td,
+  .carteira-page .carteira-other-table th,
+  .carteira-page .carteira-other-table td {
+    padding-left: 5px;
+    padding-right: 5px;
   }
 
-  .carteira-page .portfolio-positions .data-table th:nth-child(1),
-  .carteira-page .portfolio-positions .data-table td:nth-child(1) {
-    width: 32%;
+  .carteira-page .carteira-positions-table th {
+    font-size: 0.54rem;
   }
 
-  .carteira-page .portfolio-positions .data-table th:nth-child(2),
-  .carteira-page .portfolio-positions .data-table td:nth-child(2) {
+  .carteira-page .carteira-positions-table td {
+    font-size: 0.64rem;
+  }
+
+  .carteira-page .carteira-positions-table th:nth-child(1),
+  .carteira-page .carteira-positions-table td:nth-child(1) {
     width: 18%;
   }
 
-  .carteira-page .portfolio-positions .data-table th:nth-child(3),
-  .carteira-page .portfolio-positions .data-table td:nth-child(3) {
+  .carteira-page .carteira-positions-table th:nth-child(2),
+  .carteira-page .carteira-positions-table td:nth-child(2) {
+    width: 12%;
+  }
+
+  .carteira-page .carteira-positions-table th:nth-child(3),
+  .carteira-page .carteira-positions-table td:nth-child(3),
+  .carteira-page .carteira-positions-table th:nth-child(4),
+  .carteira-page .carteira-positions-table td:nth-child(4) {
+    width: 13%;
+  }
+
+  .carteira-page .carteira-positions-table th:nth-child(5),
+  .carteira-page .carteira-positions-table td:nth-child(5),
+  .carteira-page .carteira-positions-table th:nth-child(6),
+  .carteira-page .carteira-positions-table td:nth-child(6) {
     width: 14%;
   }
 
-  .carteira-page .portfolio-positions .data-table th:nth-child(4),
-  .carteira-page .portfolio-positions .data-table td:nth-child(4) {
-    width: 18%;
-  }
-
-  .carteira-page .portfolio-positions .data-table th:nth-child(5),
-  .carteira-page .portfolio-positions .data-table td:nth-child(5) {
-    width: 18%;
+  .carteira-page .carteira-positions-table th:nth-child(7),
+  .carteira-page .carteira-positions-table td:nth-child(7) {
+    width: 16%;
   }
 }
 
@@ -247,7 +309,7 @@
   }
 
   .carteira-page .portfolio-metrics,
-  .carteira-page .portfolio-secondary-metrics {
+  .carteira-page .carteira-result-metrics {
     grid-template-columns: 1fr;
   }
 
@@ -256,31 +318,45 @@
     max-height: 340px;
   }
 
-  /*
-   * Continua sem scroll horizontal.
-   * Em telas estreitas reduzimos tipografia e espaçamento.
-   */
-  .carteira-page .portfolio-positions .data-table {
+  .carteira-page .carteira-other-investments {
+    max-height: 300px;
+  }
+
+  .carteira-page .carteira-positions-table {
+    font-size: 0.6rem;
+  }
+
+  .carteira-page .carteira-positions-table th {
+    padding: 8px 2px;
+    font-size: 0.47rem;
+    letter-spacing: 0.01em;
+  }
+
+  .carteira-page .carteira-positions-table td {
+    padding: 7px 2px;
+  }
+
+  .carteira-page .carteira-other-table th,
+  .carteira-page .carteira-other-table td {
+    padding-left: 4px;
+    padding-right: 4px;
+  }
+
+  .carteira-page .carteira-positions-table .ticker,
+  .carteira-page .carteira-other-table .ticker {
+    min-height: 24px;
+    padding: 0 6px;
     font-size: 0.66rem;
   }
 
-  .carteira-page .portfolio-positions .data-table th {
-    padding: 8px 4px;
-    font-size: 0.54rem;
-    letter-spacing: 0.03em;
+  .carteira-page .carteira-positions-table .subtle-inline,
+  .carteira-page .carteira-other-table .subtle-inline {
+    display: none;
   }
 
-  .carteira-page .portfolio-positions .data-table td {
-    padding: 7px 4px;
-  }
-
-  .carteira-page .portfolio-positions .ticker {
+  .investment-category {
     min-height: 24px;
     padding: 0 6px;
-    font-size: 0.7rem;
-  }
-
-  .carteira-page .portfolio-positions .subtle-inline {
-    display: none;
+    font-size: 0.6rem;
   }
 }

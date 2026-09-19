@@ -399,8 +399,9 @@
 .options-table-panel {
   width: 100%;
   min-width: 0;
+  max-width: 100%;
   min-height: 420px;
-  overflow: hidden;
+  overflow: hidden !important;
   box-sizing: border-box;
   border: 1px solid var(--line);
   border-radius: 18px;
@@ -445,24 +446,27 @@
    ========================================================= */
 
 .options-table-wrap {
+  display: block;
   width: 100%;
   min-width: 0;
   max-width: 100%;
-  overflow: hidden;
+  overflow-x: hidden !important;
+  overflow-y: visible;
+  box-sizing: border-box;
 }
 
 .options-table {
-  width: 100%;
-  min-width: 0;
-  max-width: 100%;
-  table-layout: fixed;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  table-layout: fixed !important;
   border-collapse: collapse;
 }
 
 .options-table th,
 .options-table td {
   box-sizing: border-box;
-  padding: 9px 4px;
+  padding: 8px 4px;
   overflow: hidden;
   border-bottom: 1px solid var(--line);
   text-overflow: ellipsis;
@@ -490,96 +494,80 @@
 }
 
 /*
- * Distribuição real das colunas
+ * Tabela de consulta:
  *
- * Vencimento      11%
- * Ticker           8%
- * Tipo             5%
- * Natureza         7%
- * Status           10%
- * Quantidade       11%
- * Strike           10%
- * Prêmio Unit.     12%
- * Prêmio Total     13%
- * Ações            13%
- *
- * TOTAL           100%
+ * 1 Vencimento
+ * 2 Ticker
+ * 3 Tipo
+ * 4 Status
+ * 5 Quantidade
+ * 6 Strike
+ * 7 Resultado Bruto
+ * 8 IR
+ * 9 Resultado Líquido
  */
 
 /* Vencimento */
 .options-table th:nth-child(1),
 .options-table td:nth-child(1) {
-  width: 11%;
+  width: 10%;
   text-align: left;
 }
 
 /* Ticker */
 .options-table th:nth-child(2),
 .options-table td:nth-child(2) {
-  width: 8%;
+  width: 10%;
   text-align: center;
-  padding-left: 2px;
-  padding-right: 2px;
 }
 
 /* Tipo */
 .options-table th:nth-child(3),
 .options-table td:nth-child(3) {
-  width: 5%;
-  text-align: center;
-  padding-left: 1px;
-  padding-right: 1px;
-}
-
-/* Natureza */
-.options-table th:nth-child(4),
-.options-table td:nth-child(4) {
   width: 7%;
   text-align: center;
-  padding-left: 1px;
-  padding-right: 1px;
 }
 
 /* Status */
-.options-table th:nth-child(5),
-.options-table td:nth-child(5) {
-  width: 10%;
+.options-table th:nth-child(4),
+.options-table td:nth-child(4) {
+  width: 9%;
   text-align: center;
 }
 
 /* Quantidade */
-.options-table th:nth-child(6),
-.options-table td:nth-child(6) {
-  width: 11%;
+.options-table th:nth-child(5),
+.options-table td:nth-child(5) {
+  width: 8%;
   text-align: right;
 }
 
 /* Strike */
-.options-table th:nth-child(7),
-.options-table td:nth-child(7) {
+.options-table th:nth-child(6),
+.options-table td:nth-child(6) {
   width: 10%;
   text-align: right;
 }
 
-/* Prêmio Unitário */
+/* Resultado Bruto */
+.options-table th:nth-child(7),
+.options-table td:nth-child(7) {
+  width: 14%;
+  text-align: right;
+}
+
+/* IR */
 .options-table th:nth-child(8),
 .options-table td:nth-child(8) {
-  width: 12%;
+  width: 14%;
   text-align: right;
 }
 
-/* Prêmio Total */
+/* Resultado Líquido */
 .options-table th:nth-child(9),
 .options-table td:nth-child(9) {
-  width: 13%;
+  width: 18%;
   text-align: right;
-}
-
-/* Ações */
-.options-table th:nth-child(10),
-.options-table td:nth-child(10) {
-  width: 13%;
-  text-align: center;
 }
 
 /* =========================================================
@@ -628,13 +616,14 @@
   align-items: center;
   justify-content: center;
   gap: 4px;
+  min-width: 0;
 }
 
 .options-edit-button,
 .options-delete-button {
   min-height: 25px;
-  padding: 0 6px;
-  font-size: 0.58rem;
+  padding: 0 5px;
+  font-size: 0.56rem;
 }
 
 .options-edit-button {
@@ -658,6 +647,62 @@
 .options-delete-button:disabled {
   opacity: 0.5;
   cursor: wait;
+}
+
+/*
+ * Na Administração existe a décima coluna: Ações.
+ * Redistribuição total = 100%.
+ */
+
+.options-table:has(.options-row-actions) th:nth-child(1),
+.options-table:has(.options-row-actions) td:nth-child(1) {
+  width: 9%;
+}
+
+.options-table:has(.options-row-actions) th:nth-child(2),
+.options-table:has(.options-row-actions) td:nth-child(2) {
+  width: 9%;
+}
+
+.options-table:has(.options-row-actions) th:nth-child(3),
+.options-table:has(.options-row-actions) td:nth-child(3) {
+  width: 6%;
+}
+
+.options-table:has(.options-row-actions) th:nth-child(4),
+.options-table:has(.options-row-actions) td:nth-child(4) {
+  width: 8%;
+}
+
+.options-table:has(.options-row-actions) th:nth-child(5),
+.options-table:has(.options-row-actions) td:nth-child(5) {
+  width: 7%;
+}
+
+.options-table:has(.options-row-actions) th:nth-child(6),
+.options-table:has(.options-row-actions) td:nth-child(6) {
+  width: 9%;
+}
+
+.options-table:has(.options-row-actions) th:nth-child(7),
+.options-table:has(.options-row-actions) td:nth-child(7) {
+  width: 12%;
+}
+
+.options-table:has(.options-row-actions) th:nth-child(8),
+.options-table:has(.options-row-actions) td:nth-child(8) {
+  width: 12%;
+}
+
+.options-table:has(.options-row-actions) th:nth-child(9),
+.options-table:has(.options-row-actions) td:nth-child(9) {
+  width: 15%;
+}
+
+.options-table:has(.options-row-actions) th:nth-child(10),
+.options-table:has(.options-row-actions) td:nth-child(10) {
+  width: 13%;
+  text-align: center;
 }
 
 /* =========================================================

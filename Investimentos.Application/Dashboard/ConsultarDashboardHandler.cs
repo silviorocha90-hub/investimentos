@@ -42,6 +42,12 @@ namespace Investimentos.Application.Dashboard
                     investidorId,
                     cancellationToken);
 
+            var resultadoRealizadoAcoes =
+                await _carteiraHandler
+                    .HandleResultadoRealizadoAsync(
+                        investidorId,
+                        cancellationToken);
+
             var proventos =
                 await _proventosHandler.HandleAsync(
                     investidorId,
@@ -132,9 +138,6 @@ namespace Investimentos.Application.Dashboard
 
             /*
              * PROVENTOS
-             *
-             * O valor recebido já é líquido da
-             * retenção registrada no lançamento.
              */
             var proventosBrutos =
                 proventos.Sum(x =>
@@ -149,15 +152,7 @@ namespace Investimentos.Application.Dashboard
                     x.ValorLiquido);
 
             /*
-             * OPÇÕES
-             *
-             * ResultadoBruto representa o
-             * resultado operacional.
-             *
-             * IrEstimado é apenas uma estimativa
-             * por operação. A apuração fiscal
-             * mensal e compensação de prejuízos
-             * serão tratadas posteriormente.
+             * OPÇÕES FINALIZADAS
              */
             var opcoesFinalizadas =
                 opcoes
@@ -167,6 +162,12 @@ namespace Investimentos.Application.Dashboard
                         x.Situacao == "EXPIRADA")
                     .ToList();
 
+            /*
+             * Resultado operacional.
+             *
+             * IR estimado permanece apenas
+             * como informação fiscal.
+             */
             var opcoesBrutas =
                 opcoesFinalizadas.Sum(x =>
                     x.ResultadoBruto ?? 0);
@@ -175,10 +176,19 @@ namespace Investimentos.Application.Dashboard
                 opcoesFinalizadas.Sum(x =>
                     x.IrEstimado);
 
+            /*
+             * Mantido com este nome para
+             * compatibilidade com o frontend.
+             *
+             * No dashboard individual não existe
+             * desconto fiscal global.
+             */
             var premioLiquidoOpcoes =
-                opcoesFinalizadas.Sum(x =>
-                    x.ResultadoLiquido ?? 0);
+                opcoesBrutas;
 
+            /*
+             * VALORIZAÇÃO NÃO REALIZADA
+             */
             var valorizacaoAtivos =
                 posicoes
                     .Where(x =>
@@ -188,8 +198,17 @@ namespace Investimentos.Application.Dashboard
                     .Sum(x =>
                         x.Valorizacao);
 
-            var resultadoRealizado =
+            /*
+             * RESULTADO DA CARTEIRA
+             *
+             * Valorização não realizada
+             * + vendas realizadas
+             * + proventos líquidos
+             * + opções realizadas.
+             */
+            var resultadoCarteira =
                 valorizacaoAtivos +
+                resultadoRealizadoAcoes +
                 totalProventos +
                 premioLiquidoOpcoes;
 
@@ -207,7 +226,7 @@ namespace Investimentos.Application.Dashboard
 
             return new DashboardDto(
                 valorAplicado,
-                resultadoRealizado,
+                resultadoCarteira,
                 totalProventos,
                 premioLiquidoOpcoes,
                 quantidadeAtivos,
@@ -224,7 +243,8 @@ namespace Investimentos.Application.Dashboard
                 proventosBrutos,
                 irProventos,
                 opcoesBrutas,
-                irEstimadoOpcoes);
+                irEstimadoOpcoes,
+                resultadoRealizadoAcoes);
         }
 
         private static bool EhAtivoSemMarcacaoPorCotacao(

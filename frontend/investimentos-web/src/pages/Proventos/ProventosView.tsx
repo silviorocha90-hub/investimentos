@@ -3,13 +3,19 @@ import {
   useMemo,
   useState,
 } from 'react'
-import { PageHeader } from '../../components/PageHeader'
+
+import {
+  PageHeader,
+} from '../../components/PageHeader'
+
 import type {
   Provento,
 } from '../../types/dashboard'
+
 import type {
   Investidor,
 } from '../../types/investidor'
+
 import {
   atualizarProvento,
   criarProvento,
@@ -17,10 +23,23 @@ import {
   listarProventos,
   type SalvarProventoRequest,
 } from '../../api/proventosApi'
-import { ProventosResumo } from './components/ProventosResumo'
-import { ProventosGraficos } from './components/ProventosGraficos'
-import { ProventosTabela } from './components/ProventosTabela'
-import { ProventoModal } from './components/ProventoModal'
+
+import {
+  ProventosResumo,
+} from './components/ProventosResumo'
+
+import {
+  ProventosGraficos,
+} from './components/ProventosGraficos'
+
+import {
+  ProventosTabela,
+} from './components/ProventosTabela'
+
+import {
+  ProventoModal,
+} from './components/ProventoModal'
+
 import './Proventos.css'
 
 interface ProventosViewProps {
@@ -32,6 +51,8 @@ interface ProventosViewProps {
   onSelectInvestor: (
     nome: string,
   ) => void
+
+  modo?: 'consulta' | 'administracao'
 }
 
 const ITENS_POR_PAGINA =
@@ -41,7 +62,11 @@ export function ProventosView({
   investidores,
   selectedInvestor,
   onSelectInvestor,
+  modo = 'consulta',
 }: ProventosViewProps) {
+  const modoAdministracao =
+    modo === 'administracao'
+
   const [
     proventos,
     setProventos,
@@ -89,18 +114,23 @@ export function ProventosView({
     ano,
     setAno,
   ] = useState(
-    new Date().getFullYear(),
+    new Date()
+      .getFullYear(),
   )
 
   const [
     tipo,
     setTipo,
-  ] = useState('TODOS')
+  ] = useState(
+    'TODOS',
+  )
 
   const [
     ticker,
     setTicker,
-  ] = useState('TODOS')
+  ] = useState(
+    'TODOS',
+  )
 
   const [
     busca,
@@ -122,6 +152,7 @@ export function ProventosView({
   async function carregar() {
     if (!investidor) {
       setProventos([])
+      setCarregando(false)
       return
     }
 
@@ -138,7 +169,9 @@ export function ProventosView({
         dados,
       )
     } catch (error) {
-      console.error(error)
+      console.error(
+        error,
+      )
 
       setErro(
         error instanceof Error
@@ -153,7 +186,7 @@ export function ProventosView({
   }
 
   useEffect(() => {
-    carregar()
+    void carregar()
   }, [
     investidor?.id,
   ])
@@ -173,7 +206,8 @@ export function ProventosView({
         new Set<number>()
 
       encontrados.add(
-        new Date().getFullYear(),
+        new Date()
+          .getFullYear(),
       )
 
       proventos.forEach(
@@ -191,7 +225,9 @@ export function ProventosView({
         (a, b) =>
           b - a,
       )
-    }, [proventos])
+    }, [
+      proventos,
+    ])
 
   const tickers =
     useMemo(
@@ -236,19 +272,21 @@ export function ProventosView({
 
   const totalMes =
     proventosAno
-      .filter((item) => {
-        const data =
-          new Date(
-            item.dataPagamento,
-          )
+      .filter(
+        (item) => {
+          const data =
+            new Date(
+              item.dataPagamento,
+            )
 
-        return (
-          ano ===
-            agora.getFullYear() &&
-          data.getMonth() ===
-            agora.getMonth()
-        )
-      })
+          return (
+            ano ===
+              agora.getFullYear() &&
+            data.getMonth() ===
+              agora.getMonth()
+          )
+        },
+      )
       .reduce(
         (total, item) =>
           total +
@@ -281,9 +319,11 @@ export function ProventosView({
         (item) => {
           mapa.set(
             item.ticker,
-            (mapa.get(
-              item.ticker,
-            ) ?? 0) +
+            (
+              mapa.get(
+                item.ticker,
+              ) ?? 0
+            ) +
               item.valorRecebido,
           )
         },
@@ -309,7 +349,9 @@ export function ProventosView({
         valor:
           primeiro[1],
       }
-    }, [proventosAno])
+    }, [
+      proventosAno,
+    ])
 
   const filtrados =
     useMemo(() => {
@@ -370,11 +412,19 @@ export function ProventosView({
     ])
 
   function novo() {
+    if (
+      !modoAdministracao
+    ) {
+      return
+    }
+
     setProventoEditando(
       null,
     )
 
-    setErroModal(null)
+    setErroModal(
+      null,
+    )
 
     setModalAberto(
       true,
@@ -384,11 +434,19 @@ export function ProventosView({
   function editar(
     item: Provento,
   ) {
+    if (
+      !modoAdministracao
+    ) {
+      return
+    }
+
     setProventoEditando(
       item,
     )
 
-    setErroModal(null)
+    setErroModal(
+      null,
+    )
 
     setModalAberto(
       true,
@@ -399,6 +457,12 @@ export function ProventosView({
     request:
       SalvarProventoRequest,
   ) {
+    if (
+      !modoAdministracao
+    ) {
+      return
+    }
+
     try {
       setSalvando(true)
       setErroModal(null)
@@ -432,7 +496,9 @@ export function ProventosView({
 
       await carregar()
     } catch (error) {
-      console.error(error)
+      console.error(
+        error,
+      )
 
       setErroModal(
         error instanceof Error
@@ -447,6 +513,12 @@ export function ProventosView({
   async function excluir(
     item: Provento,
   ) {
+    if (
+      !modoAdministracao
+    ) {
+      return
+    }
+
     const confirmou =
       window.confirm(
         `Excluir o provento de ${item.ticker} no valor recebido de ${item.valorRecebido.toLocaleString(
@@ -473,7 +545,9 @@ export function ProventosView({
 
       await carregar()
     } catch (error) {
-      console.error(error)
+      console.error(
+        error,
+      )
 
       setErro(
         error instanceof Error
@@ -486,7 +560,11 @@ export function ProventosView({
   return (
     <section className="portfolio-view proventos-page">
       <PageHeader
-        titulo="Proventos"
+        titulo={
+          modoAdministracao
+            ? 'Administração de Proventos'
+            : 'Proventos'
+        }
         investidores={
           investidores
         }
@@ -514,35 +592,41 @@ export function ProventosView({
         </article>
       ) : (
         <>
-          <ProventosResumo
-            totalAno={
-              totalAno
-            }
-            totalMes={
-              totalMes
-            }
-            mediaMensal={
-              mediaMensal
-            }
-            maiorPagador={
-              maiorPagador
-            }
-          />
+          {!modoAdministracao ? (
+            <>
+              <ProventosResumo
+                totalAno={
+                  totalAno
+                }
+                totalMes={
+                  totalMes
+                }
+                mediaMensal={
+                  mediaMensal
+                }
+                maiorPagador={
+                  maiorPagador
+                }
+              />
 
-          <ProventosGraficos
-            proventos={
-              proventos
-            }
-            ano={
-              ano
-            }
-          />
+              <ProventosGraficos
+                proventos={
+                  proventos
+                }
+                ano={
+                  ano
+                }
+              />
+            </>
+          ) : null}
 
           <article className="panel proventos-history">
             <header className="proventos-history-header">
               <div>
                 <span>
-                  Movimentações
+                  {modoAdministracao
+                    ? 'Manutenção'
+                    : 'Movimentações'}
                 </span>
 
                 <strong>
@@ -550,15 +634,17 @@ export function ProventosView({
                 </strong>
               </div>
 
-              <button
-                type="button"
-                className="proventos-new-button"
-                onClick={
-                  novo
-                }
-              >
-                + Novo provento
-              </button>
+              {modoAdministracao ? (
+                <button
+                  type="button"
+                  className="proventos-new-button"
+                  onClick={
+                    novo
+                  }
+                >
+                  + Novo provento
+                </button>
+              ) : null}
             </header>
 
             <div className="proventos-filters">
@@ -717,18 +803,26 @@ export function ProventosView({
               onPaginaChange={
                 setPagina
               }
+              modoAdministracao={
+                modoAdministracao
+              }
               onEditar={
-                editar
+                modoAdministracao
+                  ? editar
+                  : undefined
               }
               onExcluir={
-                excluir
+                modoAdministracao
+                  ? excluir
+                  : undefined
               }
             />
           </article>
         </>
       )}
 
-      {modalAberto &&
+      {modoAdministracao &&
+      modalAberto &&
       investidor ? (
         <ProventoModal
           provento={

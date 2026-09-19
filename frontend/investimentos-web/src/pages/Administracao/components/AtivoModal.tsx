@@ -173,22 +173,20 @@ export function AtivoModal({
                 )
               }
             >
-              {tipos.map(
-                (tipo) => (
-                  <option
-                    key={
-                      tipo.id
-                    }
-                    value={
-                      tipo.id
-                    }
-                  >
-                    {
-                      tipo.nome
-                    }
-                  </option>
-                ),
-              )}
+             {tipos.map(
+  (tipo) => (
+    <option
+      key={
+        tipo.id
+      }
+      value={
+        tipo.id
+      }
+    >
+      {tipo.nome}
+    </option>
+  ),
+)}
             </select>
           </label>
 

@@ -10,15 +10,16 @@ import {
 
 interface OpcoesTabelaProps {
   opcoes: readonly OperacaoOpcao[]
-  salvando: boolean
+  salvando?: boolean
+  modoAdministracao?: boolean
 
-  onNovaOpcao: () => void
+  onNovaOpcao?: () => void
 
-  onEditar: (
+  onEditar?: (
     opcao: OperacaoOpcao,
   ) => void
 
-  onExcluir: (
+  onExcluir?: (
     opcao: OperacaoOpcao,
   ) => void
 }
@@ -37,7 +38,8 @@ function formatarPercentual(
 
 export function OpcoesTabela({
   opcoes,
-  salvando,
+  salvando = false,
+  modoAdministracao = false,
   onNovaOpcao,
   onEditar,
   onExcluir,
@@ -58,14 +60,17 @@ export function OpcoesTabela({
           </span>
         </div>
 
-        <button
-          type="button"
-          className="options-new-button"
-          disabled={salvando}
-          onClick={onNovaOpcao}
-        >
-          + Nova Opção
-        </button>
+        {modoAdministracao &&
+        onNovaOpcao ? (
+          <button
+            type="button"
+            className="options-new-button"
+            disabled={salvando}
+            onClick={onNovaOpcao}
+          >
+            + Nova Opção
+          </button>
+        ) : null}
       </div>
 
       {opcoes.length > 0 ? (
@@ -79,11 +84,17 @@ export function OpcoesTabela({
                 <th>Status</th>
                 <th>Qtd.</th>
                 <th>Strike</th>
-                <th>Resultado Bruto</th>
-                <th>Regime</th>
+                <th>
+                  Resultado Bruto
+                </th>
                 <th>IR</th>
-                <th>Resultado Líquido</th>
-                <th>Ações</th>
+                <th>
+                  Resultado Líquido
+                </th>
+
+                {modoAdministracao ? (
+                  <th>Ações</th>
+                ) : null}
               </tr>
             </thead>
 
@@ -159,13 +170,6 @@ export function OpcoesTabela({
                           : '—'}
                       </td>
 
-                      <td>
-                        {opcao.regimeTributario ===
-                        'DAY_TRADE'
-                          ? 'Day Trade'
-                          : 'Comum'}
-                      </td>
-
                       <td className="align-right">
                         {opcao.resultadoBruto != null
                           ? `${formatarMoeda(
@@ -191,36 +195,42 @@ export function OpcoesTabela({
                           : '—'}
                       </td>
 
-                      <td>
-                        <div className="options-row-actions">
-                          <button
-                            type="button"
-                            className="options-edit-button"
-                            onClick={() =>
-                              onEditar(
-                                opcao,
-                              )
-                            }
-                          >
-                            Editar
-                          </button>
+                      {modoAdministracao ? (
+                        <td>
+                          <div className="options-row-actions">
+                            {onEditar ? (
+                              <button
+                                type="button"
+                                className="options-edit-button"
+                                onClick={() =>
+                                  onEditar(
+                                    opcao,
+                                  )
+                                }
+                              >
+                                Editar
+                              </button>
+                            ) : null}
 
-                          <button
-                            type="button"
-                            className="options-delete-button"
-                            disabled={
-                              salvando
-                            }
-                            onClick={() =>
-                              onExcluir(
-                                opcao,
-                              )
-                            }
-                          >
-                            Excluir
-                          </button>
-                        </div>
-                      </td>
+                            {onExcluir ? (
+                              <button
+                                type="button"
+                                className="options-delete-button"
+                                disabled={
+                                  salvando
+                                }
+                                onClick={() =>
+                                  onExcluir(
+                                    opcao,
+                                  )
+                                }
+                              >
+                                Excluir
+                              </button>
+                            ) : null}
+                          </div>
+                        </td>
+                      ) : null}
                     </tr>
                   )
                 },
@@ -234,14 +244,21 @@ export function OpcoesTabela({
             Nenhuma opção encontrada
           </strong>
 
-          <button
-            type="button"
-            className="options-new-button"
-            disabled={salvando}
-            onClick={onNovaOpcao}
-          >
-            + Nova Opção
-          </button>
+          {modoAdministracao &&
+          onNovaOpcao ? (
+            <button
+              type="button"
+              className="options-new-button"
+              disabled={salvando}
+              onClick={onNovaOpcao}
+            >
+              + Nova Opção
+            </button>
+          ) : (
+            <span>
+              Não há opções para os filtros selecionados.
+            </span>
+          )}
         </div>
       )}
     </article>

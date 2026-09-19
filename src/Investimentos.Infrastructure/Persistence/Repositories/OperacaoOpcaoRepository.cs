@@ -1,5 +1,6 @@
 ﻿using Investimentos.Application.Interfaces;
 using Investimentos.Domain.Entities;
+using Investimentos.Domain.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 
 namespace Investimentos.Infrastructure.Persistence.Repositories
@@ -42,7 +43,7 @@ namespace Investimentos.Infrastructure.Persistence.Repositories
         {
             return await _context.Ativos
                 .FirstOrDefaultAsync(
-                    x => x.Ticker.Codigo == ticker,
+                    x => x.Ticker == new Ticker(ticker),
                     cancellationToken);
         }
 

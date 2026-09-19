@@ -8,11 +8,23 @@ import type {
   Dashboard,
   OperacaoOpcao,
 } from '../../types/dashboard'
-import type { Investidor } from '../../types/investidor'
 
-import { OpcoesGraficos } from './components/OpcoesGraficos'
-import { OpcoesFiltros } from './components/OpcoesFiltros'
-import { OpcoesTabela } from './components/OpcoesTabela'
+import type {
+  Investidor,
+} from '../../types/investidor'
+
+import {
+  OpcoesGraficos,
+} from './components/OpcoesGraficos'
+
+import {
+  OpcoesFiltros,
+} from './components/OpcoesFiltros'
+
+import {
+  OpcoesTabela,
+} from './components/OpcoesTabela'
+
 import {
   OpcaoModal,
   type NovaOpcaoForm,
@@ -21,18 +33,22 @@ import {
 import './Opcoes.css'
 
 interface OpcoesViewProps {
-  investidores: readonly Investidor[]
+  investidores:
+    readonly Investidor[]
 
-  carteiras: ReadonlyArray<{
-    nome: string
-    dashboard: Dashboard
-  }>
+  carteiras:
+    ReadonlyArray<{
+      nome: string
+      dashboard: Dashboard
+    }>
 
   selectedInvestor: string
 
   onSelectInvestor: (
     nome: string,
   ) => void
+
+  modo?: 'consulta' | 'administracao'
 }
 
 async function lerErroApi(
@@ -67,7 +83,11 @@ export function OpcoesView({
   carteiras,
   selectedInvestor,
   onSelectInvestor,
+  modo = 'consulta',
 }: OpcoesViewProps) {
+  const modoAdministracao =
+    modo === 'administracao'
+
   const apiUrl =
     import.meta.env.VITE_API_URL ??
     'https://localhost:7237'
@@ -105,9 +125,9 @@ export function OpcoesView({
   const [
     erroOpcao,
     setErroOpcao,
-  ] = useState<string | null>(
-    null,
-  )
+  ] = useState<
+    string | null
+  >(null)
 
   const [
     modalInclusaoAberto,
@@ -117,9 +137,9 @@ export function OpcoesView({
   const [
     opcaoEmEdicao,
     setOpcaoEmEdicao,
-  ] = useState<OperacaoOpcao | null>(
-    null,
-  )
+  ] = useState<
+    OperacaoOpcao | null
+  >(null)
 
   const carteira =
     carteiras.find(
@@ -128,74 +148,109 @@ export function OpcoesView({
         selectedInvestor,
     )?.dashboard
 
-  const opcoes = useMemo(
-    () =>
-      (carteira?.opcoes ?? [])
-        .filter(
+  const opcoes =
+    useMemo(
+      () =>
+        (
+          carteira?.opcoes ??
+          []
+        ).filter(
           (opcao) =>
             opcao.situacao ===
               'EXECUTADA' ||
             opcao.situacao ===
               'ENCERRADA',
         ),
-    [carteira?.opcoes],
-  )
+      [carteira?.opcoes],
+    )
 
   useEffect(() => {
-    setTickerSelecionado('TODOS')
-    setTipoSelecionado('TODOS')
-    setNaturezaSelecionada('TODOS')
-    setStatusSelecionado('TODOS')
+    setTickerSelecionado(
+      'TODOS',
+    )
+
+    setTipoSelecionado(
+      'TODOS',
+    )
+
+    setNaturezaSelecionada(
+      'TODOS',
+    )
+
+    setStatusSelecionado(
+      'TODOS',
+    )
+
     setVencimentoSelecionado(
       'TODOS',
     )
 
-    setModalInclusaoAberto(false)
-    setOpcaoEmEdicao(null)
-    setErroOpcao(null)
-  }, [selectedInvestor])
+    setModalInclusaoAberto(
+      false,
+    )
 
-  const tickers = useMemo(
-    () =>
-      Array.from(
-        new Set(
-          opcoes.map(
-            (opcao) =>
-              opcao.tickerOpcao,
+    setOpcaoEmEdicao(
+      null,
+    )
+
+    setErroOpcao(
+      null,
+    )
+  }, [
+    selectedInvestor,
+  ])
+
+  const tickers =
+    useMemo(
+      () =>
+        Array.from(
+          new Set(
+            opcoes.map(
+              (opcao) =>
+                opcao.tickerOpcao,
+            ),
           ),
-        ),
-      )
-        .filter(Boolean)
-        .sort((a, b) =>
-          a.localeCompare(
-            b,
-            'pt-BR',
+        )
+          .filter(Boolean)
+          .sort(
+            (a, b) =>
+              a.localeCompare(
+                b,
+                'pt-BR',
+              ),
           ),
-        ),
-    [opcoes],
-  )
+      [opcoes],
+    )
 
   const opcoesAntesVencimento =
     useMemo(
       () =>
         opcoes.filter(
           (opcao) =>
-            (tickerSelecionado ===
-              'TODOS' ||
+            (
+              tickerSelecionado ===
+                'TODOS' ||
               opcao.tickerOpcao ===
-                tickerSelecionado) &&
-            (tipoSelecionado ===
-              'TODOS' ||
+                tickerSelecionado
+            ) &&
+            (
+              tipoSelecionado ===
+                'TODOS' ||
               opcao.tipoOpcao ===
-                tipoSelecionado) &&
-            (naturezaSelecionada ===
-              'TODOS' ||
+                tipoSelecionado
+            ) &&
+            (
+              naturezaSelecionada ===
+                'TODOS' ||
               opcao.natureza ===
-                naturezaSelecionada) &&
-            (statusSelecionado ===
-              'TODOS' ||
+                naturezaSelecionada
+            ) &&
+            (
+              statusSelecionado ===
+                'TODOS' ||
               opcao.situacao ===
-                statusSelecionado),
+                statusSelecionado
+            ),
         ),
       [
         naturezaSelecionada,
@@ -221,8 +276,9 @@ export function OpcoesView({
           ),
         )
           .filter(Boolean)
-          .sort((a, b) =>
-            b.localeCompare(a),
+          .sort(
+            (a, b) =>
+              b.localeCompare(a),
           ),
       [opcoesAntesVencimento],
     )
@@ -259,22 +315,25 @@ export function OpcoesView({
                 vencimentoSelecionado,
           )
           .slice()
-          .sort((a, b) => {
-            const porVencimento =
-              b.vencimento.localeCompare(
-                a.vencimento,
+          .sort(
+            (a, b) => {
+              const porVencimento =
+                b.vencimento.localeCompare(
+                  a.vencimento,
+                )
+
+              if (
+                porVencimento !==
+                0
+              ) {
+                return porVencimento
+              }
+
+              return b.dataOperacao.localeCompare(
+                a.dataOperacao,
               )
-
-            if (
-              porVencimento !== 0
-            ) {
-              return porVencimento
-            }
-
-            return b.dataOperacao.localeCompare(
-              a.dataOperacao,
-            )
-          }),
+            },
+          ),
       [
         opcoesAntesVencimento,
         vencimentoSelecionado,
@@ -291,8 +350,15 @@ export function OpcoesView({
 
   const handleAdicionar =
     async (
-      novaOpcao: NovaOpcaoForm,
+      novaOpcao:
+        NovaOpcaoForm,
     ) => {
+      if (
+        !modoAdministracao
+      ) {
+        return
+      }
+
       setErroOpcao(null)
 
       const investidor =
@@ -302,15 +368,18 @@ export function OpcoesView({
         setErroOpcao(
           'Investidor não selecionado.',
         )
+
         return
       }
 
       if (
-        !novaOpcao.ticker.trim()
+        !novaOpcao.ticker
+          .trim()
       ) {
         setErroOpcao(
           'Ticker é obrigatório.',
         )
+
         return
       }
 
@@ -322,6 +391,7 @@ export function OpcoesView({
         setErroOpcao(
           'Quantidade deve ser maior que zero.',
         )
+
         return
       }
 
@@ -333,17 +403,20 @@ export function OpcoesView({
         setErroOpcao(
           'Strike deve ser maior que zero.',
         )
+
         return
       }
 
       if (
         Number(
-          novaOpcao.premioUnitario,
+          novaOpcao
+            .premioUnitario,
         ) < 0
       ) {
         setErroOpcao(
           'Prêmio unitário inválido.',
         )
+
         return
       }
 
@@ -354,49 +427,59 @@ export function OpcoesView({
           await fetch(
             `${apiUrl}/api/opcoes`,
             {
-              method: 'POST',
+              method:
+                'POST',
 
               headers: {
                 'Content-Type':
                   'application/json',
               },
 
-              body: JSON.stringify({
-                investidorId:
-                  investidor.id,
+              body:
+                JSON.stringify({
+                  investidorId:
+                    investidor.id,
 
-                dataOperacao:
-                  novaOpcao.dataOperacao,
+                  dataOperacao:
+                    novaOpcao
+                      .dataOperacao,
 
-                ticker:
-                  novaOpcao.ticker
-                    .trim()
-                    .toUpperCase(),
+                  ticker:
+                    novaOpcao
+                      .ticker
+                      .trim()
+                      .toUpperCase(),
 
-                tipoOpcao:
-                  novaOpcao.tipoOpcao,
+                  tipoOpcao:
+                    novaOpcao
+                      .tipoOpcao,
 
-                natureza:
-                  novaOpcao.natureza,
+                  natureza:
+                    novaOpcao
+                      .natureza,
 
-                quantidade:
-                  Number(
-                    novaOpcao.quantidade,
-                  ),
+                  quantidade:
+                    Number(
+                      novaOpcao
+                        .quantidade,
+                    ),
 
-                strike:
-                  Number(
-                    novaOpcao.strike,
-                  ),
+                  strike:
+                    Number(
+                      novaOpcao
+                        .strike,
+                    ),
 
-                vencimento:
-                  novaOpcao.vencimento,
+                  vencimento:
+                    novaOpcao
+                      .vencimento,
 
-                premioUnitario:
-                  Number(
-                    novaOpcao.premioUnitario,
-                  ),
-              }),
+                  premioUnitario:
+                    Number(
+                      novaOpcao
+                        .premioUnitario,
+                    ),
+                }),
             },
           )
 
@@ -426,8 +509,15 @@ export function OpcoesView({
 
   const handleSalvarEdicao =
     async (
-      opcao: OperacaoOpcao,
+      opcao:
+        OperacaoOpcao,
     ) => {
+      if (
+        !modoAdministracao
+      ) {
+        return
+      }
+
       try {
         setSalvando(true)
         setErroOpcao(null)
@@ -436,61 +526,64 @@ export function OpcoesView({
           await fetch(
             `${apiUrl}/api/opcoes/${opcao.id}`,
             {
-              method: 'PUT',
+              method:
+                'PUT',
 
               headers: {
                 'Content-Type':
                   'application/json',
               },
 
-              body: JSON.stringify({
-                dataOperacao:
-                  opcao.dataOperacao.slice(
-                    0,
-                    10,
-                  ),
+              body:
+                JSON.stringify({
+                  dataOperacao:
+                    opcao.dataOperacao.slice(
+                      0,
+                      10,
+                    ),
 
-                vencimento:
-                  opcao.vencimento.slice(
-                    0,
-                    10,
-                  ),
+                  vencimento:
+                    opcao.vencimento.slice(
+                      0,
+                      10,
+                    ),
 
-                strike:
-                  Number(
-                    opcao.strike,
-                  ),
+                  strike:
+                    Number(
+                      opcao.strike,
+                    ),
 
-                contratos:
-                  opcao.contratos > 0
-                    ? opcao.contratos
-                    : 1,
+                  contratos:
+                    opcao.contratos >
+                    0
+                      ? opcao.contratos
+                      : 1,
 
-                quantidade:
-                  Number(
-                    opcao.quantidade,
-                  ),
+                  quantidade:
+                    Number(
+                      opcao.quantidade,
+                    ),
 
-                premioUnitario:
-                  Number(
-                    opcao.premioUnitario,
-                  ),
+                  premioUnitario:
+                    Number(
+                      opcao.premioUnitario,
+                    ),
 
-                situacao:
-                  opcao.situacao,
+                  situacao:
+                    opcao.situacao,
 
-                dataFinalizacao:
-                  opcao.dataFinalizacao ??
-                  null,
+                  dataFinalizacao:
+                    opcao.dataFinalizacao ??
+                    null,
 
-                precoRecompraUnitario:
-                  opcao.precoRecompraUnitario ??
-                  null,
+                  precoRecompraUnitario:
+                    opcao.precoRecompraUnitario ??
+                    null,
 
-                valorExecucao:
-                  opcao.valorExecucao ??
-                  null,
-              }),
+                  valorExecucao:
+                    opcao.valorExecucao ??
+                    null,
+                }),
             },
           )
 
@@ -516,8 +609,15 @@ export function OpcoesView({
 
   const handleExcluir =
     async (
-      opcao: OperacaoOpcao,
+      opcao:
+        OperacaoOpcao,
     ) => {
+      if (
+        !modoAdministracao
+      ) {
+        return
+      }
+
       if (
         !window.confirm(
           `Excluir ${opcao.tickerOpcao}? Esta ação não pode ser desfeita.`,
@@ -534,7 +634,8 @@ export function OpcoesView({
           await fetch(
             `${apiUrl}/api/opcoes/${opcao.id}`,
             {
-              method: 'DELETE',
+              method:
+                'DELETE',
             },
           )
 
@@ -553,53 +654,112 @@ export function OpcoesView({
             ? error.message
             : 'Não foi possível excluir a opção.'
 
-        setErroOpcao(mensagem)
-        alert(mensagem)
+        setErroOpcao(
+          mensagem,
+        )
+
+        alert(
+          mensagem,
+        )
       } finally {
         setSalvando(false)
       }
     }
 
-  const limparFiltros = () => {
-    setTickerSelecionado('TODOS')
-    setTipoSelecionado('TODOS')
-    setNaturezaSelecionada('TODOS')
-    setStatusSelecionado('TODOS')
-    setVencimentoSelecionado(
-      'TODOS',
-    )
-  }
+  const limparFiltros =
+    () => {
+      setTickerSelecionado(
+        'TODOS',
+      )
 
-  const abrirNovaOpcao = () => {
-    setOpcaoEmEdicao(null)
-    setErroOpcao(null)
-    setModalInclusaoAberto(true)
-  }
+      setTipoSelecionado(
+        'TODOS',
+      )
+
+      setNaturezaSelecionada(
+        'TODOS',
+      )
+
+      setStatusSelecionado(
+        'TODOS',
+      )
+
+      setVencimentoSelecionado(
+        'TODOS',
+      )
+    }
+
+  const abrirNovaOpcao =
+    () => {
+      if (
+        !modoAdministracao
+      ) {
+        return
+      }
+
+      setOpcaoEmEdicao(
+        null,
+      )
+
+      setErroOpcao(
+        null,
+      )
+
+      setModalInclusaoAberto(
+        true,
+      )
+    }
 
   const abrirEdicao = (
-    opcao: OperacaoOpcao,
+    opcao:
+      OperacaoOpcao,
   ) => {
-    setModalInclusaoAberto(false)
-    setErroOpcao(null)
-    setOpcaoEmEdicao(opcao)
-  }
-
-  const fecharModal = () => {
-    if (salvando) {
+    if (
+      !modoAdministracao
+    ) {
       return
     }
 
-    setModalInclusaoAberto(false)
-    setOpcaoEmEdicao(null)
-    setErroOpcao(null)
+    setModalInclusaoAberto(
+      false,
+    )
+
+    setErroOpcao(
+      null,
+    )
+
+    setOpcaoEmEdicao(
+      opcao,
+    )
   }
+
+  const fecharModal =
+    () => {
+      if (salvando) {
+        return
+      }
+
+      setModalInclusaoAberto(
+        false,
+      )
+
+      setOpcaoEmEdicao(
+        null,
+      )
+
+      setErroOpcao(
+        null,
+      )
+    }
 
   return (
     <section className="portfolio-view options-page">
       <article className="panel options-header-panel">
         <div className="options-page-heading">
           <h1 className="options-page-title">
-            Opções
+            {modoAdministracao
+              ? 'Administração de Opções'
+              : 'Opções'}
           </h1>
         </div>
 
@@ -609,17 +769,26 @@ export function OpcoesView({
           </span>
 
           <select
-            value={selectedInvestor}
-            onChange={(event) =>
+            value={
+              selectedInvestor
+            }
+            onChange={(
+              event,
+            ) =>
               onSelectInvestor(
-                event.target.value,
+                event.target
+                  .value,
               )
             }
           >
             {investidores.map(
-              (investidor) => (
+              (
+                investidor,
+              ) => (
                 <option
-                  key={investidor.id}
+                  key={
+                    investidor.id
+                  }
                   value={
                     investidor.nome
                   }
@@ -634,19 +803,33 @@ export function OpcoesView({
         </label>
       </article>
 
-      <OpcoesGraficos
-        opcoes={opcoes}
-      />
+      {!modoAdministracao ? (
+        <OpcoesGraficos
+          opcoes={
+            opcoes
+          }
+        />
+      ) : null}
 
       <OpcoesFiltros
-        tickers={tickers}
-        vencimentos={vencimentos}
-        ticker={tickerSelecionado}
-        tipo={tipoSelecionado}
+        tickers={
+          tickers
+        }
+        vencimentos={
+          vencimentos
+        }
+        ticker={
+          tickerSelecionado
+        }
+        tipo={
+          tipoSelecionado
+        }
         natureza={
           naturezaSelecionada
         }
-        status={statusSelecionado}
+        status={
+          statusSelecionado
+        }
         vencimento={
           vencimentoSelecionado
         }
@@ -665,40 +848,73 @@ export function OpcoesView({
         onVencimentoChange={
           setVencimentoSelecionado
         }
-        onLimpar={limparFiltros}
+        onLimpar={
+          limparFiltros
+        }
       />
 
       <OpcoesTabela
-        opcoes={opcoesFiltradas}
-        salvando={salvando}
-        onNovaOpcao={
-          abrirNovaOpcao
+        opcoes={
+          opcoesFiltradas
         }
-        onEditar={abrirEdicao}
+        salvando={
+          salvando
+        }
+        modoAdministracao={
+          modoAdministracao
+        }
+        onNovaOpcao={
+          modoAdministracao
+            ? abrirNovaOpcao
+            : undefined
+        }
+        onEditar={
+          modoAdministracao
+            ? abrirEdicao
+            : undefined
+        }
         onExcluir={
-          handleExcluir
+          modoAdministracao
+            ? handleExcluir
+            : undefined
         }
       />
 
-      {modalInclusaoAberto ? (
+      {modoAdministracao &&
+      modalInclusaoAberto ? (
         <OpcaoModal
           modo="novo"
-          salvando={salvando}
-          erro={erroOpcao}
-          onClose={fecharModal}
+          salvando={
+            salvando
+          }
+          erro={
+            erroOpcao
+          }
+          onClose={
+            fecharModal
+          }
           onAdicionar={
             handleAdicionar
           }
         />
       ) : null}
 
-      {opcaoEmEdicao ? (
+      {modoAdministracao &&
+      opcaoEmEdicao ? (
         <OpcaoModal
           modo="editar"
-          opcao={opcaoEmEdicao}
-          salvando={salvando}
-          erro={erroOpcao}
-          onClose={fecharModal}
+          opcao={
+            opcaoEmEdicao
+          }
+          salvando={
+            salvando
+          }
+          erro={
+            erroOpcao
+          }
+          onClose={
+            fecharModal
+          }
           onSalvar={
             handleSalvarEdicao
           }

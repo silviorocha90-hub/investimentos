@@ -21,19 +21,44 @@ namespace Investimentos.Application.Carteira.ConsultarCarteira
                 Guid investidorId,
                 CancellationToken cancellationToken = default)
         {
+            var operacoes =
+                await ObterOperacoesAsync(
+                    investidorId,
+                    cancellationToken);
+
+            return _calcularCarteiraService.Calcular(
+                operacoes);
+        }
+
+        public async Task<decimal>
+            HandleResultadoRealizadoAsync(
+                Guid investidorId,
+                CancellationToken cancellationToken = default)
+        {
+            var operacoes =
+                await ObterOperacoesAsync(
+                    investidorId,
+                    cancellationToken);
+
+            return _calcularCarteiraService
+                .CalcularResultadoRealizado(
+                    operacoes);
+        }
+
+        private async Task<IReadOnlyList<OperacaoCarteiraDto>>
+            ObterOperacoesAsync(
+                Guid investidorId,
+                CancellationToken cancellationToken)
+        {
             if (investidorId == Guid.Empty)
             {
                 throw new ArgumentException(
                     "O investidor é obrigatório.");
             }
 
-            var operacoes =
-                await _repository.ObterOperacoesAsync(
-                    investidorId,
-                    cancellationToken);
-
-            return _calcularCarteiraService.Calcular(
-                operacoes);
+            return await _repository.ObterOperacoesAsync(
+                investidorId,
+                cancellationToken);
         }
     }
 }

@@ -1,6 +1,7 @@
 import type {
   Provento,
 } from '../../../types/dashboard'
+
 import {
   formatarMoeda,
   formatarNumeroInteiro,
@@ -10,13 +11,18 @@ interface ProventosTabelaProps {
   proventos: readonly Provento[]
   pagina: number
   itensPorPagina: number
+
   onPaginaChange: (
     pagina: number,
   ) => void
-  onEditar: (
+
+  modoAdministracao?: boolean
+
+  onEditar?: (
     provento: Provento,
   ) => void
-  onExcluir: (
+
+  onExcluir?: (
     provento: Provento,
   ) => void
 }
@@ -43,6 +49,7 @@ export function ProventosTabela({
   pagina,
   itensPorPagina,
   onPaginaChange,
+  modoAdministracao = false,
   onEditar,
   onExcluir,
 }: ProventosTabelaProps) {
@@ -106,9 +113,11 @@ export function ProventosTabela({
                 IR
               </th>
 
-              <th>
-                Ações
-              </th>
+              {modoAdministracao ? (
+                <th>
+                  Ações
+                </th>
+              ) : null}
             </tr>
           </thead>
 
@@ -168,32 +177,38 @@ export function ProventosTabela({
                     )}
                   </td>
 
-                  <td>
-                    <div className="provento-actions">
-                      <button
-                        type="button"
-                        onClick={() =>
-                          onEditar(
-                            item,
-                          )
-                        }
-                      >
-                        Editar
-                      </button>
+                  {modoAdministracao ? (
+                    <td>
+                      <div className="provento-actions">
+                        {onEditar ? (
+                          <button
+                            type="button"
+                            onClick={() =>
+                              onEditar(
+                                item,
+                              )
+                            }
+                          >
+                            Editar
+                          </button>
+                        ) : null}
 
-                      <button
-                        type="button"
-                        className="danger"
-                        onClick={() =>
-                          onExcluir(
-                            item,
-                          )
-                        }
-                      >
-                        Excluir
-                      </button>
-                    </div>
-                  </td>
+                        {onExcluir ? (
+                          <button
+                            type="button"
+                            className="danger"
+                            onClick={() =>
+                              onExcluir(
+                                item,
+                              )
+                            }
+                          >
+                            Excluir
+                          </button>
+                        ) : null}
+                      </div>
+                    </td>
+                  ) : null}
                 </tr>
               ),
             )}
@@ -209,7 +224,7 @@ export function ProventosTabela({
           </strong>
 
           <span>
-            Ajuste os filtros ou cadastre um novo provento.
+            Ajuste os filtros para consultar outros registros.
           </span>
         </div>
       ) : null}

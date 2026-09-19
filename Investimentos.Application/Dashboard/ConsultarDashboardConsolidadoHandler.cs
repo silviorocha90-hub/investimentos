@@ -90,11 +90,8 @@ namespace Investimentos.Application.Dashboard
                                     x.DataPrimeiraCompra));
 
                         /*
-                         * Ativos patrimoniais sem
+                         * Investimentos sem
                          * marcação por cotação.
-                         *
-                         * Valor Atual = Custo Total
-                         * Valorização = 0
                          */
                         if (EhAtivoSemMarcacaoPorCotacao(
                             posicao))
@@ -138,6 +135,9 @@ namespace Investimentos.Application.Dashboard
                         x.Ticker)
                     .ToList();
 
+            /*
+             * PROVENTOS E OPÇÕES
+             */
             var proventos =
                 dashboards
                     .SelectMany(x =>
@@ -157,11 +157,9 @@ namespace Investimentos.Application.Dashboard
             /*
              * VALOR APLICADO
              *
-             * Não inclui Previdência.
-             *
-             * CDB NEON, CDB BTG e
-             * FMP ELETROBRAS continuam
-             * incluídos.
+             * Previdência permanece fora deste
+             * indicador por compatibilidade com
+             * o conceito atual do Painel.
              */
             var valorAplicado =
                 posicoes
@@ -198,7 +196,7 @@ namespace Investimentos.Application.Dashboard
                         cancellationToken);
 
             /*
-             * PATRIMÔNIO ATUAL
+             * PATRIMÔNIO
              */
             var patrimonioEstimado =
                 valorAplicado +
@@ -206,13 +204,7 @@ namespace Investimentos.Application.Dashboard
                 caixaDisponivel;
 
             /*
-             * DISTRIBUIÇÃO DA CARTEIRA
-             *
-             * Inclui todos os investimentos
-             * com valor patrimonial atual.
-             *
-             * O caixa é acrescentado pelo
-             * frontend como "Disponível".
+             * DISTRIBUIÇÃO
              */
             var valoresPorTipo =
                 posicoes
@@ -259,10 +251,7 @@ namespace Investimentos.Application.Dashboard
                     .ToList();
 
             /*
-             * VALORIZAÇÃO DOS ATIVOS
-             *
-             * Somente posições marcadas
-             * por cotação participam.
+             * VALORIZAÇÃO NÃO REALIZADA
              */
             var valorizacaoAtivos =
                 posicoes
@@ -274,17 +263,65 @@ namespace Investimentos.Application.Dashboard
                         x.Valorizacao);
 
             /*
+             * RESULTADO REALIZADO EM AÇÕES
+             *
+             * É somado diretamente dos
+             * dashboards individuais.
+             *
+             * Isso é importante porque uma
+             * posição totalmente vendida não
+             * existe mais em "Posicoes", mas
+             * seu resultado realizado continua
+             * existindo.
+             */
+            var resultadoRealizadoAcoes =
+                dashboards.Sum(x =>
+                    x.ResultadoRealizadoAcoes);
+
+            /*
              * PROVENTOS
              */
             var totalProventos =
                 dashboards.Sum(x =>
                     x.TotalProventos);
 
+            var proventosBrutos =
+                dashboards.Sum(x =>
+                    x.ProventosBrutos);
+
+            var irProventos =
+                dashboards.Sum(x =>
+                    x.IrProventos);
+
+            /*
+             * OPÇÕES
+             *
+             * OpcoesBrutas representa o
+             * resultado operacional efetivo
+             * das operações finalizadas.
+             */
+            var opcoesBrutas =
+                dashboards.Sum(x =>
+                    x.OpcoesBrutas);
+
+            /*
+             * Mantemos o IR estimado apenas
+             * para consulta.
+             *
+             * Ele NÃO é descontado do resultado
+             * da carteira.
+             */
+            var irEstimadoOpcoes =
+                dashboards.Sum(x =>
+                    x.IrEstimadoOpcoes);
+
             /*
              * DESCONTOS FISCAIS
              *
-             * São globais e são descontados
-             * uma única vez no consolidado.
+             * Valores efetivamente registrados.
+             *
+             * São globais e descontados
+             * exatamente uma vez.
              */
             var descontosFiscais =
                 await _descontoRepository
@@ -292,28 +329,35 @@ namespace Investimentos.Application.Dashboard
                         cancellationToken);
 
             /*
-             * OPÇÕES LÍQUIDAS
+             * RESULTADO DE OPÇÕES APÓS
+             * DESCONTOS EFETIVOS.
+             *
+             * A propriedade continua chamada
+             * PremioLiquidoOpcoes para manter
+             * compatibilidade com o frontend.
              */
             var premioLiquidoOpcoes =
-                dashboards.Sum(x =>
-                    x.PremioLiquidoOpcoes) -
+                opcoesBrutas -
                 descontosFiscais;
 
             /*
-             * RESULTADO TOTAL CONSOLIDADO
+             * RESULTADO ECONÔMICO DA CARTEIRA
              *
-             * Valorização
-             * + Proventos
-             * + Opções líquidas de impostos
+             * Valorização não realizada
+             * + resultado realizado em ações
+             * + proventos líquidos
+             * + opções após descontos fiscais
+             *   efetivamente registrados.
              */
-            var resultadoRealizado =
+            var resultadoCarteira =
                 valorizacaoAtivos +
+                resultadoRealizadoAcoes +
                 totalProventos +
                 premioLiquidoOpcoes;
 
             return new DashboardDto(
                 valorAplicado,
-                resultadoRealizado,
+                resultadoCarteira,
                 totalProventos,
                 premioLiquidoOpcoes,
                 posicoes.Count(x =>
@@ -330,7 +374,12 @@ namespace Investimentos.Application.Dashboard
                 saldosDisponiveis,
                 descontosFiscais,
                 distribuicaoPorTipo,
-                valorizacaoAtivos);
+                valorizacaoAtivos,
+                proventosBrutos,
+                irProventos,
+                opcoesBrutas,
+                irEstimadoOpcoes,
+                resultadoRealizadoAcoes);
         }
 
         private static bool EhAtivoSemMarcacaoPorCotacao(

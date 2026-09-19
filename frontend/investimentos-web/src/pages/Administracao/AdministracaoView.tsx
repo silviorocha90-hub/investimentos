@@ -19,6 +19,27 @@ import type {
   AtivoAdministracao,
 } from '../../types/administracao'
 
+import type {
+  Dashboard,
+  OperacaoCarteira,
+} from '../../types/dashboard'
+
+import type {
+  Investidor,
+} from '../../types/investidor'
+
+import {
+  OperacoesView,
+} from '../Operacoes/OperacoesView'
+
+import {
+  OpcoesView,
+} from '../Opcoes/OpcoesView'
+
+import {
+  ProventosView,
+} from '../Proventos/ProventosView'
+
 import {
   AtivosTab,
 } from './components/AtivosTab'
@@ -47,6 +68,9 @@ import './Administracao.css'
 
 type AbaAdministracao =
   | 'ativos'
+  | 'operacoes'
+  | 'opcoes'
+  | 'proventos'
   | 'investidores'
   | 'carteira'
   | 'parametros'
@@ -57,8 +81,11 @@ type ModoModalAtivo =
   | 'editar'
 
 export interface ModalAtivoState {
-  modo: ModoModalAtivo
-  ativo?: AtivoAdministracao
+  modo:
+    ModoModalAtivo
+
+  ativo?:
+    AtivoAdministracao
 }
 
 export interface FormularioAtivo {
@@ -69,27 +96,71 @@ export interface FormularioAtivo {
   dataCotacao: string
 }
 
-export function AdministracaoView() {
+interface AdministracaoViewProps {
+  investidores:
+    Investidor[]
+
+  carteiras:
+    ReadonlyArray<{
+      nome: string
+      dashboard: Dashboard
+    }>
+
+  selectedInvestor:
+    string
+
+  onSelectInvestor:
+    (
+      investidor: string,
+    ) => void
+
+  operacoes:
+    OperacaoCarteira[]
+
+  onSaveOperation:
+    (
+      operacao: Pick<
+        OperacaoCarteira,
+        | 'id'
+        | 'data'
+        | 'quantidade'
+        | 'precoUnitario'
+        | 'taxas'
+      >,
+    ) => Promise<void>
+}
+
+export function AdministracaoView({
+  investidores,
+  carteiras,
+  selectedInvestor,
+  onSelectInvestor,
+  operacoes,
+  onSaveOperation,
+}: AdministracaoViewProps) {
   const hoje =
     new Date()
       .toISOString()
-      .slice(0, 10)
+      .slice(
+        0,
+        10,
+      )
 
   const [
     dados,
     setDados,
   ] =
-    useState<Administracao | null>(
-      null,
-    )
+    useState<
+      Administracao | null
+    >(null)
 
   const [
     aba,
     setAba,
   ] =
-    useState<AbaAdministracao>(
-      'ativos',
-    )
+    useState<
+      AbaAdministracao
+    >('ativos')
 
   const [
     carregando,
@@ -107,27 +178,33 @@ export function AdministracaoView() {
     erro,
     setErro,
   ] =
-    useState<string | null>(
-      null,
-    )
+    useState<
+      string | null
+    >(null)
 
   const [
     filtroAtivo,
     setFiltroAtivo,
   ] =
-    useState('TODOS')
+    useState(
+      'TODOS',
+    )
 
   const [
     filtroClasse,
     setFiltroClasse,
   ] =
-    useState('TODOS')
+    useState(
+      'TODOS',
+    )
 
   const [
     filtroTipo,
     setFiltroTipo,
   ] =
-    useState('TODOS')
+    useState(
+      'TODOS',
+    )
 
   const [
     pagina,
@@ -139,17 +216,17 @@ export function AdministracaoView() {
     investidorSelecionadoId,
     setInvestidorSelecionadoId,
   ] =
-    useState<string | null>(
-      null,
-    )
+    useState<
+      string | null
+    >(null)
 
   const [
     modalAtivo,
     setModalAtivo,
   ] =
-    useState<ModalAtivoState | null>(
-      null,
-    )
+    useState<
+      ModalAtivoState | null
+    >(null)
 
   const [
     formularioAtivo,
@@ -160,26 +237,39 @@ export function AdministracaoView() {
       nome: '',
       tipoAtivoId: '',
       cotacao: '',
-      dataCotacao: hoje,
+      dataCotacao:
+        hoje,
     })
 
   async function carregar() {
     try {
-      setCarregando(true)
-      setErro(null)
+      setCarregando(
+        true,
+      )
+
+      setErro(
+        null,
+      )
 
       const resultado =
         await obterAdministracao()
 
-      setDados(resultado)
+      setDados(
+        resultado,
+      )
 
       setInvestidorSelecionadoId(
         (atual) =>
           atual &&
-          resultado.investidores.some(
-            (investidor) =>
-              investidor.id === atual,
-          )
+          resultado
+            .investidores
+            .some(
+              (
+                investidor,
+              ) =>
+                investidor.id ===
+                atual,
+            )
             ? atual
             : resultado
                 .investidores[0]
@@ -193,7 +283,9 @@ export function AdministracaoView() {
           : 'Não foi possível carregar a administração.',
       )
     } finally {
-      setCarregando(false)
+      setCarregando(
+        false,
+      )
     }
   }
 
@@ -227,8 +319,13 @@ export function AdministracaoView() {
     novaAba:
       AbaAdministracao,
   ) {
-    setAba(novaAba)
-    setErro(null)
+    setAba(
+      novaAba,
+    )
+
+    setErro(
+      null,
+    )
   }
 
   function abrirNovoAtivo() {
@@ -247,13 +344,18 @@ export function AdministracaoView() {
           : '',
 
       cotacao: '',
-      dataCotacao: hoje,
+
+      dataCotacao:
+        hoje,
     })
 
-    setErro(null)
+    setErro(
+      null,
+    )
 
     setModalAtivo({
-      modo: 'novo',
+      modo:
+        'novo',
     })
   }
 
@@ -291,10 +393,14 @@ export function AdministracaoView() {
           : hoje,
     })
 
-    setErro(null)
+    setErro(
+      null,
+    )
 
     setModalAtivo({
-      modo: 'editar',
+      modo:
+        'editar',
+
       ativo,
     })
   }
@@ -304,8 +410,13 @@ export function AdministracaoView() {
       return
     }
 
-    setModalAtivo(null)
-    setErro(null)
+    setModalAtivo(
+      null,
+    )
+
+    setErro(
+      null,
+    )
   }
 
   async function salvarAtivo(
@@ -368,8 +479,13 @@ export function AdministracaoView() {
     }
 
     try {
-      setSalvando(true)
-      setErro(null)
+      setSalvando(
+        true,
+      )
+
+      setErro(
+        null,
+      )
 
       const nome =
         formularioAtivo
@@ -431,8 +547,13 @@ export function AdministracaoView() {
         )
       }
 
-      setModalAtivo(null)
-      setAba('ativos')
+      setModalAtivo(
+        null,
+      )
+
+      setAba(
+        'ativos',
+      )
 
       await carregar()
     } catch (error) {
@@ -442,7 +563,9 @@ export function AdministracaoView() {
           : 'Não foi possível salvar o ativo.',
       )
     } finally {
-      setSalvando(false)
+      setSalvando(
+        false,
+      )
     }
   }
 
@@ -481,7 +604,8 @@ export function AdministracaoView() {
         <button
           type="button"
           className={
-            aba === 'ativos'
+            aba ===
+            'ativos'
               ? 'active'
               : ''
           }
@@ -492,6 +616,57 @@ export function AdministracaoView() {
           }
         >
           Ativos
+        </button>
+
+        <button
+          type="button"
+          className={
+            aba ===
+            'operacoes'
+              ? 'active'
+              : ''
+          }
+          onClick={() =>
+            trocarAba(
+              'operacoes',
+            )
+          }
+        >
+          Operações
+        </button>
+
+        <button
+          type="button"
+          className={
+            aba ===
+            'opcoes'
+              ? 'active'
+              : ''
+          }
+          onClick={() =>
+            trocarAba(
+              'opcoes',
+            )
+          }
+        >
+          Opções
+        </button>
+
+        <button
+          type="button"
+          className={
+            aba ===
+            'proventos'
+              ? 'active'
+              : ''
+          }
+          onClick={() =>
+            trocarAba(
+              'proventos',
+            )
+          }
+        >
+          Proventos
         </button>
 
         <button
@@ -563,10 +738,15 @@ export function AdministracaoView() {
         </button>
       </nav>
 
-      {aba === 'ativos' ? (
+      {aba ===
+      'ativos' ? (
         <AtivosTab
-          dados={dados}
-          erro={erro}
+          dados={
+            dados
+          }
+          erro={
+            erro
+          }
           filtroAtivo={
             filtroAtivo
           }
@@ -576,7 +756,9 @@ export function AdministracaoView() {
           filtroTipo={
             filtroTipo
           }
-          pagina={pagina}
+          pagina={
+            pagina
+          }
           setFiltroAtivo={
             setFiltroAtivo
           }
@@ -599,9 +781,67 @@ export function AdministracaoView() {
       ) : null}
 
       {aba ===
+      'operacoes' ? (
+        <OperacoesView
+          investidores={
+            investidores
+          }
+          selectedInvestor={
+            selectedInvestor
+          }
+          onSelectInvestor={
+            onSelectInvestor
+          }
+          operacoes={
+            operacoes
+          }
+          onSaveOperation={
+            onSaveOperation
+          }
+        />
+      ) : null}
+
+      {aba ===
+      'opcoes' ? (
+        <OpcoesView
+          investidores={
+            investidores
+          }
+          carteiras={
+            carteiras
+          }
+          selectedInvestor={
+            selectedInvestor
+          }
+          onSelectInvestor={
+            onSelectInvestor
+          }
+          modo="administracao"
+        />
+      ) : null}
+
+      {aba ===
+      'proventos' ? (
+        <ProventosView
+          investidores={
+            investidores
+          }
+          selectedInvestor={
+            selectedInvestor
+          }
+          onSelectInvestor={
+            onSelectInvestor
+          }
+          modo="administracao"
+        />
+      ) : null}
+
+      {aba ===
       'investidores' ? (
         <InvestidoresTab
-          dados={dados}
+          dados={
+            dados
+          }
           investidorSelecionadoId={
             investidorSelecionadoId
           }
@@ -614,23 +854,30 @@ export function AdministracaoView() {
         />
       ) : null}
 
-      {aba === 'carteira' ? (
+      {aba ===
+      'carteira' ? (
         <CarteiraTab
-          dados={dados}
+          dados={
+            dados
+          }
         />
       ) : null}
 
       {aba ===
       'parametros' ? (
         <ParametrosTab
-          dados={dados}
+          dados={
+            dados
+          }
         />
       ) : null}
 
       {aba ===
       'usuarios' ? (
         <UsuariosTab
-          dados={dados}
+          dados={
+            dados
+          }
         />
       ) : null}
 
@@ -651,7 +898,9 @@ export function AdministracaoView() {
           salvando={
             salvando
           }
-          erro={erro}
+          erro={
+            erro
+          }
           fechar={
             fecharModalAtivo
           }

@@ -41,7 +41,8 @@ namespace Investimentos.Application.Dashboard
         decimal ProventosBrutos = 0,
         decimal IrProventos = 0,
         decimal OpcoesBrutas = 0,
-        decimal IrEstimadoOpcoes = 0)
+        decimal IrEstimadoOpcoes = 0,
+        decimal ResultadoRealizadoAcoes = 0)
     {
         [Obsolete("Use ValorAplicado.")]
         public decimal PatrimonioPorCusto =>
