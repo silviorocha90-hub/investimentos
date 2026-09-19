@@ -221,19 +221,77 @@ export function AtivoModal({
           </label>
 
           {outroInvestimento ? (
-            <div className="admin-modal-info">
-              <span>
-                Valor do investimento
-              </span>
+            <>
+              <label>
+                <span>
+                  Valor atual
+                </span>
 
-              <strong>
-                Gerenciado pelas operações
-              </strong>
+                <div className="admin-money-input">
+                  <span>R$</span>
 
-              <small>
-                Este tipo é apresentado pelo valor total e não utiliza cotação.
-              </small>
-            </div>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    value={
+                      formularioAtivo
+                        .valorPatrimonial
+                    }
+                    placeholder="0,00"
+                    onChange={(
+                      event,
+                    ) => {
+                      const digitos =
+                        event.target.value
+                          .replace(/\D/g, '')
+
+                      const valor =
+                        digitos
+                          ? (
+                              Number(digitos) /
+                              100
+                            ).toLocaleString(
+                              'pt-BR',
+                              {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              },
+                            )
+                          : ''
+
+                      setFormularioAtivo({
+                        ...formularioAtivo,
+                        valorPatrimonial:
+                          valor,
+                      })
+                    }}
+                  />
+                </div>
+              </label>
+
+              <label>
+                <span>
+                  Data do valor
+                </span>
+
+                <input
+                  type="date"
+                  value={
+                    formularioAtivo
+                      .dataValorPatrimonial
+                  }
+                  onChange={(
+                    event,
+                  ) =>
+                    setFormularioAtivo({
+                      ...formularioAtivo,
+                      dataValorPatrimonial:
+                        event.target.value,
+                    })
+                  }
+                />
+              </label>
+            </>
           ) : (
             <>
               <label>
