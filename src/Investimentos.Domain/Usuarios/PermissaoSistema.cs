@@ -7,6 +7,7 @@
         Operacoes = 3,
         Opcoes = 4,
         Proventos = 5,
-        Administracao = 6
+        Administracao = 6,
+        Ativos = 7
     }
 }
