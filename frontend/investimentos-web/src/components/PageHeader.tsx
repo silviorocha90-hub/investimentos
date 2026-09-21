@@ -5,6 +5,8 @@ interface PageHeaderProps {
   investidores: readonly Investidor[]
   selectedInvestor: string
   onSelectInvestor: (nome: string) => void
+  incluirTodos?: boolean
+  rotuloTodos?: string
 }
 
 export function PageHeader({
@@ -12,6 +14,8 @@ export function PageHeader({
   investidores,
   selectedInvestor,
   onSelectInvestor,
+  incluirTodos = false,
+  rotuloTodos = 'Todos',
 }: PageHeaderProps) {
   return (
     <div className="portfolio-toolbar page-header">
@@ -27,6 +31,10 @@ export function PageHeader({
               onSelectInvestor(event.target.value)
             }
           >
+            {incluirTodos ? (
+              <option value="TOTAL">{rotuloTodos}</option>
+            ) : null}
+
             {investidores.map((investidor) => (
               <option
                 key={investidor.id}
