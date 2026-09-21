@@ -878,3 +878,9 @@
 .options-chart-card:first-child .options-chart-header{padding-left:8px;padding-right:8px}
 .options-chart-card:first-child .options-month-chart{margin-left:0;margin-right:0;grid-template-columns:repeat(12,minmax(0,1fr));gap:6px}
 .options-chart-card:first-child .options-month-track{width:100%}
+
+/* Evolução: colunas crescem a partir da base do gráfico */
+.options-chart-card:first-child .options-month-chart{align-items:stretch}
+.options-chart-card:first-child .options-month-column{height:100%;grid-template-rows:30px minmax(0,1fr) 20px}
+.options-chart-card:first-child .options-month-track{height:100%;align-self:stretch}
+.options-chart-card:first-child .options-month-track i{top:auto;bottom:0}
