@@ -275,6 +275,28 @@ function App() {
       possuiPermissao,
     ])
 
+  function permissaoNoInvestidor(
+    permissao: string,
+    investidorId?: string,
+  ) {
+    if (!usuario) return false
+    if (usuario.perfil === 'Admin') return true
+    if (!investidorId) {
+      return usuario.acessosInvestidores?.some(
+        (acesso) => acesso.permissoes.some(
+          (item) => item.toLowerCase() === permissao.toLowerCase(),
+        ),
+      ) ?? possuiPermissao(permissao)
+    }
+
+    const acesso = usuario.acessosInvestidores?.find(
+      (item) => item.investidorId === investidorId,
+    )
+    return acesso?.permissoes.some(
+      (item) => item.toLowerCase() === permissao.toLowerCase(),
+    ) ?? false
+  }
+
   function telaPermitida(
     tela: Tela,
   ) {
@@ -290,7 +312,11 @@ function App() {
       return false
     }
 
-    return possuiPermissao(
+    if (configuracao.tela === 'administracao') {
+      return usuario?.perfil === 'Admin'
+    }
+
+    return permissaoNoInvestidor(
       configuracao.permissao,
     )
   }
@@ -906,9 +932,9 @@ function App() {
           {menuPrincipal.map(
             (item) => {
               const permitido =
-                possuiPermissao(
-                  item.permissao,
-                )
+                item.tela === 'administracao'
+                  ? usuario?.perfil === 'Admin'
+                  : permissaoNoInvestidor(item.permissao)
 
               return (
                 <button
@@ -1077,7 +1103,7 @@ function App() {
 
         {telaAtual ===
           'painel' &&
-        possuiPermissao(
+        permissaoNoInvestidor(
           'Dashboard',
         ) ? (
           <DashboardView
@@ -1099,7 +1125,7 @@ function App() {
 
         {telaAtual ===
           'carteira' &&
-        possuiPermissao(
+        permissaoNoInvestidor(
           'Carteira',
         ) ? (
           <CarteiraView
@@ -1138,7 +1164,7 @@ function App() {
 
         {telaAtual ===
           'ativos' &&
-        possuiPermissao(
+        permissaoNoInvestidor(
           'Carteira',
         ) ? (
           <AtivosView
@@ -1153,7 +1179,7 @@ function App() {
 
         {telaAtual ===
           'opcoes' &&
-        possuiPermissao(
+        permissaoNoInvestidor(
           'Opcoes',
         ) ? (
           <OpcoesView
@@ -1175,7 +1201,7 @@ function App() {
 
         {telaAtual ===
           'proventos' &&
-        possuiPermissao(
+        permissaoNoInvestidor(
           'Proventos',
         ) ? (
           <ProventosView
@@ -1194,9 +1220,8 @@ function App() {
 
         {telaAtual ===
           'administracao' &&
-        possuiPermissao(
-          'Administracao',
-        ) ? (
+        usuario?.perfil ===
+          'Admin' ? (
           <AdministracaoView
             investidores={
               investidores
