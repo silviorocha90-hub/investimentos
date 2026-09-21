@@ -72,29 +72,90 @@ export function LoginView({
 
   return (
     <main className="auth-page">
-      <section className="auth-card">
-        <div className="auth-brand">
-          <img
-            src="/tio-patinhas.png"
-            alt=""
-          />
+      <section className="auth-card auth-card-login">
+        <aside className="auth-showcase">
+          <div className="auth-showcase-brand">
+            <span className="auth-showcase-mark">
+              <i />
+              <i />
+              <i />
+            </span>
 
-          <div>
+            <div>
+              <strong>Investimentos</strong>
+              <span>Gestão da carteira</span>
+            </div>
+          </div>
+
+          <div className="auth-showcase-copy">
             <h1>
-              Investimentos
+              Disciplina hoje,
+              <em> mais liberdade</em>
+              amanhã.
             </h1>
 
             <p>
-              Gestão da carteira
+              Acompanhe seus investimentos
+              de forma simples, organizada
+              e segura.
             </p>
           </div>
-        </div>
 
-        <div className="auth-heading">
-          <span>
-            Acesso seguro
-          </span>
-        </div>
+          <div className="auth-benefits">
+            <div>
+              <span>▥</span>
+              <p>
+                <strong>Visão completa</strong>
+                <small>Carteira, proventos e opções</small>
+              </p>
+            </div>
+
+            <div>
+              <span>◇</span>
+              <p>
+                <strong>Seus dados protegidos</strong>
+                <small>Segurança em primeiro lugar</small>
+              </p>
+            </div>
+
+            <div>
+              <span>↗</span>
+              <p>
+                <strong>Mais controle</strong>
+                <small>Decisões melhores no longo prazo</small>
+              </p>
+            </div>
+          </div>
+
+          <blockquote>
+            “Investir bem é construir
+            possibilidades.”
+          </blockquote>
+        </aside>
+
+        <div className="auth-login-panel">
+          <div className="auth-brand">
+            <img
+              src="/tio-patinhas.png"
+              alt=""
+            />
+
+            <div>
+              <h1>
+                Investimentos
+              </h1>
+
+              <p>
+                Gestão da carteira
+              </p>
+            </div>
+          </div>
+
+          <div className="auth-heading">
+            <span>
+              Acesso seguro
+            </span>
+          </div>
 
         {mensagem ? (
           <div className="auth-success">
@@ -180,6 +241,7 @@ export function LoginView({
           >
             Esqueci minha senha
           </button>
+        </div>
         </div>
       </section>
     </main>
