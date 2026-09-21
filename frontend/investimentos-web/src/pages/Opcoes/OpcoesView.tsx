@@ -95,37 +95,20 @@ export function OpcoesView({
           return investidores
         }
 
-        const nomesComMovimento =
-          new Set(
-            carteiras
-              .filter(
-                (item) =>
-                  (
-                    item.dashboard.opcoes ??
-                    []
-                  ).some(
-                    (opcao) =>
-                      opcao.situacao === 'ABERTA' ||
-                      opcao.situacao === 'EXECUTADA' ||
-                      opcao.situacao === 'ENCERRADA' ||
-                      opcao.situacao === 'EXPIRADA',
-                  ),
-              )
-              .map(
-                (item) =>
-                  item.nome
-                    .trim()
-                    .toLocaleLowerCase('pt-BR'),
-              ),
-          )
-
         return investidores.filter(
-          (investidor) =>
-            nomesComMovimento.has(
-              investidor.nome
-                .trim()
-                .toLocaleLowerCase('pt-BR'),
-            ),
+          (investidor) => {
+            const carteiraInvestidor =
+              carteiras.find(
+                (item) =>
+                  item.nome.trim().toLocaleLowerCase('pt-BR') ===
+                  investidor.nome.trim().toLocaleLowerCase('pt-BR'),
+              )
+
+            return (
+              carteiraInvestidor?.dashboard.opcoes ??
+              []
+            ).length > 0
+          },
         )
       },
       [
