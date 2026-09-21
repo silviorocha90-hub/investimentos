@@ -756,6 +756,26 @@ namespace Investimentos.Infrastructure.Migrations
                     b.ToTable("UsuarioInvestidor", (string)null);
                 });
 
+            modelBuilder.Entity("Investimentos.Domain.Usuarios.UsuarioInvestidorPermissao", b =>
+                {
+                    b.Property<Guid>("UsuarioId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("InvestidorId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Permissao")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("UsuarioId", "InvestidorId", "Permissao");
+
+                    b.HasIndex("InvestidorId");
+
+                    b.ToTable("UsuarioInvestidorPermissao", (string)null);
+                });
+
             modelBuilder.Entity("Investimentos.Domain.Usuarios.UsuarioPermissao", b =>
                 {
                     b.Property<Guid>("UsuarioId")
@@ -939,6 +959,23 @@ namespace Investimentos.Infrastructure.Migrations
                     b.Navigation("Usuario");
                 });
 
+            modelBuilder.Entity("Investimentos.Domain.Usuarios.UsuarioInvestidorPermissao", b =>
+                {
+                    b.HasOne("Investimentos.Domain.Entities.Investidor", null)
+                        .WithMany()
+                        .HasForeignKey("InvestidorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Investimentos.Domain.Usuarios.Usuario", "Usuario")
+                        .WithMany("InvestidoresPermissoes")
+                        .HasForeignKey("UsuarioId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Usuario");
+                });
+
             modelBuilder.Entity("Investimentos.Domain.Usuarios.UsuarioPermissao", b =>
                 {
                     b.HasOne("Investimentos.Domain.Usuarios.Usuario", "Usuario")
@@ -953,6 +990,8 @@ namespace Investimentos.Infrastructure.Migrations
             modelBuilder.Entity("Investimentos.Domain.Usuarios.Usuario", b =>
                 {
                     b.Navigation("Investidores");
+
+                    b.Navigation("InvestidoresPermissoes");
 
                     b.Navigation("Permissoes");
                 });
