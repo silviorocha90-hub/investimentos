@@ -95,7 +95,7 @@ const menuPrincipal:
     },
     {
       tela: 'ativos',
-      permissao: 'Carteira',
+      permissao: 'Ativos',
       titulo: 'Ativos',
       icone: '◈',
     },
@@ -295,6 +295,22 @@ function App() {
     return acesso?.permissoes.some(
       (item) => item.toLowerCase() === permissao.toLowerCase(),
     ) ?? false
+  }
+
+  function investidoresPorPermissao(
+    permissao: string,
+  ) {
+    if (!usuario || usuario.perfil === 'Admin') {
+      return investidores
+    }
+
+    return investidores.filter(
+      (investidor) =>
+        permissaoNoInvestidor(
+          permissao,
+          investidor.id,
+        ),
+    )
   }
 
   function telaPermitida(
@@ -1165,7 +1181,7 @@ function App() {
         {telaAtual ===
           'ativos' &&
         permissaoNoInvestidor(
-          'Carteira',
+          'Ativos',
         ) ? (
           <AtivosView
             investidores={
@@ -1184,7 +1200,9 @@ function App() {
         ) ? (
           <OpcoesView
             investidores={
-              investidores
+              investidoresPorPermissao(
+                'Opcoes',
+              )
             }
             carteiras={
               carteirasPorInvestidor
