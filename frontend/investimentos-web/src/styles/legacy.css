@@ -1217,11 +1217,33 @@ a {
   text-align: right;
 }
 
-.positive {
+.positive,
+.metric-positive,
+.value-positive {
   color: var(--positive) !important;
 }
 
-.negative {
+.negative,
+.metric-negative,
+.value-negative {
+  color: var(--negative) !important;
+}
+
+.positive strong,
+.metric-positive strong,
+.value-positive strong,
+.positive span,
+.metric-positive span,
+.value-positive span {
+  color: var(--positive) !important;
+}
+
+.negative strong,
+.metric-negative strong,
+.value-negative strong,
+.negative span,
+.metric-negative span,
+.value-negative span {
   color: var(--negative) !important;
 }
 
