@@ -163,7 +163,7 @@ export function AtivosView({
         selectedInvestor={investidor}
         onSelectInvestor={setInvestidor}
         incluirTodos
-        rotuloTodos="Total"
+        rotuloTodos="Todos"
       />
 
       <div className="ativos-kpis">
