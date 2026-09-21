@@ -55,6 +55,8 @@ interface OperacoesViewProps {
       | 'taxas'
     >,
   ) => Promise<void>
+
+  onOperationCreated?: () => Promise<void>
 }
 
 function criarFormularioInicial(): NovaOperacaoForm {
@@ -76,6 +78,7 @@ export function OperacoesView({
   onSelectInvestor,
   operacoes = [],
   onSaveOperation,
+  onOperationCreated,
 }: OperacoesViewProps) {
   const [
     operacaoEmEdicao,
@@ -411,7 +414,17 @@ export function OperacoesView({
           },
         )
 
-        window.location.reload()
+        if (onOperationCreated) {
+          await onOperationCreated()
+        }
+
+        setAdicionandoOperacao(
+          false,
+        )
+
+        setFormNovaOperacao(
+          criarFormularioInicial(),
+        )
       } catch (error) {
         console.error(
           'Erro ao criar operação:',
