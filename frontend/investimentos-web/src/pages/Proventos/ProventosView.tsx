@@ -667,7 +667,7 @@ export function ProventosView({
               onSelectInvestor(nome)
             }
           }
-        }
+        }}
         incluirTodos={
           !modoAdministracao
         }
