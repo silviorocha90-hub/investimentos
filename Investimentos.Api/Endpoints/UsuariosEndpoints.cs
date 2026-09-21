@@ -208,6 +208,14 @@ namespace Investimentos.Api.Endpoints
                 permissoes,
                 request.InvestidoresIds ??
                     Array.Empty<Guid>(),
+                request.AcessosInvestidores?
+                    .Select(x => new AcessoInvestidorDto(
+                        x.InvestidorId,
+                        (x.Permissoes ?? Array.Empty<string>())
+                            .Select(p => Enum.Parse<PermissaoSistema>(p, true))
+                            .Where(p => p != PermissaoSistema.Administracao && p != PermissaoSistema.Operacoes)
+                            .ToArray()))
+                    .ToArray(),
                 cancellationToken);
 
             return Results.NoContent();
@@ -238,5 +246,11 @@ namespace Investimentos.Api.Endpoints
         IReadOnlyCollection<string>?
             Permissoes,
         IReadOnlyCollection<Guid>?
-            InvestidoresIds);
+            InvestidoresIds,
+        IReadOnlyCollection<AcessoInvestidorRequest>?
+            AcessosInvestidores);
+
+    public record AcessoInvestidorRequest(
+        Guid InvestidorId,
+        IReadOnlyCollection<string>? Permissoes);
 }
