@@ -69,6 +69,10 @@ namespace Investimentos.Infrastructure.Persistence.Configuration
                 .HasPrecision(18, 2)
                 .IsRequired(false);
 
+            builder.Property(x => x.ResultadoInformado)
+                .HasPrecision(18, 2)
+                .IsRequired(false);
+
             builder.Ignore(x => x.PremioTotal);
             builder.Ignore(x => x.ValorRecompraTotal);
             builder.Ignore(x => x.ResultadoFinal);
