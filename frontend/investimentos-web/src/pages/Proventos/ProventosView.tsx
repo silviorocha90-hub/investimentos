@@ -159,7 +159,7 @@ export function ProventosView({
     )
 
   async function carregar() {
-    if (!investidor) {
+    if (!investidor && (selectedInvestor !== 'TOTAL' || modoAdministracao)) {
       setProventos([])
       setCarregando(false)
       return
@@ -170,9 +170,17 @@ export function ProventosView({
       setErro(null)
 
       const dados =
-        await listarProventos(
-          investidor.id,
-        )
+        selectedInvestor === 'TOTAL' && !modoAdministracao
+          ? (
+              await Promise.all(
+                investidoresComProventos.map((item) =>
+                  listarProventos(item.id),
+                ),
+              )
+            ).flat()
+          : await listarProventos(
+              investidor!.id,
+            )
 
       setProventos(
         dados,
@@ -198,6 +206,9 @@ export function ProventosView({
     void carregar()
   }, [
     investidor?.id,
+    selectedInvestor,
+    modoAdministracao,
+    investidoresComProventos,
   ])
 
   useEffect(() => {
@@ -638,6 +649,10 @@ export function ProventosView({
         onSelectInvestor={
           onSelectInvestor
         }
+        incluirTodos={
+          !modoAdministracao
+        }
+        rotuloTodos="Todos"
       />
 
       {erro ? (
