@@ -8,6 +8,9 @@
         private readonly List<UsuarioInvestidor>
             _investidores = new();
 
+        private readonly List<UsuarioInvestidorPermissao>
+            _investidoresPermissoes = new();
+
         public Guid Id { get; private set; }
 
         public string Nome { get; private set; }
@@ -33,6 +36,9 @@
 
         public IReadOnlyCollection<UsuarioInvestidor>
             Investidores => _investidores;
+
+        public IReadOnlyCollection<UsuarioInvestidorPermissao>
+            InvestidoresPermissoes => _investidoresPermissoes;
 
         private Usuario()
         {
@@ -186,6 +192,24 @@
                     new UsuarioInvestidor(
                         Id,
                         investidorId));
+            }
+        }
+
+        public void DefinirPermissoesPorInvestidor(
+            IEnumerable<(Guid InvestidorId, PermissaoSistema Permissao)> acessos)
+        {
+            ArgumentNullException.ThrowIfNull(acessos);
+            _investidoresPermissoes.Clear();
+
+            foreach (var acesso in acessos
+                .Where(x => x.InvestidorId != Guid.Empty)
+                .Distinct())
+            {
+                _investidoresPermissoes.Add(
+                    new UsuarioInvestidorPermissao(
+                        Id,
+                        acesso.InvestidorId,
+                        acesso.Permissao));
             }
         }
 
