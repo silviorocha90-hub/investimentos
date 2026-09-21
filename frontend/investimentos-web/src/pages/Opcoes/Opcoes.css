@@ -872,3 +872,9 @@
 .options-filter-heading strong,.options-list-title strong{font-size:.92rem}
 .options-table tbody tr:hover{background:rgba(99,230,200,.035)}
 .options-count-badge{border-color:rgba(103,183,255,.2);background:rgba(103,183,255,.06);color:#9bd8ff}
+
+/* Evolução: aproveita toda a largura útil desde a borda do painel */
+.options-chart-card:first-child{padding-left:10px;padding-right:10px}
+.options-chart-card:first-child .options-chart-header{padding-left:8px;padding-right:8px}
+.options-chart-card:first-child .options-month-chart{margin-left:0;margin-right:0;grid-template-columns:repeat(12,minmax(0,1fr));gap:6px}
+.options-chart-card:first-child .options-month-track{width:100%}
