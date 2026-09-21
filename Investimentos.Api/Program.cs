@@ -21,7 +21,9 @@ using Investimentos.Application.Usuarios.Administracao;
 using Investimentos.Application.Usuarios.Autenticacao;
 using Investimentos.Domain.Entities;
 using Investimentos.Infrastructure;
+using Investimentos.Infrastructure.Persistence;
 using Investimentos.Infrastructure.Persistence.Repositories;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.Cookies;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -139,6 +141,22 @@ builder.Services.AddScoped<
     InvestidorAdministracaoRepository>();
 
 var app = builder.Build();
+
+/*
+ * Mantém o banco local sincronizado com as migrations antes
+ * de qualquer serviço consultar as novas estruturas.
+ *
+ * Isso evita a API iniciar com o modelo novo apontando para
+ * um banco ainda sem a tabela correspondente.
+ */
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext =
+        scope.ServiceProvider.GetRequiredService<
+            InvestimentosDbContext>();
+
+    await dbContext.Database.MigrateAsync();
+}
 
 if (app.Environment.IsDevelopment())
 {
