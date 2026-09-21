@@ -129,34 +129,6 @@ export function UsuarioModal({
     })
   }
 
-  function alternarInvestidor(
-    investidorId: string,
-  ) {
-    setFormulario(
-      (atual) => ({
-        ...atual,
-
-        investidoresIds:
-          atual.investidoresIds
-            .includes(
-              investidorId,
-            )
-            ? atual
-                .investidoresIds
-                .filter(
-                  (item) =>
-                    item !==
-                    investidorId,
-                )
-            : [
-                ...atual
-                  .investidoresIds,
-                investidorId,
-              ],
-      }),
-    )
-  }
-
   const semPermissoes =
     formulario.perfil ===
       'Usuario' &&
