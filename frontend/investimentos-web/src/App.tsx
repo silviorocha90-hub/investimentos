@@ -1106,6 +1106,9 @@ function App() {
             investidores={
               investidores
             }
+            dashboardConsolidado={
+              dashboard
+            }
             carteiras={
               carteirasPorInvestidor
             }
