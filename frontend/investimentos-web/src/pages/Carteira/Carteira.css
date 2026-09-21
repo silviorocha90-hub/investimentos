@@ -1,372 +1,41 @@
-/* =========================================================
-   CARTEIRA
-   Estilos exclusivos da tela Carteira
-   ========================================================= */
-
-.carteira-page {
-  min-height: calc(100vh - 42px);
-  grid-template-rows: auto auto auto auto auto;
-}
-
-/* =========================================================
-   INDICADORES PRINCIPAIS
-   ========================================================= */
-
-.carteira-page .portfolio-metrics {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 14px;
-}
-
-.carteira-page .portfolio-metrics .portfolio-metric strong {
-  color: var(--accent);
-}
-
-/* =========================================================
-   PAINÉIS DE INVESTIMENTOS
-   ========================================================= */
-
-.carteira-page .portfolio-positions,
-.carteira-page .carteira-other-investments {
-  min-width: 0;
-  min-height: 0;
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-.carteira-page .portfolio-positions {
-  height: clamp(340px, 43vh, 500px);
-  max-height: clamp(340px, 43vh, 500px);
-}
-
-.carteira-page .carteira-other-investments {
-  min-height: 190px;
-  max-height: 330px;
-}
-
-.carteira-page .portfolio-positions .table-wrap,
-.carteira-page .carteira-other-investments .table-wrap {
-  flex: 1;
-  min-width: 0;
-  min-height: 0;
-  width: 100%;
-  max-width: 100%;
-  margin-top: 4px;
-  overflow-y: auto;
-  overflow-x: hidden;
-  scrollbar-gutter: stable;
-}
-
-/* =========================================================
-   TABELA - RENDA VARIÁVEL
-   ========================================================= */
-
-.carteira-page .carteira-positions-table {
-  width: 100%;
-  max-width: 100%;
-  table-layout: fixed;
-  border-collapse: collapse;
-  font-size: 0.7rem;
-}
-
-/*
- * Distribuição otimizada para as 8 colunas reais da tabela.
- * Total 100%, evitando largura residual e rolagem horizontal.
- *
- * Ativo        12%
- * Tipo         10%
- * Quantidade    9%
- * Preço Médio  13%
- * Preço Atual  13%
- * Custo Total  14%
- * Valor Atual  14%
- * Valorização  15%
- */
-
-.carteira-page .carteira-positions-table th:nth-child(1),
-.carteira-page .carteira-positions-table td:nth-child(1) {
-  width: 12%;
-  text-align: left;
-}
-
-.carteira-page .carteira-positions-table th:nth-child(2),
-.carteira-page .carteira-positions-table td:nth-child(2) {
-  width: 10%;
-  text-align: left;
-}
-
-.carteira-page .carteira-positions-table th:nth-child(3),
-.carteira-page .carteira-positions-table td:nth-child(3) {
-  width: 9%;
-  text-align: right;
-}
-
-.carteira-page .carteira-positions-table th:nth-child(4),
-.carteira-page .carteira-positions-table td:nth-child(4),
-.carteira-page .carteira-positions-table th:nth-child(5),
-.carteira-page .carteira-positions-table td:nth-child(5) {
-  width: 13%;
-  text-align: right;
-}
-
-.carteira-page .carteira-positions-table th:nth-child(6),
-.carteira-page .carteira-positions-table td:nth-child(6),
-.carteira-page .carteira-positions-table th:nth-child(7),
-.carteira-page .carteira-positions-table td:nth-child(7) {
-  width: 14%;
-  text-align: right;
-}
-
-.carteira-page .carteira-positions-table th:nth-child(8),
-.carteira-page .carteira-positions-table td:nth-child(8) {
-  width: 15%;
-  text-align: right;
-}
-
-/* =========================================================
-   TABELA - OUTROS INVESTIMENTOS
-   ========================================================= */
-
-.carteira-page .carteira-other-table {
-  width: 100%;
-  max-width: 100%;
-  table-layout: fixed;
-  border-collapse: collapse;
-  font-size: 0.72rem;
-}
-
-.carteira-page .carteira-other-table th:nth-child(1),
-.carteira-page .carteira-other-table td:nth-child(1) {
-  width: 50%;
-  text-align: left;
-}
-
-.carteira-page .carteira-other-table th:nth-child(2),
-.carteira-page .carteira-other-table td:nth-child(2) {
-  width: 25%;
-  text-align: left;
-}
-
-.carteira-page .carteira-other-table th:nth-child(3),
-.carteira-page .carteira-other-table td:nth-child(3) {
-  width: 25%;
-  text-align: right;
-}
-
-.investment-category {
-  display: inline-flex;
-  align-items: center;
-  min-height: 26px;
-  padding: 0 9px;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.035);
-  color: var(--muted-strong);
-  font-size: 0.66rem;
-  font-weight: 700;
-  white-space: nowrap;
-}
-
-/* =========================================================
-   CABEÇALHOS E CÉLULAS
-   ========================================================= */
-
-.carteira-page .carteira-positions-table thead,
-.carteira-page .carteira-other-table thead {
-  position: sticky;
-  top: 0;
-  z-index: 4;
-  background: var(--panel);
-}
-
-.carteira-page .carteira-positions-table th,
-.carteira-page .carteira-other-table th {
-  padding: 10px 5px;
-  background: var(--panel);
-  font-size: 0.6rem;
-  white-space: nowrap;
-}
-
-.carteira-page .carteira-positions-table td,
-.carteira-page .carteira-other-table td {
-  min-width: 0;
-  padding: 8px 5px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.carteira-page .carteira-positions-table td:first-child,
-.carteira-page .carteira-other-table td:first-child {
-  overflow: hidden;
-}
-
-.carteira-page .carteira-positions-table td:first-child .ticker,
-.carteira-page .carteira-other-table td:first-child .ticker {
-  flex-shrink: 0;
-}
-
-.carteira-page .carteira-positions-table .subtle-inline,
-.carteira-page .carteira-other-table .subtle-inline {
-  display: inline;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* =========================================================
-   ESTADOS VAZIOS
-   ========================================================= */
-
-.carteira-page .portfolio-positions .empty-state {
-  flex: 1;
-  min-height: 220px;
-  display: grid;
-  place-items: center;
-}
-
-.carteira-page .carteira-other-empty {
-  min-height: 110px;
-}
-
-/* =========================================================
-   RESULTADOS
-   ========================================================= */
-
-.carteira-page .carteira-result-metrics {
-  display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 14px;
-}
-
-.carteira-page .carteira-result-metrics .portfolio-metric {
-  min-height: 82px;
-  box-sizing: border-box;
-}
-
-.carteira-page .portfolio-total-result {
-  border-color: rgba(99, 230, 200, 0.24);
-  background: rgba(99, 230, 200, 0.06);
-}
-
-/* =========================================================
-   RESPONSIVIDADE
-   ========================================================= */
-
-@media (max-width: 1200px) {
-  .carteira-page .carteira-result-metrics {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-}
-
-@media (max-width: 1000px) {
-  .carteira-page .carteira-positions-table th,
-  .carteira-page .carteira-positions-table td,
-  .carteira-page .carteira-other-table th,
-  .carteira-page .carteira-other-table td {
-    padding-left: 5px;
-    padding-right: 5px;
-  }
-
-  .carteira-page .carteira-positions-table th {
-    font-size: 0.54rem;
-  }
-
-  .carteira-page .carteira-positions-table td {
-    font-size: 0.64rem;
-  }
-
-  .carteira-page .carteira-positions-table th:nth-child(1),
-  .carteira-page .carteira-positions-table td:nth-child(1) {
-    width: 11%;
-  }
-
-  .carteira-page .carteira-positions-table th:nth-child(2),
-  .carteira-page .carteira-positions-table td:nth-child(2) {
-    width: 9%;
-  }
-
-  .carteira-page .carteira-positions-table th:nth-child(3),
-  .carteira-page .carteira-positions-table td:nth-child(3) {
-    width: 9%;
-  }
-
-  .carteira-page .carteira-positions-table th:nth-child(4),
-  .carteira-page .carteira-positions-table td:nth-child(4),
-  .carteira-page .carteira-positions-table th:nth-child(5),
-  .carteira-page .carteira-positions-table td:nth-child(5) {
-    width: 13%;
-  }
-
-  .carteira-page .carteira-positions-table th:nth-child(6),
-  .carteira-page .carteira-positions-table td:nth-child(6),
-  .carteira-page .carteira-positions-table th:nth-child(7),
-  .carteira-page .carteira-positions-table td:nth-child(7) {
-    width: 14%;
-  }
-
-  .carteira-page .carteira-positions-table th:nth-child(8),
-  .carteira-page .carteira-positions-table td:nth-child(8) {
-    width: 17%;
-  }
-}
-
-@media (max-width: 760px) {
-  .carteira-page {
-    min-height: auto;
-    grid-template-rows: none;
-  }
-
-  .carteira-page .portfolio-metrics,
-  .carteira-page .carteira-result-metrics {
-    grid-template-columns: 1fr;
-  }
-
-  .carteira-page .portfolio-positions {
-    height: 340px;
-    max-height: 340px;
-  }
-
-  .carteira-page .carteira-other-investments {
-    max-height: 300px;
-  }
-
-  .carteira-page .carteira-positions-table {
-    font-size: 0.6rem;
-  }
-
-  .carteira-page .carteira-positions-table th {
-    padding: 8px 2px;
-    font-size: 0.47rem;
-    letter-spacing: 0.01em;
-  }
-
-  .carteira-page .carteira-positions-table td {
-    padding: 7px 2px;
-  }
-
-  .carteira-page .carteira-other-table th,
-  .carteira-page .carteira-other-table td {
-    padding-left: 4px;
-    padding-right: 4px;
-  }
-
-  .carteira-page .carteira-positions-table .ticker,
-  .carteira-page .carteira-other-table .ticker {
-    min-height: 24px;
-    padding: 0 6px;
-    font-size: 0.66rem;
-  }
-
-  .carteira-page .carteira-positions-table .subtle-inline,
-  .carteira-page .carteira-other-table .subtle-inline {
-    display: none;
-  }
-
-  .investment-category {
-    min-height: 24px;
-    padding: 0 6px;
-    font-size: 0.6rem;
-  }
-}
+.carteira-page{display:grid;gap:16px;min-height:calc(100vh - 42px)}
+.carteira-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+.carteira-kpi{position:relative;overflow:hidden;min-height:86px;padding:16px 18px;border:1px solid;border-radius:18px;box-shadow:0 14px 34px rgba(0,0,0,.16)}
+.carteira-kpi:after{content:"";position:absolute;width:110px;height:110px;right:-45px;bottom:-60px;border-radius:50%;background:currentColor;opacity:.08}
+.carteira-kpi>i{position:absolute;right:17px;top:15px;font-style:normal;font-size:1.15rem;opacity:.65}
+.carteira-kpi span,.carteira-result-card span{display:block;color:var(--muted);font-size:.68rem}
+.carteira-kpi strong{display:block;margin-top:9px;font-size:1.12rem}
+.kpi-violet{color:#b89cff;border-color:rgba(184,156,255,.3)!important;background:linear-gradient(135deg,rgba(121,82,179,.24),rgba(121,82,179,.06))}
+.kpi-blue{color:#67b7ff;border-color:rgba(103,183,255,.3)!important;background:linear-gradient(135deg,rgba(39,119,190,.24),rgba(39,119,190,.06))}
+.kpi-green{color:#63e6c8;border-color:rgba(99,230,200,.3)!important;background:linear-gradient(135deg,rgba(31,157,128,.24),rgba(31,157,128,.06))}
+.kpi-gold{color:#f3c969;border-color:rgba(243,201,105,.3)!important;background:linear-gradient(135deg,rgba(190,142,39,.24),rgba(190,142,39,.06))}
+.carteira-panel{min-width:0;box-sizing:border-box;overflow:hidden;border:1px solid rgba(255,255,255,.08);background:linear-gradient(145deg,rgba(255,255,255,.035),rgba(255,255,255,.012));box-shadow:0 16px 38px rgba(0,0,0,.14)}
+.carteira-page .portfolio-positions{height:clamp(340px,43vh,500px);max-height:clamp(340px,43vh,500px);display:flex;flex-direction:column}
+.carteira-page .portfolio-other-investments{min-height:190px;max-height:330px;display:flex;flex-direction:column}
+.carteira-page .table-wrap{flex:1;min-width:0;min-height:0;width:100%;max-width:100%;margin-top:4px;overflow-y:auto;overflow-x:hidden;scrollbar-gutter:stable}
+.carteira-positions-table,.carteira-other-investments-table{width:100%;max-width:100%;table-layout:fixed;border-collapse:collapse;font-size:.68rem}
+.carteira-positions-table thead,.carteira-other-investments-table thead{position:sticky;top:0;z-index:4;background:var(--panel)}
+.carteira-positions-table th,.carteira-other-investments-table th{padding:10px 4px;background:var(--panel);font-size:.57rem;white-space:nowrap}
+.carteira-positions-table td,.carteira-other-investments-table td{min-width:0;padding:8px 4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.carteira-positions-table tbody tr:hover,.carteira-other-investments-table tbody tr:hover{background:rgba(99,230,200,.035)}
+.carteira-positions-table th:nth-child(1),.carteira-positions-table td:nth-child(1){width:10%;text-align:left}
+.carteira-positions-table th:nth-child(2),.carteira-positions-table td:nth-child(2){width:8%;text-align:left}
+.carteira-positions-table th:nth-child(3),.carteira-positions-table td:nth-child(3){width:9%;text-align:right}
+.carteira-positions-table th:nth-child(4),.carteira-positions-table td:nth-child(4){width:12%;text-align:right}
+.carteira-positions-table th:nth-child(5),.carteira-positions-table td:nth-child(5){width:12%;text-align:right}
+.carteira-positions-table th:nth-child(6),.carteira-positions-table td:nth-child(6){width:13%;text-align:right}
+.carteira-positions-table th:nth-child(7),.carteira-positions-table td:nth-child(7){width:13%;text-align:right}
+.carteira-positions-table th:nth-child(8),.carteira-positions-table td:nth-child(8){width:13%;text-align:right}
+.carteira-positions-table th:nth-child(9),.carteira-positions-table td:nth-child(9){width:10%;text-align:right}
+.carteira-other-investments-table th:nth-child(1),.carteira-other-investments-table td:nth-child(1){width:45%;text-align:left}
+.carteira-other-investments-table th:nth-child(2),.carteira-other-investments-table td:nth-child(2){width:30%;text-align:left}
+.carteira-other-investments-table th:nth-child(3),.carteira-other-investments-table td:nth-child(3){width:25%;text-align:right}
+.investment-category{display:inline-flex;align-items:center;min-height:26px;padding:0 9px;border:1px solid rgba(103,183,255,.2);border-radius:999px;background:rgba(103,183,255,.06);color:#9bd8ff;font-size:.66rem;font-weight:700;white-space:nowrap}
+.carteira-result-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+.carteira-result-card{min-height:76px;padding:14px 16px;box-sizing:border-box;border:1px solid rgba(255,255,255,.08);border-radius:16px;background:linear-gradient(145deg,rgba(255,255,255,.035),rgba(255,255,255,.012))}
+.carteira-result-card strong{display:block;margin-top:8px;font-size:.92rem}
+.carteira-result-card.metric-positive strong{color:#63e6c8}.carteira-result-card.metric-negative strong{color:#ff7d8d}
+.carteira-total-result{border-color:rgba(99,230,200,.24);background:rgba(99,230,200,.06)}
+.carteira-page .empty-state{flex:1;min-height:110px;display:grid;place-items:center}
+@media(max-width:1100px){.carteira-kpis,.carteira-result-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.carteira-positions-table{font-size:.62rem}.carteira-positions-table th{font-size:.51rem}}
+@media(max-width:760px){.carteira-kpis,.carteira-result-metrics{grid-template-columns:1fr}.carteira-page .portfolio-positions{height:340px;max-height:340px}.carteira-page .portfolio-other-investments{max-height:300px}.carteira-positions-table th,.carteira-positions-table td{padding-left:2px;padding-right:2px}}
