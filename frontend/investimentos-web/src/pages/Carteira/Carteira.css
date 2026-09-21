@@ -72,54 +72,55 @@
 }
 
 /*
- * Ativo        20%
- * Quantidade   11%
+ * Distribuição otimizada para as 8 colunas reais da tabela.
+ * Total 100%, evitando largura residual e rolagem horizontal.
+ *
+ * Ativo        12%
+ * Tipo         10%
+ * Quantidade    9%
  * Preço Médio  13%
  * Preço Atual  13%
  * Custo Total  14%
  * Valor Atual  14%
  * Valorização  15%
- * Total       100%
  */
 
 .carteira-page .carteira-positions-table th:nth-child(1),
 .carteira-page .carteira-positions-table td:nth-child(1) {
-  width: 20%;
+  width: 12%;
   text-align: left;
 }
 
 .carteira-page .carteira-positions-table th:nth-child(2),
 .carteira-page .carteira-positions-table td:nth-child(2) {
-  width: 11%;
-  text-align: right;
+  width: 10%;
+  text-align: left;
 }
 
 .carteira-page .carteira-positions-table th:nth-child(3),
 .carteira-page .carteira-positions-table td:nth-child(3) {
-  width: 13%;
+  width: 9%;
   text-align: right;
 }
 
 .carteira-page .carteira-positions-table th:nth-child(4),
-.carteira-page .carteira-positions-table td:nth-child(4) {
+.carteira-page .carteira-positions-table td:nth-child(4),
+.carteira-page .carteira-positions-table th:nth-child(5),
+.carteira-page .carteira-positions-table td:nth-child(5) {
   width: 13%;
   text-align: right;
 }
 
-.carteira-page .carteira-positions-table th:nth-child(5),
-.carteira-page .carteira-positions-table td:nth-child(5) {
-  width: 14%;
-  text-align: right;
-}
-
 .carteira-page .carteira-positions-table th:nth-child(6),
-.carteira-page .carteira-positions-table td:nth-child(6) {
-  width: 14%;
-  text-align: right;
-}
-
+.carteira-page .carteira-positions-table td:nth-child(6),
 .carteira-page .carteira-positions-table th:nth-child(7),
 .carteira-page .carteira-positions-table td:nth-child(7) {
+  width: 14%;
+  text-align: right;
+}
+
+.carteira-page .carteira-positions-table th:nth-child(8),
+.carteira-page .carteira-positions-table td:nth-child(8) {
   width: 15%;
   text-align: right;
 }
@@ -182,7 +183,7 @@
 
 .carteira-page .carteira-positions-table th,
 .carteira-page .carteira-other-table th {
-  padding: 10px 8px;
+  padding: 10px 5px;
   background: var(--panel);
   font-size: 0.6rem;
   white-space: nowrap;
@@ -191,7 +192,7 @@
 .carteira-page .carteira-positions-table td,
 .carteira-page .carteira-other-table td {
   min-width: 0;
-  padding: 8px 8px;
+  padding: 8px 5px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -278,31 +279,36 @@
 
   .carteira-page .carteira-positions-table th:nth-child(1),
   .carteira-page .carteira-positions-table td:nth-child(1) {
-    width: 18%;
+    width: 11%;
   }
 
   .carteira-page .carteira-positions-table th:nth-child(2),
   .carteira-page .carteira-positions-table td:nth-child(2) {
-    width: 12%;
+    width: 9%;
   }
 
   .carteira-page .carteira-positions-table th:nth-child(3),
-  .carteira-page .carteira-positions-table td:nth-child(3),
+  .carteira-page .carteira-positions-table td:nth-child(3) {
+    width: 9%;
+  }
+
   .carteira-page .carteira-positions-table th:nth-child(4),
-  .carteira-page .carteira-positions-table td:nth-child(4) {
+  .carteira-page .carteira-positions-table td:nth-child(4),
+  .carteira-page .carteira-positions-table th:nth-child(5),
+  .carteira-page .carteira-positions-table td:nth-child(5) {
     width: 13%;
   }
 
-  .carteira-page .carteira-positions-table th:nth-child(5),
-  .carteira-page .carteira-positions-table td:nth-child(5),
   .carteira-page .carteira-positions-table th:nth-child(6),
-  .carteira-page .carteira-positions-table td:nth-child(6) {
+  .carteira-page .carteira-positions-table td:nth-child(6),
+  .carteira-page .carteira-positions-table th:nth-child(7),
+  .carteira-page .carteira-positions-table td:nth-child(7) {
     width: 14%;
   }
 
-  .carteira-page .carteira-positions-table th:nth-child(7),
-  .carteira-page .carteira-positions-table td:nth-child(7) {
-    width: 16%;
+  .carteira-page .carteira-positions-table th:nth-child(8),
+  .carteira-page .carteira-positions-table td:nth-child(8) {
+    width: 17%;
   }
 }
 
