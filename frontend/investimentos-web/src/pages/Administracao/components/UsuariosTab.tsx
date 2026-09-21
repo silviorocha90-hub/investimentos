@@ -23,6 +23,10 @@ import type {
 } from '../../../types/usuario'
 
 import {
+  permissoesVisualizacao,
+} from '../../../types/usuario'
+
+import {
   UsuarioModal,
 } from './UsuarioModal'
 
@@ -190,8 +194,10 @@ export function UsuariosTab({
         usuario.perfil,
 
       permissoes:
-        usuario.permissoes as
-          PermissaoSistema[],
+        usuario.perfil === 'Usuario'
+          ? [...permissoesVisualizacao]
+          : usuario.permissoes as
+              PermissaoSistema[],
 
       investidoresIds: [
         ...usuario
