@@ -90,8 +90,7 @@ export function LoginView({
           <div className="auth-showcase-copy">
             <h1>
               Disciplina hoje,
-              <em> mais liberdade</em>
-              amanhã.
+              <em> mais liberdade amanhã.</em>
             </h1>
 
             <p>
