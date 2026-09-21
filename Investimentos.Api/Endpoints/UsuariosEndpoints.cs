@@ -21,31 +21,31 @@ namespace Investimentos.Api.Endpoints
 
             grupo.MapGet(
                 "/",
-                ListarAsync);
+                (Delegate)ListarAsync);
 
             grupo.MapGet(
                 "/pendentes",
-                ListarPendentesAsync);
+                (Delegate)ListarPendentesAsync);
 
             grupo.MapPut(
                 "/{id:guid}/aprovar",
-                AprovarAsync);
+                (Delegate)AprovarAsync);
 
             grupo.MapPut(
                 "/{id:guid}/rejeitar",
-                RejeitarAsync);
+                (Delegate)RejeitarAsync);
 
             grupo.MapPut(
                 "/{id:guid}/bloquear",
-                BloquearAsync);
+                (Delegate)BloquearAsync);
 
             grupo.MapPut(
                 "/{id:guid}/desbloquear",
-                DesbloquearAsync);
+                (Delegate)DesbloquearAsync);
 
             grupo.MapPut(
                 "/{id:guid}/acessos",
-                AlterarAcessosAsync);
+                (Delegate)AlterarAcessosAsync);
 
             return app;
         }
