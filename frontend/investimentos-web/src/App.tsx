@@ -682,6 +682,65 @@ function App() {
     usuario,
   ])
 
+  async function recarregarOperacoesSelecionadas() {
+    const investidor =
+      investidores.find(
+        (item) =>
+          item.nome ===
+          investidorSelecionado,
+      )
+
+    if (!investidor) {
+      return
+    }
+
+    const [
+      dashboardAtualizado,
+      operacoesAtualizadas,
+    ] = await Promise.all([
+      obterDashboardPorInvestidor(
+        investidor.id,
+      ),
+      obterOperacoes(
+        investidor.id,
+      ),
+    ])
+
+    setCarteirasPorInvestidor(
+      (atuais) =>
+        atuais.map(
+          (item) =>
+            item.nome ===
+            investidorSelecionado
+              ? {
+                  ...item,
+                  dashboard:
+                    dashboardAtualizado,
+                }
+              : item,
+        ),
+    )
+
+    setCarteirasPainel(
+      (atuais) =>
+        atuais.map(
+          (item) =>
+            item.nome ===
+            investidorSelecionado
+              ? {
+                  ...item,
+                  dashboard:
+                    dashboardAtualizado,
+                }
+              : item,
+        ),
+    )
+
+    setOperacoes(
+      operacoesAtualizadas,
+    )
+  }
+
   async function salvarOperacao(
     operacao: Pick<
       OperacaoCarteira,
@@ -1127,6 +1186,9 @@ function App() {
             }
             onSaveOperation={
               salvarOperacao
+            }
+            onOperationCreated={
+              recarregarOperacoesSelecionadas
             }
           />
         ) : null}
