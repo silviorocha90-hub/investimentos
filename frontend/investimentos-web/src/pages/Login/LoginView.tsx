@@ -92,17 +92,8 @@ export function LoginView({
 
         <div className="auth-heading">
           <span>
-            Acesso
+            Acesso seguro
           </span>
-
-          <h2>
-            Entrar no sistema
-          </h2>
-
-          <p>
-            Informe suas credenciais
-            para continuar.
-          </p>
         </div>
 
         {mensagem ? (
@@ -180,8 +171,12 @@ export function LoginView({
 
           <button
             type="button"
-            disabled
-            title="Será habilitado na etapa de recuperação de senha."
+            className="auth-forgot"
+            onClick={() =>
+              setErro(
+                'Recuperação de senha disponível em breve. O envio por e-mail ainda precisa ser configurado no servidor.',
+              )
+            }
           >
             Esqueci minha senha
           </button>
