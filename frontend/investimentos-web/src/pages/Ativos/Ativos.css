@@ -33,11 +33,10 @@
 .ativo-card-head,.ativo-card footer{display:flex;justify-content:space-between;align-items:center;gap:10px}
 .ativo-card-head b{font-size:.94rem;color:#9bd8ff}
 .ativo-card-head strong{font-size:.8rem}
-.ativo-numbers{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:15px 0 11px}
+.ativo-numbers{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin:15px 0 11px}
 .ativo-numbers div{min-width:0;padding:7px 6px;border-radius:9px;background:rgba(255,255,255,.035)}
 .ativo-numbers b{display:block;margin-top:3px;font-size:.72rem;white-space:nowrap}
-.ativo-numbers div:nth-child(2) b{color:#f3c969}
-.ativo-numbers div:nth-child(3) b{color:#63e6c8}
+.ativo-numbers div:nth-child(2) b{color:#63e6c8}
 .goal-track i{display:block;width:var(--goal-size);height:100%;border-radius:inherit;background:linear-gradient(90deg,#667eea,#63e6c8,#73df9d);box-shadow:0 0 12px rgba(99,230,200,.3)}
 .ativo-card footer{margin-top:9px;font-size:.68rem;color:var(--muted)}
 .ativo-card footer strong{color:var(--text);font-size:.73rem}
