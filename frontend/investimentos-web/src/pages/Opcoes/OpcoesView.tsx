@@ -192,13 +192,21 @@ export function OpcoesView({
         selectedInvestor,
     )?.dashboard
 
+  const opcoesCarteira =
+    useMemo(
+      () =>
+        selectedInvestor === 'TOTAL' && !modoAdministracao
+          ? carteiras.flatMap((item) => item.dashboard.opcoes ?? [])
+          : carteira?.opcoes ?? [],
+      [carteira?.opcoes, carteiras, modoAdministracao, selectedInvestor],
+    )
+
   const opcoes =
     useMemo(
       () =>
         (
           opcoesLocais ??
-          carteira?.opcoes ??
-          []
+          opcoesCarteira
         ).filter(
           (opcao) =>
             opcao.situacao ===
@@ -210,17 +218,15 @@ export function OpcoesView({
             opcao.situacao ===
               'EXPIRADA',
         ),
-      [carteira?.opcoes, opcoesLocais],
+      [opcoesCarteira, opcoesLocais],
     )
 
   useEffect(() => {
     setOpcoesLocais(
-      carteira?.opcoes
-        ? [...carteira.opcoes]
-        : [],
+      [...opcoesCarteira],
     )
   }, [
-    carteira?.opcoes,
+    opcoesCarteira,
   ])
 
   useEffect(() => {
@@ -893,6 +899,11 @@ export function OpcoesView({
               )
             }
           >
+            {!modoAdministracao ? (
+              <option value="TOTAL">
+                Todos
+              </option>
+            ) : null}
             {investidoresComOpcoes.map(
               (
                 investidor,
