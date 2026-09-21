@@ -33,6 +33,27 @@ export function AtivosView({
 }: AtivosViewProps) {
   const [investidor, setInvestidor] = useState('TOTAL')
 
+  const investidoresComAtivos = useMemo(
+    () => {
+      const nomesComAtivos = new Set(
+        carteiras
+          .filter((item) =>
+            item.dashboard.posicoes.some(
+              (posicao) =>
+                posicao.quantidade > 0 &&
+                posicao.valorAtual > 0,
+            ),
+          )
+          .map((item) => item.nome),
+      )
+
+      return investidores.filter((item) =>
+        nomesComAtivos.has(item.nome),
+      )
+    },
+    [investidores, carteiras],
+  )
+
   const dados = useMemo(() => {
     const selecionadas =
       investidor === 'TOTAL'
@@ -111,7 +132,7 @@ export function AtivosView({
     <section className="portfolio-view ativos-analytics-page">
       <PageHeader
         titulo="Ativos"
-        investidores={investidores}
+        investidores={investidoresComAtivos}
         selectedInvestor={investidor}
         onSelectInvestor={setInvestidor}
         incluirTodos
@@ -171,7 +192,14 @@ export function AtivosView({
             return (
               <article className="ativo-card" key={item.ticker} style={{ '--goal-size': `${progresso}%` } as React.CSSProperties}>
                 <div className="ativo-card-head">
-                  <div><b>{item.ticker}</b><small>{item.tipoAtivoNome}</small></div>
+                  <div>
+                    <b>{item.ticker}</b>
+                    <small>
+                      {item.tipoAtivoNome.trim().toUpperCase() === 'PREVIDENCIA'
+                        ? 'PREV'
+                        : item.tipoAtivoNome}
+                    </small>
+                  </div>
                   <strong className={item.rentabilidade >= 0 ? 'positive' : 'negative'}>
                     {percentual(item.rentabilidade)}
                   </strong>
