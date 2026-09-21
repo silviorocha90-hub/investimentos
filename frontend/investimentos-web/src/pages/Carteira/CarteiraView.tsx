@@ -15,6 +15,7 @@ import './Carteira.css'
 
 interface CarteiraViewProps {
   investidores: readonly Investidor[]
+  dashboardConsolidado: Dashboard | null
   carteiras: ReadonlyArray<{
     nome: string
     dashboard: Dashboard
@@ -74,6 +75,7 @@ function obterCategoria(ticker: string, tipoAtivoCodigo: string) {
 
 export function CarteiraView({
   investidores,
+  dashboardConsolidado,
   carteiras,
   selectedInvestor,
   onSelectInvestor,
@@ -137,35 +139,41 @@ export function CarteiraView({
     return [...mapa.values()]
   }, [carteirasSelecionadas])
 
-  const patrimonio = carteirasSelecionadas.reduce(
-    (total, item) => total + (item.dashboard.patrimonioEstimado ?? 0),
-    0,
-  )
-  const valorAplicado = carteirasSelecionadas.reduce(
-    (total, item) => total + (item.dashboard.valorAplicado ?? 0),
-    0,
-  )
-  const valorDisponivel = carteirasSelecionadas.reduce(
-    (total, item) => total + (item.dashboard.caixaDisponivel ?? 0),
-    0,
-  )
-  const resultadoRealizadoAcoes = carteirasSelecionadas.reduce(
-    (total, item) => total + (item.dashboard.resultadoRealizadoAcoes ?? 0),
-    0,
-  )
-  const totalProventos = carteirasSelecionadas.reduce(
-    (total, item) => total + (item.dashboard.totalProventos ?? 0),
-    0,
-  )
-  const resultadoOpcoes = carteirasSelecionadas.reduce(
-    (total, item) =>
-      total + (item.dashboard.opcoesBrutas ?? item.dashboard.premioLiquidoOpcoes ?? 0),
-    0,
-  )
-  const resultadoCarteira = carteirasSelecionadas.reduce(
-    (total, item) => total + (item.dashboard.resultadoRealizado ?? 0),
-    0,
-  )
+  const dashboardTotal =
+    filtroInvestidor === 'TOTAL' ? dashboardConsolidado : null
+
+  const patrimonio = dashboardTotal?.patrimonioEstimado ??
+    carteirasSelecionadas.reduce(
+      (total, item) => total + (item.dashboard.patrimonioEstimado ?? 0), 0,
+    )
+  const valorAplicado = dashboardTotal?.valorAplicado ??
+    carteirasSelecionadas.reduce(
+      (total, item) => total + (item.dashboard.valorAplicado ?? 0), 0,
+    )
+  const valorDisponivel = dashboardTotal?.caixaDisponivel ??
+    carteirasSelecionadas.reduce(
+      (total, item) => total + (item.dashboard.caixaDisponivel ?? 0), 0,
+    )
+  const resultadoRealizadoAcoes = dashboardTotal?.resultadoRealizadoAcoes ??
+    carteirasSelecionadas.reduce(
+      (total, item) => total + (item.dashboard.resultadoRealizadoAcoes ?? 0), 0,
+    )
+  const totalProventos = dashboardTotal?.totalProventos ??
+    carteirasSelecionadas.reduce(
+      (total, item) => total + (item.dashboard.totalProventos ?? 0), 0,
+    )
+  const resultadoOpcoes =
+    (dashboardTotal
+      ? (dashboardTotal.opcoesBrutas ?? dashboardTotal.premioLiquidoOpcoes ?? 0)
+      : carteirasSelecionadas.reduce(
+          (total, item) =>
+            total + (item.dashboard.opcoesBrutas ?? item.dashboard.premioLiquidoOpcoes ?? 0),
+          0,
+        ))
+  const resultadoCarteira = dashboardTotal?.resultadoRealizado ??
+    carteirasSelecionadas.reduce(
+      (total, item) => total + (item.dashboard.resultadoRealizado ?? 0), 0,
+    )
 
   const custoTotal = posicoes.reduce((total, item) => total + item.custoTotal, 0)
   const valorAtualTotal = posicoes.reduce((total, item) => total + item.valorAtual, 0)
