@@ -65,6 +65,10 @@ namespace Investimentos.Infrastructure.Persistence
             UsuariosInvestidores =>
                 Set<UsuarioInvestidor>();
 
+        public DbSet<UsuarioInvestidorPermissao>
+            UsuariosInvestidoresPermissoes =>
+                Set<UsuarioInvestidorPermissao>();
+
         public DbSet<TokenRecuperacaoSenha>
             TokensRecuperacaoSenha =>
                 Set<TokenRecuperacaoSenha>();
