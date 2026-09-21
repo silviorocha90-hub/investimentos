@@ -1,30 +1,46 @@
-.ativos-analytics-page { display:grid; gap:14px; }
-.ativos-kpis { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; }
-.ativos-kpis article { padding:14px 16px; border:1px solid rgba(99,230,200,.24); border-radius:16px; background:rgba(99,230,200,.07); }
-.ativos-kpis span,.ativos-chart header span,.ativos-progress-panel header span,.ativo-card small,.ativo-numbers span { display:block; color:var(--muted); font-size:.68rem; }
-.ativos-kpis strong { display:block; margin-top:8px; color:var(--accent); font-size:1.05rem; }
-.ativos-grid { display:grid; grid-template-columns:1.35fr 1fr; gap:14px; }
-.ativos-chart { min-height:300px; padding:16px; }
-.ativos-chart header,.ativos-progress-panel header { margin-bottom:16px; }
-.ativos-chart header strong,.ativos-progress-panel header strong { display:block; font-size:.9rem; }
-.bar-list,.dividend-list { display:grid; gap:10px; }
-.bar-row { display:grid; grid-template-columns:62px minmax(80px,1fr) 110px; gap:10px; align-items:center; font-size:.7rem; }
-.bar-row > span { text-align:right; }
-.bar-track,.goal-track { height:8px; overflow:hidden; border-radius:999px; background:rgba(255,255,255,.07); }
-.bar-track i,.goal-track i { display:block; height:100%; border-radius:inherit; background:var(--accent); }
-.dividend-row { display:flex; justify-content:space-between; align-items:center; padding:7px 0; border-bottom:1px solid var(--border); }
-.dividend-row div { display:flex; align-items:baseline; gap:10px; }
-.dividend-row strong { color:var(--accent); font-size:.78rem; }
-.ativos-progress-panel { padding:16px; }
-.ativos-cards { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; }
-.ativo-card { min-width:0; padding:14px; border:1px solid var(--border); border-radius:14px; background:var(--panel-strong); }
-.ativo-card-head,.ativo-card footer { display:flex; justify-content:space-between; align-items:center; gap:10px; }
-.ativo-card-head b { font-size:.9rem; }
-.ativo-card-head strong { font-size:.78rem; }
-.ativo-numbers { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:6px; margin:14px 0 10px; }
-.ativo-numbers div { min-width:0; }
-.ativo-numbers b { display:block; margin-top:3px; font-size:.72rem; white-space:nowrap; }
-.ativo-card footer { margin-top:8px; font-size:.68rem; color:var(--muted); }
-.ativo-card footer strong { color:var(--text); font-size:.72rem; }
+.ativos-analytics-page{display:grid;gap:16px}
+.ativos-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+.ativos-kpis article{position:relative;overflow:hidden;min-height:86px;padding:16px 18px;border:1px solid;border-radius:18px;box-shadow:0 14px 34px rgba(0,0,0,.16)}
+.ativos-kpis article:after{content:"";position:absolute;width:110px;height:110px;right:-45px;bottom:-60px;border-radius:50%;background:currentColor;opacity:.08}
+.ativos-kpis article>i{position:absolute;right:17px;top:15px;font-style:normal;font-size:1.15rem;opacity:.65}
+.ativos-kpis span,.ativos-chart header span,.ativos-progress-panel header span,.ativo-card small,.ativo-numbers span{display:block;color:var(--muted);font-size:.68rem}
+.ativos-kpis strong{display:block;margin-top:9px;font-size:1.12rem}
+.kpi-violet{color:#b89cff;border-color:rgba(184,156,255,.3)!important;background:linear-gradient(135deg,rgba(121,82,179,.24),rgba(121,82,179,.06))}
+.kpi-blue{color:#67b7ff;border-color:rgba(103,183,255,.3)!important;background:linear-gradient(135deg,rgba(39,119,190,.24),rgba(39,119,190,.06))}
+.kpi-green{color:#63e6c8;border-color:rgba(99,230,200,.3)!important;background:linear-gradient(135deg,rgba(31,157,128,.24),rgba(31,157,128,.06))}
+.kpi-gold{color:#f3c969;border-color:rgba(243,201,105,.3)!important;background:linear-gradient(135deg,rgba(190,142,39,.24),rgba(190,142,39,.06))}
+.ativos-grid{display:grid;grid-template-columns:1.35fr 1fr;gap:14px}
+.ativos-chart,.ativos-progress-panel{border:1px solid rgba(255,255,255,.08);background:linear-gradient(145deg,rgba(255,255,255,.035),rgba(255,255,255,.012));box-shadow:0 16px 38px rgba(0,0,0,.14)}
+.ativos-chart{min-height:310px;padding:18px}
+.ativos-chart header,.ativos-progress-panel header{margin-bottom:18px}
+.ativos-chart header strong,.ativos-progress-panel header strong{display:block;font-size:.92rem}
+.bar-list,.dividend-list{display:grid;gap:10px}
+.bar-row{display:grid;grid-template-columns:62px minmax(80px,1fr) 112px;gap:10px;align-items:center;padding:4px 0;font-size:.7rem}
+.bar-row>b{color:#9bd8ff}
+.bar-row>span{text-align:right;font-weight:700}
+.bar-track,.goal-track{height:9px;overflow:hidden;border-radius:999px;background:rgba(255,255,255,.065);box-shadow:inset 0 1px 3px rgba(0,0,0,.25)}
+.bar-track i{display:block;width:var(--bar-size);height:100%;border-radius:inherit;background:linear-gradient(90deg,#667eea,#63e6c8);box-shadow:0 0 10px rgba(99,230,200,.25)}
+.dividend-row{display:flex;justify-content:space-between;align-items:center;padding:9px 10px;border:1px solid transparent;border-radius:10px;background:rgba(255,255,255,.018)}
+.dividend-row:hover{border-color:rgba(243,201,105,.2);background:rgba(243,201,105,.05)}
+.dividend-row div{display:flex;align-items:baseline;gap:10px}
+.dividend-row div>b{color:#f3c969}
+.dividend-row strong{color:#f3c969;font-size:.8rem}
+.ativos-progress-panel{padding:18px}
+.ativos-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}
+.ativo-card{position:relative;min-width:0;overflow:hidden;padding:15px;border:1px solid rgba(103,183,255,.14);border-radius:16px;background:linear-gradient(145deg,rgba(35,47,67,.82),rgba(21,28,39,.92));transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease}
+.ativo-card:before{content:"";position:absolute;left:0;top:0;width:3px;height:100%;background:linear-gradient(#667eea,#63e6c8)}
+.ativo-card:hover{transform:translateY(-2px);border-color:rgba(99,230,200,.35);box-shadow:0 12px 28px rgba(0,0,0,.2)}
+.ativo-card-head,.ativo-card footer{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.ativo-card-head b{font-size:.94rem;color:#9bd8ff}
+.ativo-card-head strong{font-size:.8rem}
+.ativo-numbers{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin:15px 0 11px}
+.ativo-numbers div{min-width:0;padding:7px 6px;border-radius:9px;background:rgba(255,255,255,.035)}
+.ativo-numbers b{display:block;margin-top:3px;font-size:.72rem;white-space:nowrap}
+.ativo-numbers div:nth-child(2) b{color:#b89cff}
+.ativo-numbers div:nth-child(3) b{color:#f3c969}
+.ativo-numbers div:nth-child(4) b{color:#63e6c8}
+.goal-track i{display:block;width:var(--goal-size);height:100%;border-radius:inherit;background:linear-gradient(90deg,#667eea,#63e6c8,#73df9d);box-shadow:0 0 12px rgba(99,230,200,.3)}
+.ativo-card footer{margin-top:9px;font-size:.68rem;color:var(--muted)}
+.ativo-card footer strong{color:var(--text);font-size:.73rem}
 @media(max-width:1100px){.ativos-cards{grid-template-columns:repeat(2,minmax(0,1fr))}.ativos-grid{grid-template-columns:1fr}}
 @media(max-width:760px){.ativos-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.ativos-cards{grid-template-columns:1fr}}
