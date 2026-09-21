@@ -604,3 +604,9 @@
 }
 .proventos-table tbody tr:hover{background:rgba(99,230,200,.035)}
 .provento-recebido{color:#63e6c8}
+
+/* Evolução: aproveita toda a largura útil desde a borda do painel */
+.proventos-chart-card:first-child{padding-left:10px;padding-right:10px}
+.proventos-chart-card:first-child .proventos-chart-header{padding-left:8px;padding-right:8px}
+.proventos-chart-card:first-child .proventos-month-chart{margin-left:0;margin-right:0;grid-template-columns:repeat(12,minmax(0,1fr));gap:6px}
+.proventos-chart-card:first-child .proventos-month-track{width:100%}
