@@ -18,8 +18,6 @@ interface AtivoAnalise extends PosicaoAtivo {
   rentabilidade: number
 }
 
-const META_PADRAO = 1000
-
 function percentual(valor: number) {
   return `${valor.toLocaleString('pt-BR', {
     minimumFractionDigits: 1,
@@ -217,7 +215,6 @@ export function AtivosView({
 
         <div className="ativos-cards">
           {ativos.map((item) => {
-            const progresso = Math.min((item.quantidade / META_PADRAO) * 100, 100)
             const tipo = item.tipoAtivoCodigo.trim().toUpperCase()
             const ticker = item.ticker.trim().toUpperCase()
             const exibirDesempenho =
@@ -225,8 +222,13 @@ export function AtivosView({
               tipo !== 'CDB' &&
               !ticker.includes('CDB')
 
+            const yieldProventos =
+              item.custoTotal > 0
+                ? (item.proventos / item.custoTotal) * 100
+                : 0
+
             return (
-              <article className="ativo-card" key={item.ticker} style={{ '--goal-size': `${progresso}%` } as React.CSSProperties}>
+              <article className="ativo-card" key={item.ticker}>
                 <div className="ativo-card-head">
                   <div>
                     <b>{item.ticker}</b>
@@ -242,35 +244,24 @@ export function AtivosView({
                     </strong>
                   ) : null}
                 </div>
-                <div className="ativo-numbers">
-                  <div><span>Atual</span><b>{formatarNumeroInteiro(item.quantidade)}</b></div>
+                <div className={`ativo-numbers ${exibirDesempenho ? 'ativo-numbers-renda-variavel' : ''}`}>
+                  <div><span>Quantidade</span><b>{formatarNumeroInteiro(item.quantidade)}</b></div>
+                  <div><span>Valor atual</span><b>{formatarMoeda(item.valorAtual)}</b></div>
                   {exibirDesempenho ? (
-                    <div>
-                      <span>Proventos</span>
-                      <b>{formatarMoeda(item.proventos)}</b>
-                    </div>
-                  ) : (
-                    <div>
-                      <span>Valor atual</span>
-                      <b>{formatarMoeda(item.valorAtual)}</b>
-                    </div>
-                  )}
+                    <>
+                      <div>
+                        <span>Proventos</span>
+                        <b>{formatarMoeda(item.proventos)}</b>
+                      </div>
+                      <div>
+                        <span>Yield</span>
+                        <b className={yieldProventos >= 0 ? 'positive' : 'negative'}>
+                          {percentual(yieldProventos)}
+                        </b>
+                      </div>
+                    </>
+                  ) : null}
                 </div>
-                <div className="goal-track"><i /></div>
-                <footer>
-                  <span>{percentual(progresso)} da meta</span>
-                  {exibirDesempenho ? (
-                    <span>
-                      Rentabilidade{' '}
-                      <strong className={item.rentabilidade >= 0 ? 'positive' : 'negative'}>
-                        {percentual(item.rentabilidade)}
-                      </strong>
-                      {' · '}Proventos <strong>{formatarMoeda(item.proventos)}</strong>
-                    </span>
-                  ) : (
-                    <strong>{formatarMoeda(item.valorAtual)}</strong>
-                  )}
-                </footer>
               </article>
             )
           })}
