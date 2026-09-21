@@ -123,6 +123,8 @@ namespace Investimentos.Application.Usuarios.Administracao
                 permissoes,
             IReadOnlyCollection<Guid>
                 investidoresIds,
+            IReadOnlyCollection<AcessoInvestidorDto>?
+                acessosInvestidores,
             CancellationToken cancellationToken = default)
         {
             var usuario =
@@ -158,6 +160,9 @@ namespace Investimentos.Application.Usuarios.Administracao
 
                 usuario.DefinirInvestidores(
                     Array.Empty<Guid>());
+
+                usuario.DefinirPermissoesPorInvestidor(
+                    Array.Empty<(Guid, PermissaoSistema)>());
             }
             else
             {
@@ -173,8 +178,24 @@ namespace Investimentos.Application.Usuarios.Administracao
                 usuario.DefinirPermissoes(
                     permissoesVisualizacao);
 
-                usuario.DefinirInvestidores(
-                    investidoresIds);
+                var acessos = (acessosInvestidores ??
+                    Array.Empty<AcessoInvestidorDto>())
+                    .SelectMany(x => x.Permissoes.Select(
+                        permissao => (x.InvestidorId, permissao)))
+                    .ToArray();
+
+                var idsComAcesso = acessos.Length > 0
+                    ? acessos.Select(x => x.InvestidorId).Distinct().ToArray()
+                    : investidoresIds.Distinct().ToArray();
+
+                usuario.DefinirInvestidores(idsComAcesso);
+
+                usuario.DefinirPermissoesPorInvestidor(
+                    acessos.Length > 0
+                        ? acessos
+                        : idsComAcesso.SelectMany(id =>
+                            permissoesVisualizacao.Select(
+                                permissao => (id, permissao))));
             }
 
             await _usuarioRepository
@@ -289,6 +310,13 @@ namespace Investimentos.Application.Usuarios.Administracao
                         x =>
                             x.InvestidorId)
                     .Distinct()
+                    .ToArray(),
+
+                usuario.InvestidoresPermissoes
+                    .GroupBy(x => x.InvestidorId)
+                    .Select(x => new AcessoInvestidorDto(
+                        x.Key,
+                        x.Select(p => p.Permissao).Distinct().ToArray()))
                     .ToArray());
         }
 
@@ -334,5 +362,10 @@ namespace Investimentos.Application.Usuarios.Administracao
         Guid? AprovadoPorUsuarioId,
         DateTime? UltimoLogin,
         IReadOnlyCollection<string> Permissoes,
-        IReadOnlyCollection<Guid> InvestidoresIds);
+        IReadOnlyCollection<Guid> InvestidoresIds,
+        IReadOnlyCollection<AcessoInvestidorDto> AcessosInvestidores);
+
+    public record AcessoInvestidorDto(
+        Guid InvestidorId,
+        IReadOnlyCollection<PermissaoSistema> Permissoes);
 }
