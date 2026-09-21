@@ -178,7 +178,6 @@ export function AtivosView({
                 </div>
                 <div className="ativo-numbers">
                   <div><span>Atual</span><b>{formatarNumeroInteiro(item.quantidade)}</b></div>
-                  <div><span>Desejada</span><b>{formatarNumeroInteiro(META_PADRAO)}</b></div>
                   <div><span>Faltam</span><b>{formatarNumeroInteiro(Math.max(META_PADRAO - item.quantidade, 0))}</b></div>
                   <div><span>% Proventos</span><b>{percentual(item.participacaoProventos)}</b></div>
                 </div>
