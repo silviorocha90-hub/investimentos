@@ -77,7 +77,6 @@ export function CarteiraView({
   investidores,
   dashboardConsolidado,
   carteiras,
-  selectedInvestor,
   onSelectInvestor,
 }: CarteiraViewProps) {
   const [filtroInvestidor, setFiltroInvestidor] = useState('TOTAL')
