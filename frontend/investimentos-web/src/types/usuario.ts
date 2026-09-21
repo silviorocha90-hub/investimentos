@@ -11,6 +11,7 @@ export type StatusUsuario =
 export type PermissaoSistema =
   | 'Dashboard'
   | 'Carteira'
+  | 'Ativos'
   | 'Operacoes'
   | 'Opcoes'
   | 'Proventos'
@@ -47,6 +48,7 @@ export const permissoesVisualizacao:
   PermissaoSistema[] = [
     'Dashboard',
     'Carteira',
+    'Ativos',
     'Opcoes',
     'Proventos',
   ]
@@ -65,6 +67,7 @@ export const nomesPermissoes:
   > = {
     Dashboard: 'Painel',
     Carteira: 'Carteira',
+    Ativos: 'Ativos',
     Operacoes: 'Operações',
     Opcoes: 'Opções',
     Proventos: 'Proventos',
