@@ -185,20 +185,32 @@ export function OpcoesView({
     OperacaoOpcao[] | null
   >(null)
 
+  const [
+    investidorConsulta,
+    setInvestidorConsulta,
+  ] = useState(
+    modoAdministracao ? selectedInvestor : 'TOTAL',
+  )
+
+  const investidorAtivo =
+    modoAdministracao
+      ? selectedInvestor
+      : investidorConsulta
+
   const carteira =
     carteiras.find(
       (item) =>
         item.nome ===
-        selectedInvestor,
+        investidorAtivo,
     )?.dashboard
 
   const opcoesCarteira =
     useMemo(
       () =>
-        selectedInvestor === 'TOTAL' && !modoAdministracao
+        investidorAtivo === 'TOTAL' && !modoAdministracao
           ? carteiras.flatMap((item) => item.dashboard.opcoes ?? [])
           : carteira?.opcoes ?? [],
-      [carteira?.opcoes, carteiras, modoAdministracao, selectedInvestor],
+      [carteira?.opcoes, carteiras, modoAdministracao, investidorAtivo],
     )
 
   const opcoes =
@@ -262,7 +274,7 @@ export function OpcoesView({
       null,
     )
   }, [
-    selectedInvestor,
+    investidorAtivo,
   ])
 
   const tickers =
@@ -888,15 +900,18 @@ export function OpcoesView({
 
           <select
             value={
-              selectedInvestor
+              investidorAtivo
             }
-            onChange={(
-              event,
-            ) =>
-              onSelectInvestor(
-                event.target
-                  .value,
-              )
+            onChange={(event) => {
+              const nome = event.target.value
+              if (modoAdministracao) {
+                onSelectInvestor(nome)
+              } else {
+                setInvestidorConsulta(nome)
+                if (nome !== 'TOTAL') {
+                  onSelectInvestor(nome)
+                }
+              }
             }
           >
             {!modoAdministracao ? (
