@@ -44,6 +44,10 @@ import {
   AdministracaoView,
 } from './pages/Administracao/AdministracaoView'
 
+import {
+  AtivosView,
+} from './pages/Ativos/AtivosView'
+
 import type {
   Dashboard,
   EvolucaoInvestidor,
@@ -63,6 +67,7 @@ import './styles/legacy.css'
 type Tela =
   | 'painel'
   | 'carteira'
+  | 'ativos'
   | 'opcoes'
   | 'proventos'
   | 'administracao'
@@ -87,6 +92,12 @@ const menuPrincipal:
       permissao: 'Carteira',
       titulo: 'Carteira',
       icone: '◫',
+    },
+    {
+      tela: 'ativos',
+      permissao: 'Carteira',
+      titulo: 'Ativos',
+      icone: '◈',
     },
     {
       tela: 'opcoes',
@@ -1118,6 +1129,21 @@ function App() {
                     ?.saldosDisponiveis ??
                   []
                 : []
+            }
+          />
+        ) : null}
+
+        {telaAtual ===
+          'ativos' &&
+        possuiPermissao(
+          'Carteira',
+        ) ? (
+          <AtivosView
+            investidores={
+              investidores
+            }
+            carteiras={
+              carteirasPorInvestidor
             }
           />
         ) : null}
