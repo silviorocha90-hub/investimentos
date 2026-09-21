@@ -22,6 +22,7 @@ namespace Investimentos.Infrastructure.Persistence.Repositories
             return await _context.Usuarios
                 .Include(x => x.Permissoes)
                 .Include(x => x.Investidores)
+                .Include(x => x.InvestidoresPermissoes)
                 .FirstOrDefaultAsync(
                     x => x.Id == id,
                     cancellationToken);
@@ -37,6 +38,7 @@ namespace Investimentos.Infrastructure.Persistence.Repositories
             return await _context.Usuarios
                 .Include(x => x.Permissoes)
                 .Include(x => x.Investidores)
+                .Include(x => x.InvestidoresPermissoes)
                 .FirstOrDefaultAsync(
                     x => x.Email == emailNormalizado,
                     cancellationToken);
@@ -62,6 +64,7 @@ namespace Investimentos.Infrastructure.Persistence.Repositories
                 .AsNoTracking()
                 .Include(x => x.Permissoes)
                 .Include(x => x.Investidores)
+                .Include(x => x.InvestidoresPermissoes)
                 .OrderBy(x => x.Nome)
                 .ToListAsync(
                     cancellationToken);
