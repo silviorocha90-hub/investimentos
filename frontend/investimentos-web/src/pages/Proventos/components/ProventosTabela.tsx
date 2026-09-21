@@ -165,13 +165,13 @@ export function ProventosTabela({
                     )}
                   </td>
 
-                  <td className="align-right provento-recebido">
+                  <td className={`align-right provento-recebido ${item.valorRecebido >= 0 ? 'positive' : 'negative'}`}>
                     {formatarMoeda(
                       item.valorRecebido,
                     )}
                   </td>
 
-                  <td className="align-right">
+                  <td className={`align-right ${item.impostoRetido > 0 ? 'negative' : ''}`}>
                     {formatarMoeda(
                       item.impostoRetido,
                     )}
