@@ -142,7 +142,17 @@ export function AtivosView({
     ativos: ativos.length,
     valorAtual: ativos.reduce((t, x) => t + x.valorAtual, 0),
     proventos: dados.totalProventosHistorico,
-    quantidade: ativos.reduce((t, x) => t + x.quantidade, 0),
+    rentabilidade:
+      ativos.reduce((t, x) => t + x.custoTotal, 0) > 0
+        ? (
+            (
+              ativos.reduce((t, x) => t + x.valorAtual, 0) -
+              ativos.reduce((t, x) => t + x.custoTotal, 0) +
+              dados.totalProventosHistorico
+            ) /
+            ativos.reduce((t, x) => t + x.custoTotal, 0)
+          ) * 100
+        : 0,
   }), [ativos, dados.totalProventosHistorico])
 
   const maiorValor = Math.max(...ativos.map((x) => x.valorAtual), 1)
@@ -160,7 +170,7 @@ export function AtivosView({
 
       <div className="ativos-kpis">
         <article className="kpi-violet"><span>Ativos em carteira</span><strong>{totais.ativos}</strong><i>◆</i></article>
-        <article className="kpi-blue"><span>Quantidade total</span><strong>{formatarNumeroInteiro(totais.quantidade)}</strong><i>▥</i></article>
+        <article className="kpi-blue"><span>Rentabilidade total</span><strong>{percentual(totais.rentabilidade)}</strong><i>↗</i></article>
         <article className="kpi-green"><span>Valor atual</span><strong>{formatarMoeda(totais.valorAtual)}</strong><i>●</i></article>
         <article className="kpi-gold"><span>Proventos recebidos</span><strong>{formatarMoeda(totais.proventos)}</strong><i>★</i></article>
       </div>
