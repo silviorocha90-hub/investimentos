@@ -119,10 +119,10 @@ export function AtivosView({
       />
 
       <div className="ativos-kpis">
-        <article><span>Ativos em carteira</span><strong>{totais.ativos}</strong></article>
-        <article><span>Quantidade total</span><strong>{formatarNumeroInteiro(totais.quantidade)}</strong></article>
-        <article><span>Valor atual</span><strong>{formatarMoeda(totais.valorAtual)}</strong></article>
-        <article><span>Proventos recebidos</span><strong>{formatarMoeda(totais.proventos)}</strong></article>
+        <article className="kpi-violet"><span>Ativos em carteira</span><strong>{totais.ativos}</strong><i>◆</i></article>
+        <article className="kpi-blue"><span>Quantidade total</span><strong>{formatarNumeroInteiro(totais.quantidade)}</strong><i>▥</i></article>
+        <article className="kpi-green"><span>Valor atual</span><strong>{formatarMoeda(totais.valorAtual)}</strong><i>●</i></article>
+        <article className="kpi-gold"><span>Proventos recebidos</span><strong>{formatarMoeda(totais.proventos)}</strong><i>★</i></article>
       </div>
 
       <div className="ativos-grid">
@@ -130,9 +130,9 @@ export function AtivosView({
           <header><strong>Distribuição por ativo</strong><span>Participação no valor atual</span></header>
           <div className="bar-list">
             {dados.slice(0, 12).map((item) => (
-              <div className="bar-row" key={item.ticker}>
+              <div className="bar-row" key={item.ticker} style={{ '--bar-size': `${(item.valorAtual / maiorValor) * 100}%` } as React.CSSProperties}>
                 <b>{item.ticker}</b>
-                <div className="bar-track"><i style={{ width: `${(item.valorAtual / maiorValor) * 100}%` }} /></div>
+                <div className="bar-track"><i /></div>
                 <span>{formatarMoeda(item.valorAtual)}</span>
               </div>
             ))}
@@ -169,7 +169,7 @@ export function AtivosView({
           {dados.map((item) => {
             const progresso = Math.min((item.quantidade / META_PADRAO) * 100, 100)
             return (
-              <article className="ativo-card" key={item.ticker}>
+              <article className="ativo-card" key={item.ticker} style={{ '--goal-size': `${progresso}%` } as React.CSSProperties}>
                 <div className="ativo-card-head">
                   <div><b>{item.ticker}</b><small>{item.tipoAtivoNome}</small></div>
                   <strong className={item.rentabilidade >= 0 ? 'positive' : 'negative'}>
@@ -182,7 +182,7 @@ export function AtivosView({
                   <div><span>Faltam</span><b>{formatarNumeroInteiro(Math.max(META_PADRAO - item.quantidade, 0))}</b></div>
                   <div><span>% Proventos</span><b>{percentual(item.participacaoProventos)}</b></div>
                 </div>
-                <div className="goal-track"><i style={{ width: `${progresso}%` }} /></div>
+                <div className="goal-track"><i /></div>
                 <footer><span>{percentual(progresso)} da meta</span><strong>{formatarMoeda(item.valorAtual)}</strong></footer>
               </article>
             )
