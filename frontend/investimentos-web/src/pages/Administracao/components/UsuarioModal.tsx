@@ -28,6 +28,10 @@ export interface FormularioUsuario {
   permissoes:
     PermissaoSistema[]
   investidoresIds: string[]
+  acessosInvestidores: Array<{
+    investidorId: string
+    permissoes: PermissaoSistema[]
+  }>
 }
 
 interface UsuarioModalProps {
@@ -96,6 +100,35 @@ export function UsuarioModal({
     )
   }
 
+  function alternarAcessoInvestidor(
+    investidorId: string,
+    permissao: PermissaoSistema,
+  ) {
+    setFormulario((atual) => {
+      const existente = atual.acessosInvestidores.find(
+        (item) => item.investidorId === investidorId,
+      )
+      const permissoes = existente?.permissoes ?? []
+      const novas = permissoes.includes(permissao)
+        ? permissoes.filter((item) => item !== permissao)
+        : [...permissoes, permissao]
+      const demais = atual.acessosInvestidores.filter(
+        (item) => item.investidorId !== investidorId,
+      )
+      const acessosInvestidores = novas.length > 0
+        ? [...demais, { investidorId, permissoes: novas }]
+        : demais
+
+      return {
+        ...atual,
+        acessosInvestidores,
+        investidoresIds: acessosInvestidores.map(
+          (item) => item.investidorId,
+        ),
+      }
+    })
+  }
+
   function alternarInvestidor(
     investidorId: string,
   ) {
@@ -133,7 +166,7 @@ export function UsuarioModal({
   const semInvestidores =
     formulario.perfil ===
       'Usuario' &&
-    formulario.investidoresIds
+    formulario.acessosInvestidores
       .length === 0
 
   const formularioIncompleto =
@@ -432,58 +465,47 @@ export function UsuarioModal({
                 </div>
               </header>
 
-              <div className="user-investor-grid">
-                {investidores.map(
-                  (investidor) => {
-                    const selecionado =
-                      formulario
-                        .investidoresIds
-                        .includes(
-                          investidor.id,
-                        )
-
-                    return (
-                      <label
-                        key={
-                          investidor.id
-                        }
-                        className={
-                          selecionado
-                            ? 'user-investor-option selected'
-                            : 'user-investor-option'
-                        }
-                      >
-                        <input
-                          type="checkbox"
-                          checked={
-                            selecionado
-                          }
-                          disabled={
-                            salvando
-                          }
-                          onChange={() =>
-                            alternarInvestidor(
-                              investidor.id,
-                            )
-                          }
-                        />
-
-                        <div>
-                          <strong>
-                            {
-                              investidor.nome
-                            }
-                          </strong>
-
-                          <span>
-                            Carteira de
-                            investimentos
-                          </span>
-                        </div>
-                      </label>
-                    )
-                  },
-                )}
+              <div className="user-investor-access-list">
+                {investidores.map((investidor) => {
+                  const acesso = formulario.acessosInvestidores.find(
+                    (item) => item.investidorId === investidor.id,
+                  )
+                  return (
+                    <article className="user-investor-access-card" key={investidor.id}>
+                      <header>
+                        <strong>{investidor.nome}</strong>
+                        <span>
+                          {acesso?.permissoes.length ?? 0} tela(s) liberada(s)
+                        </span>
+                      </header>
+                      <div className="user-investor-permissions">
+                        {permissoesVisualizacao.map((permissao) => {
+                          const selecionada =
+                            acesso?.permissoes.includes(permissao) ?? false
+                          return (
+                            <label
+                              key={permissao}
+                              className={selecionada ? 'selected' : ''}
+                            >
+                              <input
+                                type="checkbox"
+                                checked={selecionada}
+                                disabled={salvando}
+                                onChange={() =>
+                                  alternarAcessoInvestidor(
+                                    investidor.id,
+                                    permissao,
+                                  )
+                                }
+                              />
+                              <span>{nomesPermissoes[permissao]}</span>
+                            </label>
+                          )
+                        })}
+                      </div>
+                    </article>
+                  )
+                })}
               </div>
 
               {semInvestidores ? (
