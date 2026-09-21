@@ -151,15 +151,27 @@ export function ProventosView({
     setPagina,
   ] = useState(1)
 
+  const [
+    investidorConsulta,
+    setInvestidorConsulta,
+  ] = useState(
+    modoAdministracao ? selectedInvestor : 'TOTAL',
+  )
+
+  const investidorAtivo =
+    modoAdministracao
+      ? selectedInvestor
+      : investidorConsulta
+
   const investidor =
     investidores.find(
       (item) =>
         item.nome ===
-        selectedInvestor,
+        investidorAtivo,
     )
 
   async function carregar() {
-    if (!investidor && (selectedInvestor !== 'TOTAL' || modoAdministracao)) {
+    if (!investidor && (investidorAtivo !== 'TOTAL' || modoAdministracao)) {
       setProventos([])
       setCarregando(false)
       return
@@ -170,7 +182,7 @@ export function ProventosView({
       setErro(null)
 
       const dados =
-        selectedInvestor === 'TOTAL' && !modoAdministracao
+        investidorAtivo === 'TOTAL' && !modoAdministracao
           ? (
               await Promise.all(
                 investidoresComProventos.map((item) =>
@@ -206,7 +218,7 @@ export function ProventosView({
     void carregar()
   }, [
     investidor?.id,
-    selectedInvestor,
+    investidorAtivo,
     modoAdministracao,
     investidoresComProventos,
   ])
@@ -644,10 +656,17 @@ export function ProventosView({
           investidoresComProventos
         }
         selectedInvestor={
-          selectedInvestor
+          investidorAtivo
         }
-        onSelectInvestor={
-          onSelectInvestor
+        onSelectInvestor={(nome) => {
+          if (modoAdministracao) {
+            onSelectInvestor(nome)
+          } else {
+            setInvestidorConsulta(nome)
+            if (nome !== 'TOTAL') {
+              onSelectInvestor(nome)
+            }
+          }
         }
         incluirTodos={
           !modoAdministracao
