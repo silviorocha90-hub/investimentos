@@ -912,7 +912,7 @@ export function OpcoesView({
                   onSelectInvestor(nome)
                 }
               }
-            }
+            }}
           >
             {!modoAdministracao ? (
               <option value="TOTAL">
