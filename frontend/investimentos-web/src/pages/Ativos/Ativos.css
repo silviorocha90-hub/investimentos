@@ -1,0 +1,30 @@
+.ativos-analytics-page { display:grid; gap:14px; }
+.ativos-kpis { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; }
+.ativos-kpis article { padding:14px 16px; border:1px solid rgba(99,230,200,.24); border-radius:16px; background:rgba(99,230,200,.07); }
+.ativos-kpis span,.ativos-chart header span,.ativos-progress-panel header span,.ativo-card small,.ativo-numbers span { display:block; color:var(--muted); font-size:.68rem; }
+.ativos-kpis strong { display:block; margin-top:8px; color:var(--accent); font-size:1.05rem; }
+.ativos-grid { display:grid; grid-template-columns:1.35fr 1fr; gap:14px; }
+.ativos-chart { min-height:300px; padding:16px; }
+.ativos-chart header,.ativos-progress-panel header { margin-bottom:16px; }
+.ativos-chart header strong,.ativos-progress-panel header strong { display:block; font-size:.9rem; }
+.bar-list,.dividend-list { display:grid; gap:10px; }
+.bar-row { display:grid; grid-template-columns:62px minmax(80px,1fr) 110px; gap:10px; align-items:center; font-size:.7rem; }
+.bar-row > span { text-align:right; }
+.bar-track,.goal-track { height:8px; overflow:hidden; border-radius:999px; background:rgba(255,255,255,.07); }
+.bar-track i,.goal-track i { display:block; height:100%; border-radius:inherit; background:var(--accent); }
+.dividend-row { display:flex; justify-content:space-between; align-items:center; padding:7px 0; border-bottom:1px solid var(--border); }
+.dividend-row div { display:flex; align-items:baseline; gap:10px; }
+.dividend-row strong { color:var(--accent); font-size:.78rem; }
+.ativos-progress-panel { padding:16px; }
+.ativos-cards { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; }
+.ativo-card { min-width:0; padding:14px; border:1px solid var(--border); border-radius:14px; background:var(--panel-strong); }
+.ativo-card-head,.ativo-card footer { display:flex; justify-content:space-between; align-items:center; gap:10px; }
+.ativo-card-head b { font-size:.9rem; }
+.ativo-card-head strong { font-size:.78rem; }
+.ativo-numbers { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:6px; margin:14px 0 10px; }
+.ativo-numbers div { min-width:0; }
+.ativo-numbers b { display:block; margin-top:3px; font-size:.72rem; white-space:nowrap; }
+.ativo-card footer { margin-top:8px; font-size:.68rem; color:var(--muted); }
+.ativo-card footer strong { color:var(--text); font-size:.72rem; }
+@media(max-width:1100px){.ativos-cards{grid-template-columns:repeat(2,minmax(0,1fr))}.ativos-grid{grid-template-columns:1fr}}
+@media(max-width:760px){.ativos-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.ativos-cards{grid-template-columns:1fr}}
