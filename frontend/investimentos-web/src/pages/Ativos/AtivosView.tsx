@@ -95,6 +95,18 @@ export function AtivosView({
     })
 
     const lista = [...mapa.values()]
+    const totalProventosHistorico = selecionadas.reduce(
+      (total, item) =>
+        total +
+        item.dashboard.proventos.reduce(
+          (subtotal, provento) =>
+            subtotal +
+            provento.valorRecebido,
+          0,
+        ),
+      0,
+    )
+
     const totalProventos = lista.reduce((total, item) => total + item.proventos, 0)
 
     lista.forEach((item) => {
@@ -106,7 +118,7 @@ export function AtivosView({
         totalProventos > 0 ? (item.proventos / totalProventos) * 100 : 0
     })
 
-    return lista
+    const listaVisivel = lista
       .filter(
         (item) =>
           item.quantidade > 0 &&
@@ -117,16 +129,23 @@ export function AtivosView({
           b.valorAtual -
           a.valorAtual,
       )
+
+    return {
+      ativos: listaVisivel,
+      totalProventosHistorico,
+    }
   }, [carteiras, investidor])
 
-  const totais = useMemo(() => ({
-    ativos: dados.length,
-    valorAtual: dados.reduce((t, x) => t + x.valorAtual, 0),
-    proventos: dados.reduce((t, x) => t + x.proventos, 0),
-    quantidade: dados.reduce((t, x) => t + x.quantidade, 0),
-  }), [dados])
+  const ativos = dados.ativos
 
-  const maiorValor = Math.max(...dados.map((x) => x.valorAtual), 1)
+  const totais = useMemo(() => ({
+    ativos: ativos.length,
+    valorAtual: ativos.reduce((t, x) => t + x.valorAtual, 0),
+    proventos: dados.totalProventosHistorico,
+    quantidade: ativos.reduce((t, x) => t + x.quantidade, 0),
+  }), [ativos, dados.totalProventosHistorico])
+
+  const maiorValor = Math.max(...ativos.map((x) => x.valorAtual), 1)
 
   return (
     <section className="portfolio-view ativos-analytics-page">
@@ -150,7 +169,7 @@ export function AtivosView({
         <article className="panel ativos-chart">
           <header><strong>Distribuição por ativo</strong><span>Participação no valor atual</span></header>
           <div className="bar-list">
-            {dados.slice(0, 12).map((item) => (
+            {ativos.slice(0, 12).map((item) => (
               <div className="bar-row" key={item.ticker} style={{ '--bar-size': `${(item.valorAtual / maiorValor) * 100}%` } as React.CSSProperties}>
                 <b>{item.ticker}</b>
                 <div className="bar-track"><i /></div>
@@ -163,7 +182,7 @@ export function AtivosView({
         <article className="panel ativos-chart">
           <header><strong>Proventos por ativo</strong><span>% do total recebido</span></header>
           <div className="dividend-list">
-            {dados
+            {ativos
               .filter(
                 (item) =>
                   item.proventos > 0,
@@ -187,7 +206,7 @@ export function AtivosView({
         </header>
 
         <div className="ativos-cards">
-          {dados.map((item) => {
+          {ativos.map((item) => {
             const progresso = Math.min((item.quantidade / META_PADRAO) * 100, 100)
             return (
               <article className="ativo-card" key={item.ticker} style={{ '--goal-size': `${progresso}%` } as React.CSSProperties}>
