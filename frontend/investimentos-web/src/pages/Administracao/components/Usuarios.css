@@ -775,3 +775,14 @@
 .user-card:hover{border-color:rgba(99,230,200,.35);box-shadow:0 12px 28px rgba(0,0,0,.2)}
 .user-permission-option.selected,.user-investor-option.selected{border-color:rgba(99,230,200,.35);background:linear-gradient(145deg,rgba(31,157,128,.12),rgba(31,157,128,.035))}
 .user-permission-option:has(input:disabled){cursor:default}
+
+.user-investor-access-list{display:grid;gap:10px;padding-left:34px}
+.user-investor-access-card{overflow:hidden;border:1px solid rgba(103,183,255,.14);border-radius:13px;background:rgba(255,255,255,.018)}
+.user-investor-access-card>header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.07)}
+.user-investor-access-card>header strong{color:#9bd8ff;font-size:.7rem}
+.user-investor-access-card>header span{color:var(--muted);font-size:.6rem}
+.user-investor-permissions{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;padding:10px}
+.user-investor-permissions label{display:flex;align-items:center;gap:7px;min-height:36px;padding:0 9px;border:1px solid var(--border);border-radius:9px;color:var(--muted);font-size:.62rem;font-weight:700;cursor:pointer}
+.user-investor-permissions label.selected{border-color:rgba(99,230,200,.38);background:rgba(99,230,200,.07);color:#63e6c8}
+.user-investor-permissions input{accent-color:var(--accent)}
+@media(max-width:680px){.user-investor-access-list{padding-left:0}.user-investor-permissions{grid-template-columns:repeat(2,minmax(0,1fr))}}
