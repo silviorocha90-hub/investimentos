@@ -265,7 +265,21 @@ namespace Investimentos.Api.Endpoints
                 permissoes,
 
                 investidoresIds =
-                    investidores
+                    investidores,
+
+                acessosInvestidores =
+                    usuario.InvestidoresPermissoes
+                        .GroupBy(x => x.InvestidorId)
+                        .Select(x => new
+                        {
+                            investidorId = x.Key,
+                            permissoes = x
+                                .Select(p => p.Permissao.ToString())
+                                .Distinct()
+                                .OrderBy(p => p)
+                                .ToArray()
+                        })
+                        .ToArray()
             };
         }
     }
