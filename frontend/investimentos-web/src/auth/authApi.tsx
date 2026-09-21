@@ -14,6 +14,10 @@ export interface UsuarioAutenticado {
     | 'Bloqueado'
   permissoes: string[]
   investidoresIds: string[]
+  acessosInvestidores: Array<{
+    investidorId: string
+    permissoes: string[]
+  }>
 }
 
 interface ErroApi {
