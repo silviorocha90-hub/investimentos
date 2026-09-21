@@ -171,6 +171,7 @@ namespace Investimentos.Application.Usuarios.Administracao
                     {
                         PermissaoSistema.Dashboard,
                         PermissaoSistema.Carteira,
+                        PermissaoSistema.Ativos,
                         PermissaoSistema.Opcoes,
                         PermissaoSistema.Proventos
                     };
