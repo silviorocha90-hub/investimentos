@@ -85,7 +85,7 @@ export function OpcoesResumo({
           )}
         </strong>
 
-        <small>
+        <small className={resultadoBruto >= 0 ? 'positive' : 'negative'}>
           Bruto{' '}
           {formatarMoeda(
             resultadoBruto,
