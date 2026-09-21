@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import { PageHeader } from '../../components/PageHeader'
 import { SectionTitle } from '../../components/SectionTitle'
@@ -78,9 +78,11 @@ export function CarteiraView({
   selectedInvestor,
   onSelectInvestor,
 }: CarteiraViewProps) {
-  const [filtroInvestidor, setFiltroInvestidor] = useState(
-    selectedInvestor || 'TOTAL',
-  )
+  const [filtroInvestidor, setFiltroInvestidor] = useState('TOTAL')
+
+  useEffect(() => {
+    setFiltroInvestidor('TOTAL')
+  }, [])
 
   const investidoresComCarteira = useMemo(() => {
     const nomes = new Set(
