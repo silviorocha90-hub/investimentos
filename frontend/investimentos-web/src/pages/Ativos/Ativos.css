@@ -15,8 +15,8 @@
 .ativos-chart header,.ativos-progress-panel header{margin-bottom:18px}
 .ativos-chart header strong,.ativos-progress-panel header strong{display:block;font-size:.92rem}
 .bar-list,.dividend-list{display:grid;gap:10px}
-.bar-row{display:grid;grid-template-columns:62px minmax(80px,1fr) 112px;gap:10px;align-items:center;padding:4px 0;font-size:.7rem}
-.bar-row>b{color:#9bd8ff}
+.bar-row{display:grid;grid-template-columns:78px minmax(80px,1fr) 112px;gap:12px;align-items:center;padding:4px 0;font-size:.7rem}
+.bar-row>b{color:#9bd8ff;padding-right:4px}
 .bar-row>span{text-align:right;font-weight:700}
 .bar-track{height:9px;overflow:hidden;border-radius:999px;background:rgba(255,255,255,.065);box-shadow:inset 0 1px 3px rgba(0,0,0,.25)}
 .bar-track i{display:block;width:var(--bar-size);height:100%;border-radius:inherit;background:linear-gradient(90deg,#667eea,#63e6c8);box-shadow:0 0 10px rgba(99,230,200,.25)}
