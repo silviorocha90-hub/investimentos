@@ -85,7 +85,17 @@ export function AtivosView({
         totalProventos > 0 ? (item.proventos / totalProventos) * 100 : 0
     })
 
-    return lista.sort((a, b) => b.valorAtual - a.valorAtual)
+    return lista
+      .filter(
+        (item) =>
+          item.quantidade > 0 &&
+          item.valorAtual > 0,
+      )
+      .sort(
+        (a, b) =>
+          b.valorAtual -
+          a.valorAtual,
+      )
   }, [carteiras, investidor])
 
   const totais = useMemo(() => ({
@@ -133,6 +143,10 @@ export function AtivosView({
           <header><strong>Proventos por ativo</strong><span>% do total recebido</span></header>
           <div className="dividend-list">
             {dados
+              .filter(
+                (item) =>
+                  item.proventos > 0,
+              )
               .slice()
               .sort((a, b) => b.proventos - a.proventos)
               .slice(0, 10)
