@@ -210,7 +210,7 @@ export function AtivosView({
 
       <article className="panel ativos-progress-panel">
         <header>
-          <div><strong>Evolução das posições</strong><span>Quantidade atual em relação à meta padrão de {META_PADRAO.toLocaleString('pt-BR')} ativos</span></div>
+          <div><strong>Posições atuais</strong><span>Quantidade, valor atual, proventos e yield por ativo</span></div>
         </header>
 
         <div className="ativos-cards">
