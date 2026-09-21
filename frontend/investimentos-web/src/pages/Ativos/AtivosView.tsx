@@ -170,7 +170,7 @@ export function AtivosView({
 
       <div className="ativos-kpis">
         <article className="kpi-violet"><span>Ativos em carteira</span><strong>{totais.ativos}</strong><i>◆</i></article>
-        <article className="kpi-blue"><span>Rentabilidade total</span><strong>{percentual(totais.rentabilidade)}</strong><i>↗</i></article>
+        <article className="kpi-blue"><span>Rentabilidade total</span><strong className={totais.rentabilidade >= 0 ? 'positive' : 'negative'}>{percentual(totais.rentabilidade)}</strong><i>↗</i></article>
         <article className="kpi-green"><span>Valor atual</span><strong>{formatarMoeda(totais.valorAtual)}</strong><i>●</i></article>
         <article className="kpi-gold"><span>Proventos recebidos</span><strong>{formatarMoeda(totais.proventos)}</strong><i>★</i></article>
       </div>
