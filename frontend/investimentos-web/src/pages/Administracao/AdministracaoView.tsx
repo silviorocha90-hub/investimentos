@@ -131,6 +131,8 @@ interface AdministracaoViewProps {
         | 'taxas'
       >,
     ) => Promise<void>
+
+  onOperationCreated?: () => Promise<void>
 }
 
 export function AdministracaoView({
@@ -140,6 +142,7 @@ export function AdministracaoView({
   onSelectInvestor,
   operacoes,
   onSaveOperation,
+  onOperationCreated,
 }: AdministracaoViewProps) {
   const hoje =
     new Date()
@@ -978,47 +981,7 @@ export function AdministracaoView({
             onSaveOperation
           }
           onOperationCreated={
-            async () => {
-              const investidor =
-                investidores.find(
-                  (item) =>
-                    item.nome ===
-                    selectedInvestor,
-                )
-
-              if (!investidor) {
-                return
-              }
-
-              const apiUrl =
-                import.meta.env
-                  .VITE_API_URL ??
-                'https://localhost:7237'
-
-              const response =
-                await fetch(
-                  `${apiUrl}/api/operacoes?investidorId=${investidor.id}&_=${Date.now()}`,
-                  {
-                    cache: 'no-store',
-                  },
-                )
-
-              if (!response.ok) {
-                throw new Error(
-                  'Operação salva, mas não foi possível atualizar a lista.',
-                )
-              }
-
-              window.dispatchEvent(
-                new CustomEvent(
-                  'operacoes-atualizadas',
-                  {
-                    detail:
-                      await response.json(),
-                  },
-                ),
-              )
-            }
+            onOperationCreated
           }
         />
       ) : null}
