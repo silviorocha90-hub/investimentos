@@ -616,3 +616,8 @@
 .proventos-chart-card:first-child .proventos-month-column{height:100%;grid-template-rows:30px minmax(0,1fr) 20px}
 .proventos-chart-card:first-child .proventos-month-track{height:100%;align-self:stretch}
 .proventos-chart-card:first-child .proventos-month-track i{top:auto;bottom:0}
+
+/* Evolução: ocupa verticalmente todo o espaço disponível do card */
+.proventos-chart-card:first-child{display:flex;flex-direction:column}
+.proventos-chart-card:first-child .proventos-month-chart{flex:1;height:auto;min-height:260px;margin-top:12px;margin-bottom:0}
+.proventos-chart-card:first-child .proventos-month-column{min-height:0}
