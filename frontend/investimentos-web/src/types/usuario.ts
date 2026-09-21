@@ -36,13 +36,18 @@ export interface AlterarAcessosUsuario {
   investidoresIds: string[]
 }
 
-export const permissoesSistema:
+export const permissoesVisualizacao:
   PermissaoSistema[] = [
     'Dashboard',
     'Carteira',
-    'Operacoes',
     'Opcoes',
     'Proventos',
+  ]
+
+export const permissoesSistema:
+  PermissaoSistema[] = [
+    ...permissoesVisualizacao,
+    'Operacoes',
     'Administracao',
   ]
 
