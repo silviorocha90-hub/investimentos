@@ -569,3 +569,38 @@
 .proventos-page .provento-kpi strong {
   color: var(--accent);
 }
+
+
+/* Visual padronizado com Carteira e Ativos */
+.proventos-page{gap:16px}
+.provento-kpi{
+  position:relative;overflow:hidden;min-height:86px;padding:16px 18px;border:1px solid;border-radius:18px;
+  box-shadow:0 14px 34px rgba(0,0,0,.16);justify-content:flex-start
+}
+.provento-kpi:after{content:"";position:absolute;width:110px;height:110px;right:-45px;bottom:-60px;border-radius:50%;background:currentColor;opacity:.08}
+.provento-kpi:nth-child(1){color:#b89cff;border-color:rgba(184,156,255,.3)!important;background:linear-gradient(135deg,rgba(121,82,179,.24),rgba(121,82,179,.06))}
+.provento-kpi:nth-child(2){color:#67b7ff;border-color:rgba(103,183,255,.3)!important;background:linear-gradient(135deg,rgba(39,119,190,.24),rgba(39,119,190,.06))}
+.provento-kpi:nth-child(3){color:#63e6c8;border-color:rgba(99,230,200,.3)!important;background:linear-gradient(135deg,rgba(31,157,128,.24),rgba(31,157,128,.06))}
+.provento-kpi:nth-child(4){color:#f3c969;border-color:rgba(243,201,105,.3)!important;background:linear-gradient(135deg,rgba(190,142,39,.24),rgba(190,142,39,.06))}
+.proventos-page .provento-kpi strong{color:currentColor;margin-top:9px;font-size:1.12rem}
+.provento-kpi small{margin-top:5px}
+.proventos-chart-card,.proventos-history{
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:18px;
+  background:linear-gradient(145deg,rgba(255,255,255,.035),rgba(255,255,255,.012));
+  box-shadow:0 16px 38px rgba(0,0,0,.14)
+}
+.proventos-month-track,.proventos-ranking-track{background:rgba(255,255,255,.065);box-shadow:inset 0 1px 3px rgba(0,0,0,.25)}
+.proventos-month-track i,.proventos-ranking-track i{
+  background:linear-gradient(180deg,#667eea,#63e6c8);
+  box-shadow:0 0 10px rgba(99,230,200,.2)
+}
+.proventos-ranking-row{padding:7px 9px;border:1px solid transparent;border-radius:10px;background:rgba(255,255,255,.018)}
+.proventos-ranking-row:hover{border-color:rgba(243,201,105,.2);background:rgba(243,201,105,.05)}
+.proventos-ranking-row strong{color:#f3c969}
+.proventos-filters label>span,.provento-form-grid label>span{color:#63e6c8}
+.proventos-filters input,.proventos-filters select,.provento-form-grid input,.provento-form-grid select{
+  border-color:rgba(103,183,255,.16);background:rgba(255,255,255,.035)
+}
+.proventos-table tbody tr:hover{background:rgba(99,230,200,.035)}
+.provento-recebido{color:#63e6c8}
