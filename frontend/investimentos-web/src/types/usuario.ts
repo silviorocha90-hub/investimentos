@@ -28,12 +28,19 @@ export interface UsuarioAdministracao {
   ultimoLogin?: string | null
   permissoes: string[]
   investidoresIds: string[]
+  acessosInvestidores: AcessoInvestidor[]
+}
+
+export interface AcessoInvestidor {
+  investidorId: string
+  permissoes: PermissaoSistema[]
 }
 
 export interface AlterarAcessosUsuario {
   perfil: PerfilUsuario
   permissoes: PermissaoSistema[]
   investidoresIds: string[]
+  acessosInvestidores: AcessoInvestidor[]
 }
 
 export const permissoesVisualizacao:
