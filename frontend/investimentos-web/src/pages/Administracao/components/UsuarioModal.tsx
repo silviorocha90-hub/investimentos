@@ -14,6 +14,7 @@ import type {
 import {
   nomesPermissoes,
   permissoesSistema,
+  permissoesVisualizacao,
 } from '../../../types/usuario'
 
 import type {
@@ -277,8 +278,9 @@ export function UsuarioModal({
                         ? [
                             ...permissoesSistema,
                           ]
-                        : atual
-                            .permissoes,
+                        : [
+                            ...permissoesVisualizacao,
+                          ],
 
                     investidoresIds:
                       perfil ===
@@ -328,16 +330,15 @@ export function UsuarioModal({
                   </strong>
 
                   <span>
-                    Selecione as áreas
-                    que ficarão
-                    disponíveis no
-                    sistema.
+                    Usuários possuem acesso
+                    a todas as telas de
+                    visualização.
                   </span>
                 </div>
               </header>
 
               <div className="user-permission-grid">
-                {permissoesSistema.map(
+                {permissoesVisualizacao.map(
                   (permissao) => {
                     const selecionada =
                       formulario
@@ -362,9 +363,7 @@ export function UsuarioModal({
                           checked={
                             selecionada
                           }
-                          disabled={
-                            salvando
-                          }
+                          disabled
                           onChange={() =>
                             alternarPermissao(
                               permissao,
