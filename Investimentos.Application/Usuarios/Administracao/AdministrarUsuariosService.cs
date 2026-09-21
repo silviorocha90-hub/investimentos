@@ -161,8 +161,17 @@ namespace Investimentos.Application.Usuarios.Administracao
             }
             else
             {
+                var permissoesVisualizacao =
+                    new[]
+                    {
+                        PermissaoSistema.Dashboard,
+                        PermissaoSistema.Carteira,
+                        PermissaoSistema.Opcoes,
+                        PermissaoSistema.Proventos
+                    };
+
                 usuario.DefinirPermissoes(
-                    permissoes);
+                    permissoesVisualizacao);
 
                 usuario.DefinirInvestidores(
                     investidoresIds);
