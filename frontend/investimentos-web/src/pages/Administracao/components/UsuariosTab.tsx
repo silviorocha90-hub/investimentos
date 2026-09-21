@@ -104,6 +104,7 @@ export function UsuariosTab({
       perfil: 'Usuario',
       permissoes: [],
       investidoresIds: [],
+      acessosInvestidores: [],
     })
 
   async function carregar() {
@@ -203,6 +204,17 @@ export function UsuariosTab({
         ...usuario
           .investidoresIds,
       ],
+
+      acessosInvestidores:
+        usuario.acessosInvestidores?.length
+          ? usuario.acessosInvestidores.map((item) => ({
+              investidorId: item.investidorId,
+              permissoes: [...item.permissoes],
+            }))
+          : usuario.investidoresIds.map((investidorId) => ({
+              investidorId,
+              permissoes: [...permissoesVisualizacao],
+            })),
     })
 
     setErro(null)
