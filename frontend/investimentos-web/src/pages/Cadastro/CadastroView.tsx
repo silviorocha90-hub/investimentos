@@ -101,11 +101,12 @@ export function CadastroView({
   return (
     <main className="auth-page">
       <section className="auth-card">
-        <div className="auth-brand">
-          <img
-            src="/tio-patinhas.png"
-            alt=""
-          />
+        <div className="auth-brand auth-brand-login">
+          <span className="auth-login-mark" aria-hidden="true">
+            <i />
+            <i />
+            <i />
+          </span>
 
           <div>
             <h1>
