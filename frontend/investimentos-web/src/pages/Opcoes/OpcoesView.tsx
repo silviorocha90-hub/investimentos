@@ -103,18 +103,28 @@ export function OpcoesView({
                   (
                     item.dashboard.opcoes ??
                     []
-                  ).length > 0,
+                  ).some(
+                    (opcao) =>
+                      opcao.situacao === 'ABERTA' ||
+                      opcao.situacao === 'EXECUTADA' ||
+                      opcao.situacao === 'ENCERRADA' ||
+                      opcao.situacao === 'EXPIRADA',
+                  ),
               )
               .map(
                 (item) =>
-                  item.nome,
+                  item.nome
+                    .trim()
+                    .toLocaleLowerCase('pt-BR'),
               ),
           )
 
         return investidores.filter(
           (investidor) =>
             nomesComMovimento.has(
-              investidor.nome,
+              investidor.nome
+                .trim()
+                .toLocaleLowerCase('pt-BR'),
             ),
         )
       },
