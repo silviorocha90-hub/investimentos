@@ -96,11 +96,16 @@ namespace Investimentos.Application.Dashboard
                         if (EhAtivoSemMarcacaoPorCotacao(
                             posicao))
                         {
+                            var valorPatrimonialConsolidado =
+                                grupo.Sum(x => x.ValorAtual);
+
                             return posicao with
                             {
                                 PrecoAtual = null,
-                                ValorAtual = custoTotal,
-                                Valorizacao = 0
+                                ValorAtual = valorPatrimonialConsolidado,
+                                Valorizacao =
+                                    valorPatrimonialConsolidado -
+                                    custoTotal
                             };
                         }
 
