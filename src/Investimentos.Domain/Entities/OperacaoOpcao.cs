@@ -214,6 +214,76 @@
                 resultadoInformado;
         }
 
+        public void AtualizarFinalizacao(
+            string situacao,
+            DateTime? dataFinalizacao,
+            decimal? precoRecompraUnitario,
+            decimal? valorExecucao)
+        {
+            var situacaoNormalizada =
+                situacao.Trim().ToUpperInvariant();
+
+            if (situacaoNormalizada != "ENCERRADA" &&
+                situacaoNormalizada != "EXECUTADA")
+            {
+                throw new ArgumentException(
+                    "A situação deve ser ENCERRADA ou EXECUTADA.");
+            }
+
+            if (dataFinalizacao.HasValue)
+            {
+                ValidarDataFinalizacao(
+                    dataFinalizacao.Value);
+            }
+
+            if (precoRecompraUnitario.HasValue &&
+                precoRecompraUnitario.Value < 0)
+            {
+                throw new ArgumentException(
+                    "O preço unitário de recompra não pode ser negativo.");
+            }
+
+            if (valorExecucao.HasValue &&
+                valorExecucao.Value < 0)
+            {
+                throw new ArgumentException(
+                    "O valor de execução não pode ser negativo.");
+            }
+
+            if (situacaoNormalizada == "ENCERRADA")
+            {
+                if (!dataFinalizacao.HasValue)
+                {
+                    throw new ArgumentException(
+                        "A data de finalização é obrigatória para encerrar a opção.");
+                }
+
+                if (!precoRecompraUnitario.HasValue)
+                {
+                    throw new ArgumentException(
+                        "O preço de recompra é obrigatório para encerrar a opção.");
+                }
+
+                DataFinalizacao =
+                    dataFinalizacao.Value;
+                PrecoRecompraUnitario =
+                    precoRecompraUnitario.Value;
+                ValorExecucao = null;
+            }
+            else
+            {
+                DataFinalizacao =
+                    dataFinalizacao;
+                PrecoRecompraUnitario = null;
+                ValorExecucao =
+                    valorExecucao;
+            }
+
+            Situacao =
+                situacaoNormalizada;
+        }
+
+
         public void Encerrar(
             DateTime dataFinalizacao,
             decimal precoRecompraUnitario)
