@@ -97,6 +97,7 @@ export interface FormularioAtivo {
   dataCotacao: string
   valorPatrimonial: string
   dataValorPatrimonial: string
+  investidorId: string
 }
 
 interface AdministracaoViewProps {
@@ -258,6 +259,11 @@ export function AdministracaoView({
 
       dataValorPatrimonial:
         hoje,
+
+      investidorId:
+        filtroInvestidor !== 'TODOS'
+          ? filtroInvestidor
+          : dados?.investidores[0]?.id ?? '',
     })
 
   async function carregar() {
@@ -371,6 +377,11 @@ export function AdministracaoView({
 
       dataValorPatrimonial:
         hoje,
+
+      investidorId:
+        filtroInvestidor !== 'TODOS'
+          ? filtroInvestidor
+          : dados?.investidores[0]?.id ?? '',
     })
 
     setErro(
@@ -425,6 +436,11 @@ export function AdministracaoView({
 
       dataValorPatrimonial:
         hoje,
+
+      investidorId:
+        filtroInvestidor !== 'TODOS'
+          ? filtroInvestidor
+          : dados?.investidores[0]?.id ?? '',
     })
 
     setErro(
@@ -659,6 +675,11 @@ export function AdministracaoView({
               ? null
               : formularioAtivo
                   .dataValorPatrimonial,
+
+          investidorId:
+            valorPatrimonial == null
+              ? null
+              : formularioAtivo.investidorId,
         })
       } else {
         const ativoAtualizado =
@@ -1085,6 +1106,9 @@ export function AdministracaoView({
           }
           tipos={
             tiposAtivos
+          }
+          investidores={
+            dados.investidores
           }
           salvando={
             salvando
