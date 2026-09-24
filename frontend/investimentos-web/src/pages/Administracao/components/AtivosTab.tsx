@@ -142,14 +142,17 @@ export function AtivosTab({
         dados.ativos.filter(
           (ativo) =>
             filtroInvestidor ===
-              'TODOS' ||
-            ativo
-              .posicoesInvestidores
-              .some(
-                (posicao) =>
-                  posicao.investidorId ===
-                  filtroInvestidor,
-              ),
+              'TODOS'
+              ? ativo.quantidade > 0
+              : ativo
+                  .posicoesInvestidores
+                  .some(
+                    (posicao) =>
+                      posicao.investidorId ===
+                        filtroInvestidor &&
+                      posicao.quantidade >
+                        0,
+                  ),
         ),
       [
         dados.ativos,
