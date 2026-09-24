@@ -16,12 +16,14 @@ namespace Investimentos.Infrastructure.Persistence.Repositories
 
         public async Task<IReadOnlyDictionary<string, decimal>>
             ObterUltimosPorTickerAsync(
+                Guid investidorId,
                 CancellationToken cancellationToken = default)
         {
             var valores =
                 await _context.ValoresPatrimoniaisAtivos
                     .AsNoTracking()
                     .Include(x => x.Ativo)
+                    .Where(x => x.InvestidorId == investidorId)
                     .OrderByDescending(x => x.DataReferencia)
                     .ThenByDescending(x => x.Id)
                     .ToListAsync(cancellationToken);
