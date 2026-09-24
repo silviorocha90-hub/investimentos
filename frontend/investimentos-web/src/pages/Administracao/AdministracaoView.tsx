@@ -260,8 +260,7 @@ export function AdministracaoView({
       dataValorPatrimonial:
         hoje,
 
-      investidorId:
-        investidorPatrimonialId,
+      investidorId: '',
     })
 
   async function carregar() {
@@ -450,9 +449,7 @@ export function AdministracaoView({
         hoje,
 
       investidorId:
-        filtroInvestidor !== 'TODOS'
-          ? filtroInvestidor
-          : dados?.investidores[0]?.id ?? '',
+        investidorPatrimonialId,
     })
 
     setErro(
@@ -722,6 +719,11 @@ export function AdministracaoView({
                   ? null
                   : formularioAtivo
                       .dataValorPatrimonial,
+
+              investidorId:
+                valorPatrimonial == null
+                  ? null
+                  : formularioAtivo.investidorId,
             },
           )
 
