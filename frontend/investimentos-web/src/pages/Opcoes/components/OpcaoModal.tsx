@@ -593,22 +593,75 @@ function EditarOpcaoModal({
                 })
               }
             >
-              <option value="ABERTA">
-                ABERTA
+              <option value="ENCERRADA">
+                ENCERRADA
               </option>
 
               <option value="EXECUTADA">
                 EXECUTADA
               </option>
-
-              <option value="ENCERRADA">
-                ENCERRADA
-              </option>
-
-              <option value="EXPIRADA">
-                EXPIRADA
-              </option>
             </select>
+          </label>
+
+          <label>
+            <span>Data finalização</span>
+
+            <input
+              type="date"
+              value={
+                form.dataFinalizacao?.slice(
+                  0,
+                  10,
+                ) ?? ''
+              }
+              onChange={(event) =>
+                setForm({
+                  ...form,
+                  dataFinalizacao:
+                    event.target.value ||
+                    null,
+                })
+              }
+            />
+          </label>
+
+          <label>
+            <span>Preço recompra unit.</span>
+
+            <div className="admin-money-input">
+              <span>R$</span>
+              <input
+                inputMode="numeric"
+                value={
+                  form.precoRecompraUnitario == null
+                    ? ''
+                    : form.precoRecompraUnitario.toLocaleString(
+                        'pt-BR',
+                        {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        },
+                      )
+                }
+                onChange={(event) => {
+                  const valor =
+                    formatarMoedaEntrada(
+                      event.target.value,
+                    )
+
+                  setForm({
+                    ...form,
+                    precoRecompraUnitario:
+                      valor === ''
+                        ? null
+                        : moedaParaNumero(
+                            valor,
+                          ),
+                  })
+                }}
+                placeholder="Opcional"
+              />
+            </div>
           </label>
 
           <label>
