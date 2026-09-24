@@ -83,7 +83,8 @@
         decimal? Cotacao,
         DateTime? DataCotacao,
         decimal? ValorPatrimonial,
-        DateTime? DataValorPatrimonial);
+        DateTime? DataValorPatrimonial,
+        Guid? InvestidorId);
 
     public record AtualizarAtivoAdministracaoRequest(
         string Nome,
@@ -91,5 +92,6 @@
         decimal? Cotacao,
         DateTime? DataCotacao,
         decimal? ValorPatrimonial,
-        DateTime? DataValorPatrimonial);
+        DateTime? DataValorPatrimonial,
+        Guid? InvestidorId);
 }
