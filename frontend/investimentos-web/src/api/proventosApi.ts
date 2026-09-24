@@ -54,6 +54,39 @@ export async function listarProventos(
   return response.json()
 }
 
+export interface SalvarProventoTotalRequest {
+  ticker: string
+  tipo: string
+  descricao?: string | null
+  dataCom?: string | null
+  dataPagamento: string
+  valorTotal: number
+}
+
+export async function criarProventoRateado(
+  request: SalvarProventoTotalRequest,
+) {
+  const response =
+    await fetch(
+      `${API_URL}/api/proventos/ratear`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(request),
+      },
+    )
+
+  if (!response.ok) {
+    throw new Error(
+      await obterMensagemErro(response),
+    )
+  }
+
+  return response.json()
+}
+
 export async function criarProvento(
   request: SalvarProventoRequest,
 ) {
