@@ -261,9 +261,7 @@ export function AdministracaoView({
         hoje,
 
       investidorId:
-        filtroInvestidor !== 'TODOS'
-          ? filtroInvestidor
-          : dados?.investidores[0]?.id ?? '',
+        investidorPatrimonialId,
     })
 
   async function carregar() {
@@ -398,6 +396,19 @@ export function AdministracaoView({
     ativo:
       AtivoAdministracao,
   ) {
+    const investidorPatrimonialId =
+      filtroInvestidor !== 'TODOS'
+        ? filtroInvestidor
+        : ativo.posicoesInvestidores[0]?.investidorId ??
+          dados?.investidores[0]?.id ??
+          ''
+
+    const posicaoInvestidor =
+      ativo.posicoesInvestidores.find(
+        (posicao) =>
+          posicao.investidorId === investidorPatrimonialId,
+      )
+
     setFormularioAtivo({
       ticker:
         ativo.ticker,
@@ -424,6 +435,7 @@ export function AdministracaoView({
 
       valorPatrimonial:
         (
+          posicaoInvestidor?.valorAtual ??
           ativo.valorPatrimonialAtual ??
           ativo.valorAtual
         ).toLocaleString(
