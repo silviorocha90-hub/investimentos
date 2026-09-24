@@ -586,6 +586,7 @@ export function ProventoModal({
           </label>
         </div>
 
+        {provento ? (
         <div className="provento-calculo">
           <div>
             <span>
@@ -623,6 +624,18 @@ export function ProventoModal({
             </strong>
           </div>
         </div>
+        ) : (
+          <div className="provento-calculo">
+            <div>
+              <span>
+                Distribuição
+              </span>
+              <strong>
+                Automática pela posição na Data-Com
+              </strong>
+            </div>
+          </div>
+        )}
       </div>
     </Modal>
   )
