@@ -123,6 +123,9 @@ namespace Investimentos.Infrastructure.Migrations
                     b.Property<DateTime>("DataReferencia")
                         .HasColumnType("datetime2");
 
+                    b.Property<Guid>("InvestidorId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<decimal>("Preco")
                         .HasPrecision(18, 8)
                         .HasColumnType("decimal(18,8)");
@@ -424,7 +427,9 @@ namespace Investimentos.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AtivoId", "DataReferencia")
+                    b.HasIndex("InvestidorId");
+
+                    b.HasIndex("AtivoId", "InvestidorId", "DataReferencia")
                         .IsUnique();
 
                     b.ToTable("ValorPatrimonialAtivo", (string)null);
@@ -907,7 +912,15 @@ namespace Investimentos.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Investimentos.Domain.Entities.Investidor", "Investidor")
+                        .WithMany()
+                        .HasForeignKey("InvestidorId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.Navigation("Ativo");
+
+                    b.Navigation("Investidor");
                 });
 
             modelBuilder.Entity("Investimentos.Domain.Entities.TipoAtivo", b =>
