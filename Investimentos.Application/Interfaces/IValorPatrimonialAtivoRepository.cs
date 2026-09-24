@@ -4,6 +4,7 @@ namespace Investimentos.Application.Interfaces
     {
         Task<IReadOnlyDictionary<string, decimal>>
             ObterUltimosPorTickerAsync(
+                Guid investidorId,
                 CancellationToken cancellationToken = default);
     }
 }
