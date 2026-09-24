@@ -59,47 +59,18 @@ namespace Investimentos.Application.Opcoes.AtualizarOperacaoOpcao
                     .Trim()
                     .ToUpperInvariant();
 
-            if (opcao.Situacao == "ABERTA")
+            if (situacao != "ENCERRADA" &&
+                situacao != "EXECUTADA")
             {
-                if (situacao == "ENCERRADA")
-                {
-                    if (!command.DataFinalizacao.HasValue)
-                    {
-                        throw new ArgumentException(
-                            "A data de finalização é obrigatória para encerrar a opção.");
-                    }
-
-                    if (!command.PrecoRecompraUnitario.HasValue)
-                    {
-                        throw new ArgumentException(
-                            "O preço de recompra é obrigatório para encerrar a opção.");
-                    }
-
-                    opcao.Encerrar(
-                        command.DataFinalizacao.Value,
-                        command.PrecoRecompraUnitario.Value);
-                }
-                else if (situacao == "EXECUTADA")
-                {
-                    opcao.MarcarExercida(
-                        command.ValorExecucao);
-                }
-                else if (situacao == "EXPIRADA")
-                {
-                    opcao.MarcarExpirada(
-                        command.DataFinalizacao);
-                }
-                else if (situacao != "ABERTA")
-                {
-                    throw new ArgumentException(
-                        "A situação deve ser ABERTA, ENCERRADA, EXECUTADA ou EXPIRADA.");
-                }
+                throw new ArgumentException(
+                    "A situação deve ser ENCERRADA ou EXECUTADA.");
             }
-            else if (situacao != opcao.Situacao)
-            {
-                throw new InvalidOperationException(
-                    "Uma opção já finalizada não pode ter sua situação alterada.");
-            }
+
+            opcao.AtualizarFinalizacao(
+                situacao,
+                command.DataFinalizacao,
+                command.PrecoRecompraUnitario,
+                command.ValorExecucao);
 
             await _repository.SalvarAlteracoesAsync(
                 cancellationToken);
