@@ -70,11 +70,15 @@ namespace Investimentos.Infrastructure.Persistence.Repositories
                     .OrderByDescending(x => x.DataReferencia)
                     .ToListAsync(cancellationToken);
 
-            var ultimoValorPatrimonialPorAtivo =
+            var ultimoValorPatrimonialPorAtivoInvestidor =
                 valoresPatrimoniaisBanco
-                    .GroupBy(x => x.AtivoId)
+                    .GroupBy(x => new
+                    {
+                        x.AtivoId,
+                        x.InvestidorId
+                    })
                     .ToDictionary(
-                        x => x.Key,
+                        x => (x.Key.AtivoId, x.Key.InvestidorId),
                         x => x
                             .OrderByDescending(
                                 valor => valor.DataReferencia)
@@ -299,14 +303,42 @@ namespace Investimentos.Infrastructure.Persistence.Repositories
                     posicoesInvestidores.Sum(
                         x => x.Quantidade);
 
-                ultimoValorPatrimonialPorAtivo.TryGetValue(
-                    ativo.Id,
-                    out var valorPatrimonial);
+                var posicoesComValorAtual =
+                    posicoesInvestidores
+                        .Select(posicao =>
+                        {
+                            ultimoValorPatrimonialPorAtivoInvestidor.TryGetValue(
+                                (ativo.Id, posicao.InvestidorId),
+                                out var valorIndividual);
+
+                            return valorIndividual is null
+                                ? posicao
+                                : posicao with
+                                {
+                                    ValorAtual = valorIndividual.Valor
+                                };
+                        })
+                        .ToList();
+
+                var valoresPatrimoniaisAtivo =
+                    valoresPatrimoniaisBanco
+                        .Where(x => x.AtivoId == ativo.Id)
+                        .GroupBy(x => x.InvestidorId)
+                        .Select(x => x
+                            .OrderByDescending(v => v.DataReferencia)
+                            .ThenByDescending(v => v.Id)
+                            .First())
+                        .ToList();
 
                 var valorAtual =
-                    valorPatrimonial?.Valor ??
-                    posicoesInvestidores.Sum(
-                        x => x.ValorAtual);
+                    posicoesComValorAtual.Sum(x => x.ValorAtual);
+
+                var valorPatrimonial =
+                    valoresPatrimoniaisAtivo.Count == 0
+                        ? null
+                        : valoresPatrimoniaisAtivo
+                            .OrderByDescending(x => x.DataReferencia)
+                            .First();
 
                 ativos.Add(
                     new AtivoAdministracaoDto(
@@ -323,7 +355,7 @@ namespace Investimentos.Infrastructure.Persistence.Repositories
                         valorAtual,
                         valorPatrimonial?.Valor,
                         valorPatrimonial?.DataReferencia,
-                        posicoesInvestidores,
+                        posicoesComValorAtual,
                         cotacao?.Preco,
                         cotacao?.DataReferencia));
             }
@@ -550,9 +582,19 @@ namespace Investimentos.Infrastructure.Persistence.Repositories
 
             if (request.ValorPatrimonial.HasValue)
             {
+                if (!request.InvestidorId.HasValue)
+                    throw new ArgumentException("Selecione o investidor do valor patrimonial.");
+
+                var investidorValor =
+                    await _context.Investidores.FirstOrDefaultAsync(
+                        x => x.Id == request.InvestidorId.Value,
+                        cancellationToken)
+                    ?? throw new ArgumentException("Investidor não encontrado.");
+
                 valorPatrimonial =
                     new ValorPatrimonialAtivo(
                         ativo,
+                        investidorValor,
                         (request.DataValorPatrimonial ?? DateTime.Today).Date,
                         request.ValorPatrimonial.Value);
 
@@ -715,9 +757,20 @@ namespace Investimentos.Infrastructure.Persistence.Repositories
                  * patrimonial por ativo para evitar que valores antigos
                  * concorram com a edição recém-salva.
                  */
+                if (!request.InvestidorId.HasValue)
+                    throw new ArgumentException("Selecione o investidor do valor patrimonial.");
+
+                var investidorValor =
+                    await _context.Investidores.FirstOrDefaultAsync(
+                        x => x.Id == request.InvestidorId.Value,
+                        cancellationToken)
+                    ?? throw new ArgumentException("Investidor não encontrado.");
+
                 var valoresExistentes =
                     await _context.ValoresPatrimoniaisAtivos
-                        .Where(x => x.AtivoId == ativo.Id)
+                        .Where(x =>
+                            x.AtivoId == ativo.Id &&
+                            x.InvestidorId == investidorValor.Id)
                         .OrderByDescending(x => x.DataReferencia)
                         .ThenByDescending(x => x.Id)
                         .ToListAsync(cancellationToken);
@@ -730,6 +783,7 @@ namespace Investimentos.Infrastructure.Persistence.Repositories
                     valorPatrimonial =
                         new ValorPatrimonialAtivo(
                             ativo,
+                            investidorValor,
                             dataValor,
                             request.ValorPatrimonial.Value);
 
@@ -754,7 +808,10 @@ namespace Investimentos.Infrastructure.Persistence.Repositories
                 valorPatrimonial =
                     await _context.ValoresPatrimoniaisAtivos
                         .AsNoTracking()
-                        .Where(x => x.AtivoId == ativo.Id)
+                        .Where(x =>
+                            x.AtivoId == ativo.Id &&
+                            (!request.InvestidorId.HasValue ||
+                             x.InvestidorId == request.InvestidorId.Value))
                         .OrderByDescending(x => x.DataReferencia)
                         .ThenByDescending(x => x.Id)
                         .FirstOrDefaultAsync(cancellationToken);
