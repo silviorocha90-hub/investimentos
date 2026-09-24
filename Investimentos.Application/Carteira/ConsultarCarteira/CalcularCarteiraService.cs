@@ -70,17 +70,49 @@
 
                         if (operacao.TipoOperacao == "VENDA")
                         {
-                            if (quantidade <= 0)
+                            var tickerNormalizado =
+                                grupo.Key.Ticker
+                                    .Trim()
+                                    .ToUpperInvariant();
+
+                            var tipoNormalizado =
+                                grupo.Key.TipoAtivoCodigo
+                                    ?.Trim()
+                                    .ToUpperInvariant();
+
+                            var usaControlePatrimonial =
+                                tipoNormalizado is "CDB" or "FMP" or "PREVIDENCIA" ||
+                                tickerNormalizado.Contains("CDB") ||
+                                tickerNormalizado.Contains("FMP ELETROBRAS");
+
+                            /*
+                             * CDB/FMP/Previdência podem ter sido migrados
+                             * apenas com valor patrimonial, sem uma COMPRA
+                             * histórica correspondente. A baixa/resgate
+                             * desses ativos não deve invalidar a carteira.
+                             */
+                            if (
+                                !usaControlePatrimonial &&
+                                quantidade <= 0)
                             {
                                 throw new InvalidOperationException(
                                     $"Não existe posição disponível de {grupo.Key.Ticker} para venda.");
                             }
 
-                            if (operacao.Quantidade > quantidade)
+                            if (
+                                !usaControlePatrimonial &&
+                                operacao.Quantidade > quantidade)
                             {
                                 throw new InvalidOperationException(
                                     $"Quantidade de venda de {grupo.Key.Ticker} é maior que a posição disponível. " +
                                     $"Disponível: {quantidade}. Venda: {operacao.Quantidade}.");
+                            }
+
+                            if (
+                                usaControlePatrimonial &&
+                                quantidade <= 0)
+                            {
+                                continue;
                             }
 
                             var precoMedio =
