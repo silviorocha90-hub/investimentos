@@ -74,7 +74,30 @@ namespace Investimentos.Application.Operacoes.CadastrarOperacao
                     command.Data,
                     cancellationToken);
 
-            if (tipoOperacao.Codigo == "VENDA")
+            var tipoAtivoCodigo =
+                ativo.TipoAtivo.Codigo
+                    .Trim()
+                    .ToUpperInvariant();
+
+            var ticker =
+                ativo.Ticker.Codigo
+                    .Trim()
+                    .ToUpperInvariant();
+
+            /*
+             * Outros investimentos são controlados pelo valor
+             * patrimonial corrente, e não por quantidade de ações.
+             * Portanto a baixa/resgate não deve ser bloqueada pela
+             * validação de posição usada para renda variável.
+             */
+            var usaControlePatrimonial =
+                tipoAtivoCodigo is "CDB" or "FMP" or "PREVIDENCIA" ||
+                ticker.Contains("CDB") ||
+                ticker.Contains("FMP ELETROBRAS");
+
+            if (
+                tipoOperacao.Codigo == "VENDA" &&
+                !usaControlePatrimonial)
             {
                 var quantidadeDisponivel =
                     await _repository
