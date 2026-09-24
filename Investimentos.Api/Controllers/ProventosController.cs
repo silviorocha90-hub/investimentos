@@ -1,7 +1,9 @@
 ﻿using Investimentos.Application.Interfaces;
 using Investimentos.Application.Proventos.ConsultarProventos;
 using Investimentos.Domain.Entities;
+using Investimentos.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace Investimentos.Api.Controllers
 {
@@ -16,13 +18,19 @@ namespace Investimentos.Api.Controllers
         private readonly
             ConsultarProventosHandler _consultarHandler;
 
+        private readonly
+            InvestimentosDbContext _context;
+
         public ProventosController(
             IProventoRepository repository,
-            ConsultarProventosHandler consultarHandler)
+            ConsultarProventosHandler consultarHandler,
+            InvestimentosDbContext context)
         {
             _repository = repository;
             _consultarHandler =
                 consultarHandler;
+
+            _context = context;
         }
 
         [HttpGet("{investidorId:guid}")]
@@ -49,6 +57,128 @@ namespace Investimentos.Api.Controllers
                         mensagem =
                             ex.Message
                     });
+            }
+        }
+
+        [HttpPost("ratear")]
+        public async Task<ActionResult>
+            CriarRateado(
+                [FromBody]
+                SalvarProventoTotalRequest request,
+                CancellationToken cancellationToken)
+        {
+            try
+            {
+                if (request.ValorTotal <= 0)
+                    return BadRequest(new { mensagem = "O valor total deve ser maior que zero." });
+
+                var ativo =
+                    await _repository.ObterAtivoPorTickerAsync(
+                        request.Ticker,
+                        cancellationToken);
+
+                if (ativo is null)
+                    return NotFound(new { mensagem = "Ativo não encontrado." });
+
+                var dataBase =
+                    (request.DataCom ?? request.DataPagamento).Date;
+
+                var operacoes =
+                    await _context.Operacoes
+                        .AsNoTracking()
+                        .Where(x =>
+                            x.AtivoId == ativo.Id &&
+                            x.Data.Date <= dataBase)
+                        .Select(x => new
+                        {
+                            x.InvestidorId,
+                            Tipo = x.TipoOperacao.Codigo,
+                            x.Quantidade
+                        })
+                        .ToListAsync(cancellationToken);
+
+                var posicoes =
+                    operacoes
+                        .GroupBy(x => x.InvestidorId)
+                        .Select(grupo => new
+                        {
+                            InvestidorId = grupo.Key,
+                            Quantidade = grupo.Sum(x =>
+                                x.Tipo == "COMPRA"
+                                    ? x.Quantidade
+                                    : x.Tipo == "VENDA"
+                                        ? -x.Quantidade
+                                        : 0)
+                        })
+                        .Where(x => x.Quantidade > 0)
+                        .ToList();
+
+                var quantidadeTotal =
+                    posicoes.Sum(x => x.Quantidade);
+
+                if (quantidadeTotal <= 0)
+                    return BadRequest(new
+                    {
+                        mensagem =
+                            $"Não existem posições de {request.Ticker.ToUpperInvariant()} na data-base {dataBase:dd/MM/yyyy}."
+                    });
+
+                var investidores =
+                    await _context.Investidores
+                        .Where(x =>
+                            posicoes.Select(p => p.InvestidorId)
+                                .Contains(x.Id))
+                        .ToDictionaryAsync(x => x.Id, cancellationToken);
+
+                var valorUnitario =
+                    request.ValorTotal / quantidadeTotal;
+
+                decimal distribuido = 0;
+
+                for (var indice = 0; indice < posicoes.Count; indice++)
+                {
+                    var posicao = posicoes[indice];
+
+                    var valorRecebido =
+                        indice == posicoes.Count - 1
+                            ? request.ValorTotal - distribuido
+                            : Math.Round(
+                                request.ValorTotal *
+                                posicao.Quantidade /
+                                quantidadeTotal,
+                                2,
+                                MidpointRounding.AwayFromZero);
+
+                    distribuido += valorRecebido;
+
+                    var provento =
+                        new Provento(
+                            investidores[posicao.InvestidorId],
+                            ativo,
+                            request.Tipo,
+                            request.Descricao,
+                            request.DataCom,
+                            request.DataPagamento,
+                            posicao.Quantidade,
+                            valorUnitario,
+                            valorRecebido);
+
+                    _context.Proventos.Add(provento);
+                }
+
+                await _context.SaveChangesAsync(cancellationToken);
+
+                return Ok(new
+                {
+                    quantidadeTotal,
+                    valorUnitario,
+                    investidores = posicoes.Count,
+                    valorTotal = request.ValorTotal
+                });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { mensagem = ex.Message });
             }
         }
 
@@ -229,6 +359,14 @@ namespace Investimentos.Api.Controllers
             return NoContent();
         }
     }
+
+    public record SalvarProventoTotalRequest(
+        string Ticker,
+        string Tipo,
+        string? Descricao,
+        DateTime? DataCom,
+        DateTime DataPagamento,
+        decimal ValorTotal);
 
     public record SalvarProventoRequest(
         Guid InvestidorId,
