@@ -123,9 +123,6 @@ namespace Investimentos.Infrastructure.Migrations
                     b.Property<DateTime>("DataReferencia")
                         .HasColumnType("datetime2");
 
-                    b.Property<Guid>("InvestidorId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<decimal>("Preco")
                         .HasPrecision(18, 8)
                         .HasColumnType("decimal(18,8)");
@@ -420,6 +417,9 @@ namespace Investimentos.Infrastructure.Migrations
 
                     b.Property<DateTime>("DataReferencia")
                         .HasColumnType("datetime2");
+
+                    b.Property<Guid>("InvestidorId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<decimal>("Valor")
                         .HasPrecision(18, 2)
