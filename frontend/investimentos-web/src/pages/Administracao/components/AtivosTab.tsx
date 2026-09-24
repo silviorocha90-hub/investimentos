@@ -351,25 +351,8 @@ export function AtivosTab({
     outrosInvestimentosFiltrados
 
   /* A paginação é aplicada somente à lista principal de
-   * renda variável. Outros investimentos permanecem visíveis
-   * porque normalmente são poucos e não devem desaparecer
-   * em páginas diferentes.
+   * renda variável. Outros investimentos permanecem visíveis.
    */
-  const _ativosPaginaRemovidos =
-    [] as AtivoAdministracao[]
-
-  /*
-   * Mantido abaixo apenas o predicado de classificação.
-   */
-  const _rendaVariavelLegado =
-    _ativosPaginaRemovidos.filter(
-      (ativo) =>
-        !ehOutroInvestimento(
-          ativo,
-        ),
-    )
-
-  void _rendaVariavelLegado
 
   function obterValorAtual(
     ativo: AtivoAdministracao,
