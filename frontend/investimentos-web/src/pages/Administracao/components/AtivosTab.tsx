@@ -13,9 +13,6 @@ import {
   formatarDataCurta,
   formatarMoeda,
 } from '../../../utils/formatters'
-import {
-  Pagination,
-} from '../../../components/Pagination'
 
 interface AtivosTabProps {
   dados: Administracao
@@ -119,8 +116,6 @@ export function AtivosTab({
   excluirAtivo,
   excluindo,
 }: AtivosTabProps) {
-  const itensPorPagina = 12
-
   const investidoresDisponiveis =
     useMemo(
       () =>
@@ -297,30 +292,7 @@ export function AtivosTab({
       ],
     )
 
-  const totalRendaVariavel =
-    ativosFiltrados.filter(
-      (ativo) =>
-        !ehOutroInvestimento(
-          ativo,
-        ),
-    ).length
-
-  const totalPaginas =
-    Math.max(
-      1,
-      Math.ceil(
-        totalRendaVariavel /
-          itensPorPagina,
-      ),
-    )
-
-  const paginaNormalizada =
-    Math.min(
-      pagina,
-      totalPaginas,
-    )
-
-  const rendaVariavelFiltrada =
+  const rendaVariavel =
     ativosFiltrados.filter(
       (ativo) =>
         !ehOutroInvestimento(
@@ -328,31 +300,13 @@ export function AtivosTab({
         ),
     )
 
-  const outrosInvestimentosFiltrados =
+  const outrosInvestimentos =
     ativosFiltrados.filter(
       (ativo) =>
         ehOutroInvestimento(
           ativo,
         ),
     )
-
-  const rendaVariavel =
-    rendaVariavelFiltrada.slice(
-      (
-        paginaNormalizada -
-        1
-      ) * itensPorPagina,
-
-      paginaNormalizada *
-        itensPorPagina,
-    )
-
-  const outrosInvestimentos =
-    outrosInvestimentosFiltrados
-
-  /* A paginação é aplicada somente à lista principal de
-   * renda variável. Outros investimentos permanecem visíveis.
-   */
 
   function obterValorAtual(
     ativo: AtivoAdministracao,
@@ -902,21 +856,7 @@ export function AtivosTab({
         </div>
       </div>
 
-      <Pagination
-        page={
-          paginaNormalizada
-        }
-        totalPages={
-          totalPaginas
-        }
-        totalItems={
-          totalRendaVariavel
-        }
-        itemLabel="ativos"
-        onPageChange={
-          setPagina
-        }
-      />
+
     </article>
   )
 }
