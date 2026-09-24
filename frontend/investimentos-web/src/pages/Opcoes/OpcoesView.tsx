@@ -566,11 +566,32 @@ export function OpcoesView({
           )
         }
 
+        const responseAtualizada =
+          await fetch(
+            `${apiUrl}/api/opcoes/${investidor.id}?_=${Date.now()}`,
+            {
+              cache: 'no-store',
+            },
+          )
+
+        if (!responseAtualizada.ok) {
+          throw new Error(
+            await lerErroApi(
+              responseAtualizada,
+            ),
+          )
+        }
+
+        const opcoesAtualizadas =
+          await responseAtualizada.json() as OperacaoOpcao[]
+
+        setOpcoesLocais(
+          opcoesAtualizadas,
+        )
+
         setModalInclusaoAberto(
           false,
         )
-
-        window.location.reload()
       } catch (error) {
         setErroOpcao(
           error instanceof Error
