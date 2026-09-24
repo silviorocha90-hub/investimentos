@@ -101,6 +101,7 @@ export interface AtualizarAtivoAdministracao {
   dataCotacao?: string | null
   valorPatrimonial?: number | null
   dataValorPatrimonial?: string | null
+  investidorId?: string | null
 }
 
 export interface AtualizarInvestidorAdministracao {
