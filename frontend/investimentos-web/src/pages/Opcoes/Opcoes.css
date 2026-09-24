@@ -900,3 +900,18 @@
 .options-chart-card:first-child{display:flex;flex-direction:column}
 .options-chart-card:first-child .options-month-chart{flex:1;height:auto;min-height:260px;margin-top:12px;margin-bottom:0}
 .options-chart-card:first-child .options-month-column{min-height:0}
+
+
+/* Selects nativos: mantém contraste correto no popup do Windows/Chrome */
+.options-form-grid select option,
+.options-filters select option {
+  background: #ffffff;
+  color: #17212b;
+  font-weight: 600;
+}
+
+.options-form-grid select option:checked,
+.options-filters select option:checked {
+  background: #dfe7ee;
+  color: #17212b;
+}
