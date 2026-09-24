@@ -5,6 +5,7 @@ import type {
 } from 'react'
 import type {
   TipoAtivoAdministracao,
+  InvestidorAdministracao,
 } from '../../../types/administracao'
 import type {
   FormularioAtivo,
@@ -28,6 +29,9 @@ interface AtivoModalProps {
   tipos:
     TipoAtivoAdministracao[]
 
+  investidores:
+    InvestidorAdministracao[]
+
   salvando:
     boolean
 
@@ -49,6 +53,7 @@ export function AtivoModal({
   formularioAtivo,
   setFormularioAtivo,
   tipos,
+  investidores,
   salvando,
   erro,
   fechar,
@@ -222,6 +227,31 @@ export function AtivoModal({
 
           {outroInvestimento ? (
             <>
+              <label>
+                <span>
+                  Investidor
+                </span>
+
+                <select
+                  value={formularioAtivo.investidorId}
+                  onChange={(event) =>
+                    setFormularioAtivo({
+                      ...formularioAtivo,
+                      investidorId: event.target.value,
+                    })
+                  }
+                  required
+                >
+                  {investidores.map((investidor) => (
+                    <option
+                      key={investidor.id}
+                      value={investidor.id}
+                    >
+                      {investidor.nome}
+                    </option>
+                  ))}
+                </select>
+              </label>
               <label>
                 <span>
                   Valor atual
