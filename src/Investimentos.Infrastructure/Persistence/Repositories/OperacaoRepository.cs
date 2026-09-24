@@ -68,6 +68,8 @@ namespace Investimentos.Infrastructure.Persistence.Repositories
                 new Ticker(ticker);
 
             return await _context.Ativos
+                .Include(x => x.TipoAtivo)
+                .ThenInclude(x => x.ClasseAtivo)
                 .FirstOrDefaultAsync(
                     x => x.Ticker == tickerValueObject,
                     cancellationToken);
