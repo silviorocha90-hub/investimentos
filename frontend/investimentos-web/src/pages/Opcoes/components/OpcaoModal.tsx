@@ -664,6 +664,47 @@ function EditarOpcaoModal({
             </div>
           </label>
 
+          {form.situacao === 'EXECUTADA' ? (
+            <label>
+              <span>Valor de execução</span>
+
+              <div className="admin-money-input">
+                <span>R$</span>
+                <input
+                  inputMode="numeric"
+                  value={
+                    form.valorExecucao == null
+                      ? ''
+                      : form.valorExecucao.toLocaleString(
+                          'pt-BR',
+                          {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          },
+                        )
+                  }
+                  onChange={(event) => {
+                    const valor =
+                      formatarMoedaEntrada(
+                        event.target.value,
+                      )
+
+                    setForm({
+                      ...form,
+                      valorExecucao:
+                        valor === ''
+                          ? null
+                          : moedaParaNumero(
+                              valor,
+                            ),
+                    })
+                  }}
+                  placeholder="Opcional"
+                />
+              </div>
+            </label>
+          ) : null}
+
           <label>
             <span>Resultado informado</span>
 
