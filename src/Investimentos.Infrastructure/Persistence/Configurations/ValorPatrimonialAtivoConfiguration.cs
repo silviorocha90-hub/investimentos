@@ -23,6 +23,7 @@ namespace Investimentos.Infrastructure.Persistence.Configurations
             builder.HasIndex(x => new
             {
                 x.AtivoId,
+                x.InvestidorId,
                 x.DataReferencia
             }).IsUnique();
 
@@ -30,6 +31,11 @@ namespace Investimentos.Infrastructure.Persistence.Configurations
                 .WithMany()
                 .HasForeignKey(x => x.AtivoId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasOne(x => x.Investidor)
+                .WithMany()
+                .HasForeignKey(x => x.InvestidorId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }
