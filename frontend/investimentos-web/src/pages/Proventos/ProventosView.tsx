@@ -18,10 +18,11 @@ import type {
 
 import {
   atualizarProvento,
-  criarProvento,
+  criarProventoRateado,
   excluirProvento,
   listarProventos,
   type SalvarProventoRequest,
+  type SalvarProventoTotalRequest,
 } from '../../api/proventosApi'
 
 import {
@@ -542,7 +543,8 @@ export function ProventosView({
 
   async function salvar(
     request:
-      SalvarProventoRequest,
+      SalvarProventoRequest |
+      SalvarProventoTotalRequest,
   ) {
     if (
       !modoAdministracao
@@ -568,8 +570,8 @@ export function ProventosView({
           dados,
         )
       } else {
-        await criarProvento(
-          request,
+        await criarProventoRateado(
+          request as SalvarProventoTotalRequest,
         )
       }
 
