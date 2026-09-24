@@ -71,6 +71,7 @@ namespace Investimentos.Application.Dashboard
             var valoresPatrimoniais =
                 await _valorPatrimonialRepository
                     .ObterUltimosPorTickerAsync(
+                        investidorId,
                         cancellationToken);
 
             var posicoes =
@@ -271,6 +272,7 @@ namespace Investimentos.Application.Dashboard
         {
             public Task<IReadOnlyDictionary<string, decimal>>
                 ObterUltimosPorTickerAsync(
+                    Guid investidorId,
                     CancellationToken cancellationToken = default)
             {
                 IReadOnlyDictionary<string, decimal> vazio =
