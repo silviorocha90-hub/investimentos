@@ -130,7 +130,7 @@ function NovoOpcaoModal({
   const formularioValido =
     form.ticker.trim().length > 0 &&
     Number(form.quantidade) > 0 &&
-    Number(form.strike) > 0 &&
+    moedaParaNumero(form.strike) > 0 &&
     form.vencimento.length > 0 &&
     form.premioUnitario !== '' &&
     moedaParaNumero(
