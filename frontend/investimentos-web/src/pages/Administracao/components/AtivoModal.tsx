@@ -234,10 +234,31 @@ export function AtivoModal({
 
                 <select
                   value={formularioAtivo.investidorId}
-                  onChange={(event) =>
+                  onChange={(event) => {
+                    const investidorId =
+                      event.target.value
+
+                    const posicao =
+                      modalAtivo.ativo
+                        ?.posicoesInvestidores
+                        .find(
+                          (item) =>
+                            item.investidorId === investidorId,
+                        )
+
                     setFormularioAtivo({
                       ...formularioAtivo,
-                      investidorId: event.target.value,
+                      investidorId,
+                      valorPatrimonial:
+                        posicao == null
+                          ? ''
+                          : posicao.valorAtual.toLocaleString(
+                              'pt-BR',
+                              {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              },
+                            ),
                     })
                   }
                   required
