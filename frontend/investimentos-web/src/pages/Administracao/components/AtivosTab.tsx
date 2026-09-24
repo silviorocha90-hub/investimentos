@@ -297,11 +297,19 @@ export function AtivosTab({
       ],
     )
 
+  const totalRendaVariavel =
+    ativosFiltrados.filter(
+      (ativo) =>
+        !ehOutroInvestimento(
+          ativo,
+        ),
+    ).length
+
   const totalPaginas =
     Math.max(
       1,
       Math.ceil(
-        ativosFiltrados.length /
+        totalRendaVariavel /
           itensPorPagina,
       ),
     )
@@ -312,8 +320,24 @@ export function AtivosTab({
       totalPaginas,
     )
 
-  const ativosPagina =
-    ativosFiltrados.slice(
+  const rendaVariavelFiltrada =
+    ativosFiltrados.filter(
+      (ativo) =>
+        !ehOutroInvestimento(
+          ativo,
+        ),
+    )
+
+  const outrosInvestimentosFiltrados =
+    ativosFiltrados.filter(
+      (ativo) =>
+        ehOutroInvestimento(
+          ativo,
+        ),
+    )
+
+  const rendaVariavel =
+    rendaVariavelFiltrada.slice(
       (
         paginaNormalizada -
         1
@@ -323,21 +347,29 @@ export function AtivosTab({
         itensPorPagina,
     )
 
-  const rendaVariavel =
-    ativosPagina.filter(
+  const outrosInvestimentos =
+    outrosInvestimentosFiltrados
+
+  /* A paginação é aplicada somente à lista principal de
+   * renda variável. Outros investimentos permanecem visíveis
+   * porque normalmente são poucos e não devem desaparecer
+   * em páginas diferentes.
+   */
+  const _ativosPaginaRemovidos =
+    [] as AtivoAdministracao[]
+
+  /*
+   * Mantido abaixo apenas o predicado de classificação.
+   */
+  const _rendaVariavelLegado =
+    _ativosPaginaRemovidos.filter(
       (ativo) =>
         !ehOutroInvestimento(
           ativo,
         ),
     )
 
-  const outrosInvestimentos =
-    ativosPagina.filter(
-      (ativo) =>
-        ehOutroInvestimento(
-          ativo,
-        ),
-    )
+  void _rendaVariavelLegado
 
   function obterValorAtual(
     ativo: AtivoAdministracao,
@@ -895,7 +927,7 @@ export function AtivosTab({
           totalPaginas
         }
         totalItems={
-          ativosFiltrados.length
+          totalRendaVariavel
         }
         itemLabel="ativos"
         onPageChange={
