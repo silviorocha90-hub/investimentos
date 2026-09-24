@@ -12,6 +12,7 @@ import {
 } from '../../../utils/formatters'
 import type {
   SalvarProventoRequest,
+  SalvarProventoTotalRequest,
 } from '../../../api/proventosApi'
 
 interface ProventoModalProps {
@@ -22,7 +23,7 @@ interface ProventoModalProps {
   erro?: string | null
   onClose: () => void
   onSalvar: (
-    request: SalvarProventoRequest,
+    request: SalvarProventoRequest | SalvarProventoTotalRequest,
   ) => Promise<void>
 }
 
@@ -78,6 +79,11 @@ export function ProventoModal({
   const [
     quantidadeBase,
     setQuantidadeBase,
+  ] = useState('')
+
+  const [
+    valorTotal,
+    setValorTotal,
   ] = useState('')
 
   const [
@@ -157,6 +163,7 @@ export function ProventoModal({
     setQuantidadeBase('')
     setValorPorUnidade('')
     setValorRecebido('')
+    setValorTotal('')
   }, [
     provento,
     tickers,
@@ -197,6 +204,14 @@ export function ProventoModal({
         recebido,
     )
 
+  const total =
+    Number(
+      valorTotal.replace(
+        ',',
+        '.',
+      ),
+    ) || 0
+
   const formularioValido =
     useMemo(
       () =>
@@ -204,16 +219,21 @@ export function ProventoModal({
           .length > 0 &&
         dataPagamento
           .length > 0 &&
-        quantidade > 0 &&
-        valorUnitario >=
-          0 &&
-        recebido >= 0,
+        (
+          provento
+            ? quantidade > 0 &&
+              valorUnitario >= 0 &&
+              recebido >= 0
+            : total > 0
+        ),
       [
         ticker,
         dataPagamento,
         quantidade,
         valorUnitario,
         recebido,
+        total,
+        provento,
       ],
     )
 
@@ -221,6 +241,21 @@ export function ProventoModal({
     if (
       !formularioValido
     ) {
+      return
+    }
+
+    if (!provento) {
+      await onSalvar({
+        ticker:
+          ticker.trim().toUpperCase(),
+        tipo,
+        descricao:
+          descricao.trim() || null,
+        dataCom:
+          dataCom || null,
+        dataPagamento,
+        valorTotal: total,
+      })
       return
     }
 
@@ -426,6 +461,25 @@ export function ProventoModal({
             />
           </label>
 
+          {!provento ? (
+            <label className="provento-field-full">
+              <span>
+                Valor total do provento
+              </span>
+
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                value={valorTotal}
+                onChange={(event) =>
+                  setValorTotal(event.target.value)
+                }
+                placeholder="0,00"
+              />
+            </label>
+          ) : (
+            <>
           <label>
             <span>
               Quantidade base
@@ -494,6 +548,10 @@ export function ProventoModal({
               }
             />
           </label>
+
+
+            </>
+          )}
 
           <label className="provento-field-full">
             <span>
