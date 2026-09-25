@@ -156,9 +156,19 @@ namespace Investimentos.Infrastructure.Persistence.Repositories
                     x.Sequencia))
                 .ToListAsync(cancellationToken);
 
+            var ticker = await _context.Ativos
+                .AsNoTracking()
+                .Where(x => x.Id == ativoId)
+                .Select(x => x.Ticker.Codigo)
+                .FirstAsync(cancellationToken);
+
             return Math.Max(
                 _calcularCarteira.Calcular(operacoes)
-                    .FirstOrDefault(x => x.AtivoId == ativoId)
+                    .FirstOrDefault(x =>
+                        string.Equals(
+                            x.Ticker,
+                            ticker,
+                            StringComparison.OrdinalIgnoreCase))
                     ?.Quantidade ?? 0,
                 0);
         }
