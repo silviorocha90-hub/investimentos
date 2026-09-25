@@ -108,9 +108,37 @@ export function AtivosView({
     const totalProventos = lista.reduce((total, item) => total + item.proventos, 0)
 
     lista.forEach((item) => {
+      const resultadoOpcoesAtivo =
+        selecionadas.reduce(
+          (total, { dashboard }) =>
+            total +
+            dashboard.opcoes
+              .filter(
+                (opcao) =>
+                  opcao.tickerAtivo === item.ticker &&
+                  (
+                    opcao.situacao === 'ENCERRADA' ||
+                    opcao.situacao === 'EXECUTADA' ||
+                    opcao.situacao === 'EXPIRADA'
+                  ),
+              )
+              .reduce(
+                (subtotal, opcao) =>
+                  subtotal +
+                  (opcao.resultadoBruto ?? 0),
+                0,
+              ),
+          0,
+        )
+
+      const resultadoEconomico =
+        item.valorizacao +
+        item.proventos +
+        resultadoOpcoesAtivo
+
       item.rentabilidade =
         item.custoTotal > 0
-          ? ((item.valorAtual - item.custoTotal) / item.custoTotal) * 100
+          ? (resultadoEconomico / item.custoTotal) * 100
           : 0
       item.participacaoProventos =
         totalProventos > 0 ? (item.proventos / totalProventos) * 100 : 0
