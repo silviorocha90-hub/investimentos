@@ -955,3 +955,46 @@
   font: inherit;
   font-size: 0.72rem;
 }
+
+
+/* Movimentações financeiras */
+.admin-assets-toolbar > div {
+  display: grid;
+  gap: 4px;
+}
+
+.admin-movement-summary {
+  color: var(--muted);
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+
+.admin-movement-filters {
+  grid-template-columns: minmax(180px, 280px);
+}
+
+.admin-movement-table {
+  min-width: 720px;
+}
+
+.admin-movement-table th,
+.admin-movement-table td {
+  text-align: center;
+  vertical-align: middle;
+}
+
+.admin-movement-table td:nth-child(5) {
+  text-align: left;
+}
+
+.movement-entry {
+  color: var(--accent);
+}
+
+.movement-exit {
+  color: var(--negative);
+}
+
+.admin-movement-description {
+  grid-column: 1 / -1;
+}
