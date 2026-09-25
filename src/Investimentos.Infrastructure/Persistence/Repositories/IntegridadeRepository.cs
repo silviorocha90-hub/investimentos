@@ -179,6 +179,7 @@ namespace Investimentos.Infrastructure.Persistence.Repositories
             var ativos =
                 await _context.Ativos
                     .AsNoTracking()
+                    .Include(x => x.TipoAtivo)
                     .ToDictionaryAsync(
                         x => x.Id,
                         cancellationToken);
