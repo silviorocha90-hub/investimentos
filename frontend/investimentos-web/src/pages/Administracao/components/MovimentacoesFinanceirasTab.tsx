@@ -14,6 +14,7 @@ import type {
 
 interface Props {
   investidores: Investidor[]
+  onDataChanged?: () => Promise<void>
 }
 
 const moeda = new Intl.NumberFormat('pt-BR', {
@@ -21,7 +22,10 @@ const moeda = new Intl.NumberFormat('pt-BR', {
   currency: 'BRL',
 })
 
-export function MovimentacoesFinanceirasTab({ investidores }: Props) {
+export function MovimentacoesFinanceirasTab({
+  investidores,
+  onDataChanged,
+}: Props) {
   const hoje = new Date().toISOString().slice(0, 10)
   const ano = new Date().getFullYear()
   const [itens, setItens] = useState<MovimentacaoFinanceira[]>([])
@@ -117,6 +121,7 @@ export function MovimentacoesFinanceirasTab({ investidores }: Props) {
       }
       setModal(false)
       await carregar()
+      await onDataChanged?.()
     } catch (e) {
       setErro(e instanceof Error ? e.message : 'Não foi possível salvar a movimentação.')
     } finally {
@@ -130,6 +135,7 @@ export function MovimentacoesFinanceirasTab({ investidores }: Props) {
       setErro(null)
       await excluirMovimentacaoFinanceira(item.id)
       await carregar()
+      await onDataChanged?.()
     } catch (e) {
       setErro(e instanceof Error ? e.message : 'Não foi possível excluir a movimentação.')
     }
