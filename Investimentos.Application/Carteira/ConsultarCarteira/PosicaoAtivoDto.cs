@@ -24,5 +24,7 @@
         public decimal ResultadoEconomico { get; init; }
 
         public decimal RentabilidadeEconomica { get; init; }
+
+        public decimal YieldProventos { get; init; }
     }
 }
