@@ -184,85 +184,37 @@ export function CarteiraView({
       0,
     )
 
-  const crescimentoCarteira = useMemo(() => {
-    const normalizarNome = (valor: string) =>
-      valor
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .trim()
-        .toLocaleUpperCase('pt-BR')
+  const crescimentoCarteira =
+    dashboardTotal?.rentabilidadeAno ??
+    (
+      carteirasSelecionadas.length === 1
+        ? (carteirasSelecionadas[0].dashboard.rentabilidadeAno ?? null)
+        : (() => {
+            const patrimonioSelecionado =
+              carteirasSelecionadas.reduce(
+                (total, item) =>
+                  total +
+                  (item.dashboard.patrimonioEstimado ?? 0),
+                0,
+              )
 
-    const dashboards =
-      filtroInvestidor === 'TOTAL'
-        ? carteiras.map((item) => item.dashboard)
-        : carteiras
-            .filter(
-              (item) =>
-                normalizarNome(item.nome) ===
-                normalizarNome(filtroInvestidor),
-            )
-            .map((item) => item.dashboard)
+            const resultadoSelecionado =
+              carteirasSelecionadas.reduce(
+                (total, item) =>
+                  total +
+                  (item.dashboard.resultadoRealizado ?? 0),
+                0,
+              )
 
-    if (dashboards.length === 0) {
-      return null
-    }
+            const capitalBase =
+              patrimonioSelecionado -
+              resultadoSelecionado
 
-    const patrimonioAtual =
-      filtroInvestidor === 'TOTAL'
-        ? (
-            dashboardConsolidado?.patrimonioEstimado ??
-            dashboards.reduce(
-              (total, dashboard) =>
-                total +
-                (dashboard.patrimonioEstimado ?? 0),
-              0,
-            )
-          )
-        : dashboards.reduce(
-            (total, dashboard) =>
-              total +
-              (dashboard.patrimonioEstimado ?? 0),
-            0,
-          )
-
-    const resultadoAcumulado =
-      filtroInvestidor === 'TOTAL' &&
-      dashboardConsolidado
-        ? (dashboardConsolidado.resultadoRealizado ?? 0)
-        : dashboards.reduce(
-            (total, dashboard) =>
-              total +
-              (dashboard.resultadoRealizado ?? 0),
-            0,
-          )
-
-    /*
-     * Crescimento econômico desde o início dos dados.
-     *
-     * O patrimônio atual já contém a marcação a mercado.
-     * O resultado acumulado contém valorização dos ativos,
-     * proventos/dividendos e prêmio líquido de opções.
-     *
-     * Subtraindo o resultado do patrimônio obtemos a base de
-     * capital que formou a carteira, sem confundir valor atual
-     * dos ativos com capital aplicado.
-     */
-    const capitalBase =
-      patrimonioAtual - resultadoAcumulado
-
-    if (capitalBase <= 0) {
-      return null
-    }
-
-    return (
-      resultadoAcumulado /
-      capitalBase
-    ) * 100
-  }, [
-    filtroInvestidor,
-    carteiras,
-    dashboardConsolidado,
-  ])
+            return capitalBase > 0
+              ? (resultadoSelecionado / capitalBase) * 100
+              : null
+          })()
+    )
 
   const rendaVariavel = posicoes
     .filter((posicao) => !ehOutroInvestimento(posicao.ticker, posicao.tipoAtivoCodigo))
