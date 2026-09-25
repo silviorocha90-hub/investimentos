@@ -75,38 +75,56 @@ namespace Investimentos.Application.Carteira.ConsultarCarteira
                     .Where(x =>
                         x.ValorExecucao.HasValue &&
                         x.ValorExecucao.Value > 0)
-                    .Select(x =>
+                    .ToList();
+
+            foreach (var exercicio in exercicios)
+            {
+                var tipoOperacao =
+                    exercicio.TipoOpcao == "PUT"
+                        ? exercicio.Natureza == "VENDA"
+                            ? "COMPRA"
+                            : "VENDA"
+                        : exercicio.Natureza == "VENDA"
+                            ? "VENDA"
+                            : "COMPRA";
+
+                var dataExercicio =
+                    exercicio.DataFinalizacao ??
+                    exercicio.Vencimento;
+
+                var operacaoExistente =
+                    operacoes
+                        .Select((operacao, indice) =>
+                            new { operacao, indice })
+                        .FirstOrDefault(x =>
+                            x.operacao.AtivoId ==
+                                exercicio.AtivoId &&
+                            x.operacao.TipoOperacao ==
+                                tipoOperacao &&
+                            x.operacao.Quantidade ==
+                                exercicio.Quantidade &&
+                            x.operacao.Data.Date ==
+                                dataExercicio.Date);
+
+                if (operacaoExistente is null)
+                {
+                    continue;
+                }
+
+                var precoUnitario =
+                    exercicio.ValorExecucao!.Value /
+                    exercicio.Quantidade;
+
+                var original =
+                    operacaoExistente.operacao;
+
+                operacoes[operacaoExistente.indice] =
+                    original with
                     {
-                        var tipoOperacao =
-                            x.TipoOpcao == "PUT"
-                                ? x.Natureza == "VENDA"
-                                    ? "COMPRA"
-                                    : "VENDA"
-                                : x.Natureza == "VENDA"
-                                    ? "VENDA"
-                                    : "COMPRA";
-
-                        return new OperacaoCarteiraDto(
-                            x.Id,
-                            x.AtivoId,
-                            x.Ativo.Ticker.Codigo,
-                            x.Ativo.Nome,
-                            tipoOperacao,
-                            x.Quantidade,
-                            x.ValorExecucao!.Value / x.Quantidade,
-                            0m,
-                            x.DataFinalizacao ?? x.Vencimento,
-                            int.MaxValue)
-                        {
-                            TipoAtivoCodigo =
-                                x.Ativo.TipoAtivo.Codigo,
-                            TipoAtivoNome =
-                                x.Ativo.TipoAtivo.Nome
-                        };
-                    });
-
-            operacoes.AddRange(
-                exercicios);
+                        PrecoUnitario =
+                            precoUnitario
+                    };
+            }
 
             return operacoes
                 .OrderBy(x => x.Data)
