@@ -33,14 +33,20 @@ public class ConsultarPerformanceCarteiraService
                 movimentacoes);
         }
 
-        var datas = historicos
-            .Select(x => x.DataReferencia.Date)
-            .Distinct()
-            .OrderBy(x => x)
-            .ToList();
-
         var porInvestidor = historicos
             .GroupBy(x => x.InvestidorId)
+            .ToList();
+
+        var inicioComum = porInvestidor.Count > 0
+            ? porInvestidor.Max(grupo =>
+                grupo.Min(x => x.DataReferencia.Date))
+            : DateTime.MaxValue;
+
+        var datas = historicos
+            .Select(x => x.DataReferencia.Date)
+            .Where(x => x >= inicioComum)
+            .Distinct()
+            .OrderBy(x => x)
             .ToList();
 
         var historicoConsolidado = new List<HistoricoPatrimonio>();
