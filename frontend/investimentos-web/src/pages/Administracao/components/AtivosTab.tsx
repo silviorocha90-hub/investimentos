@@ -353,10 +353,7 @@ export function AtivosTab({
 
     setFiltroAtivo(
       'TODOS',
-    )
-
-    setPagina(1)
-  }
+    )}
 
   function alterarClasse(
     classeId: string,
@@ -371,10 +368,7 @@ export function AtivosTab({
 
     setFiltroAtivo(
       'TODOS',
-    )
-
-    setPagina(1)
-  }
+    )}
 
   function alterarTipo(
     tipoId: string,
@@ -385,20 +379,14 @@ export function AtivosTab({
 
     setFiltroAtivo(
       'TODOS',
-    )
-
-    setPagina(1)
-  }
+    )}
 
   function alterarAtivo(
     ticker: string,
   ) {
     setFiltroAtivo(
       ticker,
-    )
-
-    setPagina(1)
-  }
+    )}
 
   function limparFiltros() {
     setFiltroInvestidor(
@@ -415,10 +403,7 @@ export function AtivosTab({
 
     setFiltroAtivo(
       'TODOS',
-    )
-
-    setPagina(1)
-  }
+    )}
 
   function renderAcoes(
     ativo: AtivoAdministracao,
