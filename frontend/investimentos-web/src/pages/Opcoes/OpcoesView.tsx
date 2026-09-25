@@ -117,7 +117,8 @@ export function OpcoesView({
                 (posicao) =>
                   posicao.quantidade > 0 &&
                   posicao.tipoAtivoCodigo === 'ACAO' &&
-                  posicao.ticker.trim().toUpperCase() !== 'LFTB11',
+                  posicao.ticker.trim().toUpperCase() !== 'LFTB11' &&
+                  posicao.ticker.trim().toUpperCase() !== 'FMP ELETROBRAS',
               )
 
             const possuiOpcao =
@@ -991,22 +992,23 @@ export function OpcoesView({
       </article>
 
       {!modoAdministracao ? (
-        <OpcoesGraficos
-          opcoes={
-            opcoes
-          }
-        />
-      ) : null}
-
-      {!modoAdministracao ? (
-        <CallsDisponiveis
-          posicoes={
-            posicoesConsulta
-          }
-          opcoes={
-            opcoes
-          }
-        />
+        <div className="options-charts-grid options-charts-grid-three">
+          <OpcoesGraficos
+            opcoes={
+              opcoes
+            }
+            callsDisponiveis={
+              <CallsDisponiveis
+                posicoes={
+                  posicoesConsulta
+                }
+                opcoes={
+                  opcoes
+                }
+              />
+            }
+          />
+        </div>
       ) : null}
 
       <OpcoesFiltros
