@@ -456,6 +456,7 @@ export function OperacoesView({
         onSelectInvestor={
           onSelectInvestor
         }
+        incluirTodos
       />
 
       <article className="panel portfolio-operations">
