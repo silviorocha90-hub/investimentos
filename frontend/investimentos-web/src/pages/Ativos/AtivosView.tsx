@@ -209,9 +209,7 @@ export function AtivosView({
               !ticker.includes('CDB')
 
             const yieldProventos =
-              item.custoTotal > 0
-                ? (item.proventos / item.custoTotal) * 100
-                : 0
+              item.yieldProventos ?? 0
 
             return (
               <article className="ativo-card" key={item.ticker}>
