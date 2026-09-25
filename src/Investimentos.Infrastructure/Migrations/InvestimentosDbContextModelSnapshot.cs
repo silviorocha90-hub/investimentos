@@ -207,6 +207,38 @@ namespace Investimentos.Infrastructure.Migrations
                     b.ToTable("Investidor", (string)null);
                 });
 
+            modelBuilder.Entity("Investimentos.Domain.Entities.MovimentacaoFinanceira", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("Data")
+                        .HasColumnType("date");
+
+                    b.Property<string>("Descricao")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<Guid>("InvestidorId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Tipo")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<decimal>("Valor")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("InvestidorId", "Data");
+
+                    b.ToTable("MovimentacaoFinanceira", (string)null);
+                });
+
             modelBuilder.Entity("Investimentos.Domain.Entities.Operacao", b =>
                 {
                     b.Property<Guid>("Id")
@@ -818,6 +850,17 @@ namespace Investimentos.Infrastructure.Migrations
                 });
 
             modelBuilder.Entity("Investimentos.Domain.Entities.HistoricoPatrimonio", b =>
+                {
+                    b.HasOne("Investimentos.Domain.Entities.Investidor", "Investidor")
+                        .WithMany()
+                        .HasForeignKey("InvestidorId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Investidor");
+                });
+
+            modelBuilder.Entity("Investimentos.Domain.Entities.MovimentacaoFinanceira", b =>
                 {
                     b.HasOne("Investimentos.Domain.Entities.Investidor", "Investidor")
                         .WithMany()
