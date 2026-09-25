@@ -45,7 +45,8 @@ export function CallsDisponiveis({
       (posicao) =>
         posicao.quantidade > 0 &&
         posicao.tipoAtivoCodigo === 'ACAO' &&
-        posicao.ticker.trim().toUpperCase() !== 'LFTB11',
+        posicao.ticker.trim().toUpperCase() !== 'LFTB11' &&
+        posicao.ticker.trim().toUpperCase() !== 'FMP ELETROBRAS',
     )
     .map((posicao) => {
       const ticker =
@@ -86,69 +87,67 @@ export function CallsDisponiveis({
     0,
   )
 
-  return (
-    <article className="options-call-panel">
-      <div className="options-call-heading">
-        <div>
-          <strong>Disponível para CALL</strong>
-          <span>
-            Ações livres para venda coberta, em lotes de 100
-          </span>
-        </div>
+  const maiorPosicao =
+    Math.max(
+      ...disponiveis.map((item) => item.quantidade),
+      1,
+    )
 
-        <div className="options-call-totals">
-          <span>
-            <b>{disponiveis.length}</b>
-            ativos em carteira
-          </span>
-          <span>
-            <b>{quantidade.format(totalAcoes)}</b>
-            ações livres
-          </span>
-          <span>
-            <b>{totalLotes}</b>
-            lotes
-          </span>
-        </div>
-      </div>
+  return (
+    <article className="panel options-chart-card options-call-ranking-card">
+      <header className="options-chart-header">
+        <strong>
+          Disponível para CALL
+        </strong>
+      </header>
 
       {disponiveis.length > 0 ? (
-        <div className="options-call-grid">
-          {disponiveis.map((item) => (
-            <div
-              className="options-call-card"
-              key={item.ticker}
-            >
-              <div className="options-call-card-head">
-                <strong>{item.ticker}</strong>
-                <span>
-                  {item.lotes > 0
-                    ? `${item.lotes} lote${item.lotes !== 1 ? 's' : ''}`
-                    : 'sem lote livre'}
+        <div className="options-ranking options-call-ranking">
+          {disponiveis.map(
+            (item, index) => (
+              <div
+                className="options-ranking-row"
+                key={item.ticker}
+                title={`Posição: ${quantidade.format(item.quantidade)} | CALL comprometida: ${quantidade.format(item.comprometida)}`}
+              >
+                <span className="options-ranking-position">
+                  {index + 1}
                 </span>
-              </div>
 
-              <div className="options-call-card-value">
-                {quantidade.format(item.livre)}
-                <small>ações disponíveis</small>
-              </div>
+                <strong>
+                  {item.ticker}
+                </strong>
 
-              <div className="options-call-card-detail">
-                <span>
-                  Posição
-                  <b>{quantidade.format(item.quantidade)}</b>
-                </span>
-                <span>
-                  Em CALL comprometida
-                  <b>{quantidade.format(item.comprometida)}</b>
+                <div className="options-ranking-track">
+                  <i
+                    className={
+                      item.livre === 0
+                        ? 'negative'
+                        : ''
+                    }
+                    style={{
+                      width: `${item.livre > 0
+                        ? Math.max(
+                            (item.livre / maiorPosicao) * 100,
+                            3,
+                          )
+                        : 0}%`,
+                    }}
+                  />
+                </div>
+
+                <span
+                  className={`options-ranking-value ${item.livre === 0 ? 'negative' : ''}`}
+                >
+                  {quantidade.format(item.livre)} ações
                 </span>
               </div>
-            </div>
-          ))}
+            ),
+          )}
         </div>
       ) : (
-        <div className="options-call-empty">
-          Nenhum ativo possui lote completo disponível para CALL.
+        <div className="options-chart-empty">
+          Nenhum ativo elegível para CALL.
         </div>
       )}
     </article>
