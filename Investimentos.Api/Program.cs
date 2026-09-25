@@ -10,6 +10,7 @@ using Investimentos.Application.Dashboard;
 using Investimentos.Application.Interfaces;
 using Investimentos.Application.Investidores.CadastrarInvestidor;
 using Investimentos.Application.Investidores.ListarInvestidores;
+using Investimentos.Application.Performance;
 using Investimentos.Application.Opcoes.AtualizarOperacaoOpcao;
 using Investimentos.Application.Opcoes.CadastrarOperacaoOpcao;
 using Investimentos.Application.Opcoes.ConsultarOpcoes;
@@ -111,6 +112,7 @@ builder.Services.AddScoped<IMovimentacaoFinanceiraRepository, MovimentacaoFinanc
 
 builder.Services.AddScoped<ConsultarDashboardHandler>();
 builder.Services.AddScoped<ConsultarDashboardConsolidadoHandler>();
+builder.Services.AddScoped<ConsultarPerformanceCarteiraService>();
 
 builder.Services.AddScoped<AdministrarUsuariosService>();
 
@@ -964,6 +966,20 @@ app.MapGet(
         var resultado =
             await repository.ListarEvolucaoAsync(
                 cancellationToken);
+
+        return Results.Ok(resultado);
+    });
+
+app.MapGet(
+    "/api/performance",
+    async (
+        Guid? investidorId,
+        ConsultarPerformanceCarteiraService service,
+        CancellationToken cancellationToken) =>
+    {
+        var resultado = await service.ConsultarAsync(
+            investidorId,
+            cancellationToken);
 
         return Results.Ok(resultado);
     });
