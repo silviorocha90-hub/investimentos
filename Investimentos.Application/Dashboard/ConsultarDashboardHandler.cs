@@ -272,7 +272,12 @@ namespace Investimentos.Application.Dashboard
                             Proventos = proventosAtivo,
                             ResultadoOpcoes = resultadoOpcoesAtivo,
                             ResultadoEconomico = resultadoEconomicoAtivo,
-                            RentabilidadeEconomica = rentabilidadeEconomica
+                            RentabilidadeEconomica = rentabilidadeEconomica,
+                            YieldProventos =
+                                posicao.CustoTotal > 0
+                                    ? proventosAtivo /
+                                      posicao.CustoTotal * 100
+                                    : 0
                         };
                     })
                     .ToList();
