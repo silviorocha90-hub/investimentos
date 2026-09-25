@@ -226,6 +226,27 @@ export interface SalvarDescontoFiscalAdministracao {
   dataPagamento: string
   valor: number
   descricao?: string | null
+  investidorId?: string | null
+}
+
+export async function criarDescontoFiscal(
+  request: SalvarDescontoFiscalAdministracao,
+): Promise<void> {
+  const response = await fetch(
+    `${apiUrl}/api/descontos-fiscais`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        ...request,
+        tipo: 'DARF',
+      }),
+    },
+  )
+
+  if (!response.ok) {
+    throw new Error(await lerErro(response))
+  }
 }
 
 export async function atualizarDescontoFiscal(
