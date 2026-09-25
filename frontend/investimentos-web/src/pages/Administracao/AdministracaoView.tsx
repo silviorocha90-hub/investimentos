@@ -143,9 +143,6 @@ interface AdministracaoViewProps {
 export function AdministracaoView({
   investidores,
   carteiras,
-  selectedInvestor,
-  onSelectInvestor,
-  operacoes,
   onSaveOperation,
   onOperationCreated,
 }: AdministracaoViewProps) {
