@@ -222,16 +222,21 @@ namespace Investimentos.Application.Dashboard
                         x.Valorizacao);
 
             /*
-             * RESULTADO DA CARTEIRA
+             * RESULTADO ECONÔMICO PADRÃO
              *
-             * Valorização não realizada
-             * + vendas realizadas
-             * + proventos líquidos
-             * + opções realizadas.
+             * Regra única usada por rentabilidade e
+             * crescimento em todo o projeto:
+             *
+             * valorização dos ativos em carteira
+             * + proventos/dividendos líquidos recebidos
+             * + prêmio líquido (ganho) de opções.
+             *
+             * Resultado realizado de vendas de ações fica
+             * disponível separadamente, mas não compõe
+             * este indicador.
              */
             var resultadoCarteira =
                 valorizacaoAtivos +
-                resultadoRealizadoAcoes +
                 totalProventos +
                 premioLiquidoOpcoes;
 
