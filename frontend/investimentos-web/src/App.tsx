@@ -1171,6 +1171,7 @@ function App() {
           'Dashboard',
         ) ? (
           <DashboardView
+            key={`dados-${versaoDados}`}
             dashboard={
               dashboard
             }
@@ -1193,6 +1194,7 @@ function App() {
           'Carteira',
         ) ? (
           <CarteiraView
+            key={`dados-${versaoDados}`}
             investidores={
               investidores
             }
@@ -1232,6 +1234,7 @@ function App() {
           'Ativos',
         ) ? (
           <AtivosView
+            key={`dados-${versaoDados}`}
             investidores={
               investidores
             }
@@ -1247,6 +1250,7 @@ function App() {
           'Opcoes',
         ) ? (
           <OpcoesView
+            key={`dados-${versaoDados}`}
             investidores={
               investidoresPorPermissao(
                 'Opcoes',
@@ -1271,6 +1275,7 @@ function App() {
           'Proventos',
         ) ? (
           <ProventosView
+            key={`dados-${versaoDados}`}
             investidores={
               investidores
             }
@@ -1289,6 +1294,7 @@ function App() {
         usuario?.perfil ===
           'Admin' ? (
           <AdministracaoView
+            key={`dados-${versaoDados}`}
             investidores={
               investidores
             }
