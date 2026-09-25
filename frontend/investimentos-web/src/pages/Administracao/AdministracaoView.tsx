@@ -15,6 +15,10 @@ import {
   obterAdministracao,
 } from '../../api/administracaoApi'
 
+import {
+  obterOperacoes,
+} from '../../api/dashboardApi'
+
 import type {
   Administracao,
   AtivoAdministracao,
@@ -196,6 +200,43 @@ export function AdministracaoView({
     useState(
       'TODOS',
     )
+
+  const [
+    investidorAdministracao,
+    setInvestidorAdministracao,
+  ] = useState('TODOS')
+
+  const [
+    operacoesAdministracao,
+    setOperacoesAdministracao,
+  ] = useState<OperacaoCarteira[]>([])
+
+  useEffect(() => {
+    let ativo = true
+
+    void Promise.all(
+      investidores.map((investidor) =>
+        obterOperacoes(investidor.id),
+      ),
+    )
+      .then((listas) => {
+        if (ativo) {
+          setOperacoesAdministracao(
+            listas.flat(),
+          )
+        }
+      })
+      .catch((error) => {
+        console.error(
+          'Não foi possível carregar todas as operações da administração.',
+          error,
+        )
+      })
+
+    return () => {
+      ativo = false
+    }
+  }, [investidores])
 
   const [
     filtroAtivo,
@@ -992,13 +1033,15 @@ export function AdministracaoView({
             investidores
           }
           selectedInvestor={
-            selectedInvestor
+            investidorAdministracao
           }
           onSelectInvestor={
-            onSelectInvestor
+            setInvestidorAdministracao
           }
           operacoes={
-            operacoes
+            investidorAdministracao === 'TODOS'
+              ? operacoesAdministracao
+              : operacoes
           }
           onSaveOperation={
             onSaveOperation
@@ -1019,10 +1062,10 @@ export function AdministracaoView({
             carteiras
           }
           selectedInvestor={
-            selectedInvestor
+            investidorAdministracao
           }
           onSelectInvestor={
-            onSelectInvestor
+            setInvestidorAdministracao
           }
           modo="administracao"
         />
@@ -1035,10 +1078,10 @@ export function AdministracaoView({
             investidores
           }
           selectedInvestor={
-            selectedInvestor
+            investidorAdministracao
           }
           onSelectInvestor={
-            onSelectInvestor
+            setInvestidorAdministracao
           }
           modo="administracao"
         />
