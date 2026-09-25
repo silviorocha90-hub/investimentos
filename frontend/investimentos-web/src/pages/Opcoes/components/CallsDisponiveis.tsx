@@ -140,7 +140,13 @@ export function CallsDisponiveis({
                   className={`options-ranking-value ${item.livre === 0 ? 'negative' : ''}`}
                 >
                   <span className="options-call-ranking-numbers">
-                    <b>{quantidade.format(item.livre)} ações</b>
+                    <b>{quantidade.format(item.livre)} disponíveis</b>
+                    <small>
+                      Total {quantidade.format(item.quantidade)} ações
+                    </small>
+                    <small>
+                      Comprometidas {quantidade.format(item.comprometida)}
+                    </small>
                     <small>
                       PM {item.precoMedio.toLocaleString(
                         'pt-BR',
