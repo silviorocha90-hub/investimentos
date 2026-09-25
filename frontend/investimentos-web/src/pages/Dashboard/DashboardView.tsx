@@ -34,6 +34,48 @@ interface DashboardViewProps {
   erro: string | null
 }
 
+function MetricBarList({
+  items,
+  formatter,
+  tone = 'calmo',
+}: {
+  items: readonly SimpleMetric[]
+  formatter: (value: number) => string
+  tone?: 'calmo' | 'vibrante'
+}) {
+  const max = Math.max(
+    ...items.map((item) => Math.abs(item.value)),
+    1,
+  )
+
+  return (
+    <div className="metric-bar-list">
+      {items.map((item) => {
+        const percentual =
+          (Math.abs(item.value) / max) * 100
+
+        return (
+          <div className="metric-bar-item" key={item.label}>
+            <div className="metric-bar-head">
+              <strong>{item.label}</strong>
+              <span>{formatter(item.value)}</span>
+            </div>
+
+            <div className={`metric-bar-track ${tone}`}>
+              <div
+                className="metric-bar-fill"
+                style={{
+                  width: `${Math.max(percentual, 2)}%`,
+                }}
+              />
+            </div>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
 function InvestorAppliedBars({
   items,
 }: {
