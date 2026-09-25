@@ -55,6 +55,7 @@ interface ProventosViewProps {
   ) => void
 
   modo?: 'consulta' | 'administracao'
+  onDataChanged?: () => Promise<void>
 }
 
 const ITENS_POR_PAGINA =
@@ -65,6 +66,7 @@ export function ProventosView({
   selectedInvestor,
   onSelectInvestor,
   modo = 'consulta',
+  onDataChanged,
 }: ProventosViewProps) {
   const modoAdministracao =
     modo === 'administracao'
@@ -678,6 +680,7 @@ export function ProventosView({
       )
 
       await carregar()
+      await onDataChanged?.()
     } catch (error) {
       console.error(
         error,
