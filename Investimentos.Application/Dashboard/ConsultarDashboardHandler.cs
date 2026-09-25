@@ -13,6 +13,7 @@ namespace Investimentos.Application.Dashboard
         private readonly ICotacaoAtivoRepository _cotacaoRepository;
         private readonly ISaldoDisponivelRepository _saldoRepository;
         private readonly IValorPatrimonialAtivoRepository _valorPatrimonialRepository;
+        private readonly Investimentos.Infrastructure.Persistence.InvestimentosDbContext _context;
 
         public ConsultarDashboardHandler(
             ConsultarCarteiraHandler carteiraHandler,
@@ -20,6 +21,7 @@ namespace Investimentos.Application.Dashboard
             ConsultarOpcoesHandler opcoesHandler,
             ICotacaoAtivoRepository cotacaoRepository,
             ISaldoDisponivelRepository saldoRepository,
+            Investimentos.Infrastructure.Persistence.InvestimentosDbContext context,
             IValorPatrimonialAtivoRepository? valorPatrimonialRepository = null)
         {
             _carteiraHandler = carteiraHandler;
@@ -27,6 +29,7 @@ namespace Investimentos.Application.Dashboard
             _opcoesHandler = opcoesHandler;
             _cotacaoRepository = cotacaoRepository;
             _saldoRepository = saldoRepository;
+            _context = context;
             _valorPatrimonialRepository =
                 valorPatrimonialRepository ??
                 new ValorPatrimonialAtivoRepositoryVazio();
@@ -244,8 +247,32 @@ namespace Investimentos.Application.Dashboard
              * Até existir um livro explícito de
              * APORTE/RETIRADA, não inventamos estes valores.
              */
-            const decimal entradasAno = 0;
-            const decimal saidasAno = 0;
+            var inicioAno =
+                new DateTime(DateTime.Today.Year, 1, 1);
+
+            var inicioProximoAno =
+                inicioAno.AddYears(1);
+
+            var movimentacoesAno =
+                await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions
+                    .ToListAsync(
+                        _context.MovimentacoesFinanceiras
+                            .AsNoTracking()
+                            .Where(x =>
+                                x.InvestidorId == investidorId &&
+                                x.Data >= inicioAno &&
+                                x.Data < inicioProximoAno),
+                        cancellationToken);
+
+            var entradasAno =
+                movimentacoesAno
+                    .Where(x => x.Tipo == "APORTE")
+                    .Sum(x => x.Valor);
+
+            var saidasAno =
+                movimentacoesAno
+                    .Where(x => x.Tipo == "RETIRADA")
+                    .Sum(x => x.Valor);
 
             /*
              * Rentabilidade econômica da carteira.
