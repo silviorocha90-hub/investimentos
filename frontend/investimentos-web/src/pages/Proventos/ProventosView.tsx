@@ -447,6 +447,70 @@ export function ProventosView({
       proventosAno,
     ])
 
+  const proventosExibidos =
+    useMemo(() => {
+      if (investidorAtivo !== 'TOTAL') {
+        return proventos
+      }
+
+      const grupos =
+        new Map<string, Provento>()
+
+      proventos.forEach((item) => {
+        const chave = [
+          item.ticker,
+          item.tipo,
+          item.descricao ?? '',
+          item.dataCom?.slice(0, 10) ?? '',
+          item.dataPagamento.slice(0, 10),
+          item.valorPorUnidade.toFixed(6),
+        ].join('|')
+
+        const existente =
+          grupos.get(chave)
+
+        if (!existente) {
+          grupos.set(
+            chave,
+            { ...item },
+          )
+          return
+        }
+
+        grupos.set(
+          chave,
+          {
+            ...existente,
+            quantidadeBase:
+              existente.quantidadeBase +
+              item.quantidadeBase,
+            valorBruto:
+              existente.valorBruto +
+              item.valorBruto,
+            valorRecebido:
+              existente.valorRecebido +
+              item.valorRecebido,
+            impostoRetido:
+              existente.impostoRetido +
+              item.impostoRetido,
+            valorLiquido:
+              existente.valorLiquido +
+              item.valorLiquido,
+            irEfetivo:
+              existente.irEfetivo +
+              item.irEfetivo,
+          },
+        )
+      })
+
+      return Array.from(
+        grupos.values(),
+      )
+    }, [
+      proventos,
+      investidorAtivo,
+    ])
+
   const filtrados =
     useMemo(() => {
       const texto =
@@ -454,7 +518,7 @@ export function ProventosView({
           .trim()
           .toUpperCase()
 
-      return proventos
+      return proventosExibidos
         .filter(
           (item) =>
             new Date(
@@ -498,7 +562,7 @@ export function ProventosView({
               ),
         )
     }, [
-      proventos,
+      proventosExibidos,
       ano,
       tipo,
       ticker,
