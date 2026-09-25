@@ -992,8 +992,7 @@ export function OpcoesView({
       </article>
 
       {!modoAdministracao ? (
-        <div className="options-charts-grid options-charts-grid-three">
-          <OpcoesGraficos
+        <OpcoesGraficos
             opcoes={
               opcoes
             }
@@ -1008,7 +1007,6 @@ export function OpcoesView({
               />
             }
           />
-        </div>
       ) : null}
 
       <OpcoesFiltros
