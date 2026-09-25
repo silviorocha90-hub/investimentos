@@ -141,6 +141,56 @@ namespace Investimentos.Application.Dashboard
                     .ToList();
 
             /*
+             * O consolidado preserva os componentes econômicos
+             * calculados nos dashboards individuais. Assim,
+             * nenhuma tela precisa reconstruir a fórmula.
+             */
+            posicoes =
+                posicoes
+                    .Select(posicao =>
+                    {
+                        var componentes =
+                            dashboards
+                                .SelectMany(x =>
+                                    x.Posicoes)
+                                .Where(x =>
+                                    string.Equals(
+                                        x.Ticker,
+                                        posicao.Ticker,
+                                        StringComparison.OrdinalIgnoreCase))
+                                .ToList();
+
+                        var proventosAtivo =
+                            componentes.Sum(x =>
+                                x.Proventos);
+
+                        var resultadoOpcoesAtivo =
+                            componentes.Sum(x =>
+                                x.ResultadoOpcoes);
+
+                        var resultadoEconomicoAtivo =
+                            CalculadoraResultadoCarteira.CalcularResultado(
+                                posicao.Valorizacao,
+                                proventosAtivo,
+                                resultadoOpcoesAtivo);
+
+                        var rentabilidadeEconomica =
+                            posicao.CustoTotal > 0
+                                ? resultadoEconomicoAtivo /
+                                  posicao.CustoTotal * 100
+                                : 0;
+
+                        return posicao with
+                        {
+                            Proventos = proventosAtivo,
+                            ResultadoOpcoes = resultadoOpcoesAtivo,
+                            ResultadoEconomico = resultadoEconomicoAtivo,
+                            RentabilidadeEconomica = rentabilidadeEconomica
+                        };
+                    })
+                    .ToList();
+
+            /*
              * PROVENTOS E OPÇÕES
              */
             var proventos =
