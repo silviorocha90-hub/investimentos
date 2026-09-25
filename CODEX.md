@@ -1649,282 +1649,524 @@ https://localhost:7237/swagger/index.html
 
 # 56. ESTADO ATUAL EXATO DO DESENVOLVIMENTO
 
-Estamos preparando a PRIMEIRA IMPORTAÇÃO REAL COMPLETA do Excel.
+Última atualização: 2026-09-25.
 
-O banco ainda NÃO foi reconstruído com os dados reais.
+A primeira fase de importação já foi superada. O sistema atual opera com os
+dados persistidos no SQL Server e possui API e frontend funcionais.
 
-O Program.cs ainda está em MODO SIMULAÇÃO.
+A prioridade técnica atual é manter uma única interpretação financeira entre
+backend e frontend e garantir consistência após qualquer manutenção dos dados.
 
-Última atividade:
+Entregas estruturais concluídas nesta fase:
 
-foi identificado que a linha:
+1. Motor financeiro único no backend.
+2. Remoção dos principais cálculos financeiros duplicados do frontend.
+3. Cobertura de testes para a regra econômica central.
+4. Refresh/invalidação global após CRUDs relevantes.
+5. Relatório administrativo de reconciliação e integridade.
+6. Atualização deste CODEX para refletir o sistema real.
 
-VALOR | Disponível
-
-da planilha Cotação Ativos estava sendo considerada um ativo.
-
-Foi definida alteração no:
-
-LeitorExcelInvestimentos.LerCadastroAtivos()
-
-para ignorar:
-
-Tipo = Disponível
-Tipo = Disponivel
-
-O próximo dry-run deve confirmar:
-
-Operações.............. 226
-Compras................ 179
-Vendas................. 47
-
-Proventos.............. 172
-
-Opções................. 61
-PUT.................... 40
-CALL................... 21
-
-Cotações............... 19
-Duplicadas............. 0
-
-Saldos disponíveis..... 6
-Duplicados............. 0
-
-Histórico patrimonial.. 40
-Duplicados............. 0
-
-Investidores........... 6
-
-Ativos utilizados...... 50
-Classificados.......... 50
-Sem classificação...... 0
-
-Ativos-base opções..... 61/61
-
-Encerradas............. 46
-Encerradas com data.... 46
-Exercidas.............. 15
-
-Histórico de vendas.... válido
-
-A pendência auxiliar da linha 213 pode continuar aparecendo.
-
-Resultado final esperado:
-
-DADOS PRONTOS PARA IMPORTAÇÃO
-
-seguido de:
-
-MODO SIMULAÇÃO
-
-Nenhuma alteração foi realizada no banco.
+O frontend continua mantendo snapshot local somente como fallback/referência.
+Quando a API está disponível, os indicadores financeiros devem vir da API.
 
 ---
 
-# 57. PRÓXIMOS PASSOS
+# 57. REGRA FINANCEIRA PADRÃO
 
-Executar nesta ordem:
+A regra econômica oficial da carteira é:
 
-1. Rebuild após correção do leitor.
-2. Executar dry-run.
-3. Confirmar 50/50 ativos classificados.
-4. Confirmar 19 cotações.
-5. Confirmar 6 saldos.
-6. Confirmar 40 históricos.
-7. Criar ImportadorCotacoes.
-8. Compilar.
-9. Criar ImportadorSaldosDisponiveis.
-10. Compilar.
-11. Criar ImportadorHistoricosPatrimonio.
-12. Compilar.
-13. Atualizar ResetBancoDados.
-14. Compilar.
-15. Atualizar VerificadorBancoDados.
-16. Compilar.
-17. Atualizar CoordenadorImportacao.
-18. Compilar.
-19. Validar transaction/reset/load completo.
-20. Somente então alterar Program.cs para importação real.
-21. Executar primeira reconstrução real do InvestimentosDb.
-22. Comparar Excel x SQL.
-23. Rodar testes.
-24. Retomar API/dashboard/frontend.
+Resultado da carteira =
+Valorização dos ativos em carteira
++ Proventos/dividendos líquidos recebidos
++ Prêmio líquido (ganho) de opções.
 
----
+A classe central é:
 
-# 58. CONTAGENS ESPERADAS NA PRIMEIRA IMPORTAÇÃO
+`Investimentos.Application/Dashboard/CalculadoraResultadoCarteira.cs`
 
-Excel:
+Ela concentra:
 
-Investidores:
-6
+- cálculo do resultado econômico;
+- cálculo do capital-base;
+- cálculo da rentabilidade.
 
-Operações:
-226
+Resultado realizado na venda de ações continua sendo calculado e exposto
+separadamente em `ResultadoRealizadoAcoes`.
 
-Proventos:
-172
+IMPORTANTE:
 
-Opções:
-61
+`ResultadoRealizadoAcoes` NÃO deve ser somado novamente ao Resultado da
+Carteira.
 
-Cotações:
-19
+Isso evita dupla contagem entre valorização, posição remanescente e resultado
+realizado.
 
-Saldos disponíveis:
-6
+No dashboard individual, o resultado operacional de opções atualmente é
+utilizado sem rateio de desconto fiscal global.
 
-Histórico patrimonial:
-40
+No consolidado:
 
-Ativos:
-aproximadamente 50, considerando o conjunto necessário das fontes e
-ativos-base das opções.
+`PremioLiquidoOpcoes = OpcoesBrutas - DescontosFiscais`
 
-O número final de ativos deve ser validado pelo próprio importador,
-não hardcoded como regra de domínio.
+Os descontos fiscais são globais e devem ser abatidos exatamente uma vez.
+
+O IR estimado de opções é informativo e não substitui os descontos fiscais
+efetivamente persistidos.
 
 ---
 
-# 59. PRINCÍPIO PARA O FUTURO
+# 58. INDICADORES POR ATIVO
 
-O Excel é fonte de verdade APENAS nesta fase.
+`PosicaoAtivoDto` expõe, além da posição contábil:
 
-A arquitetura não deve assumir permanentemente que dados sempre virão
-do Excel.
+- PrecoAtual
+- ValorAtual
+- Valorizacao
+- Proventos
+- ResultadoOpcoes
+- ResultadoEconomico
+- RentabilidadeEconomica
+- YieldProventos
 
-Por isso:
+As telas não devem reconstruir essas fórmulas.
 
-LeitorExcelInvestimentos
-→ transforma Excel em dados de importação.
+Para cada ativo:
 
-Importadores
-→ transformam dados de importação em entidades.
+`ResultadoEconomico = Valorizacao + Proventos + ResultadoOpcoes`
 
-Domain
-→ não conhece Excel.
+`RentabilidadeEconomica = ResultadoEconomico / CustoTotal * 100`
 
-Infrastructure
-→ não conhece regras específicas das células do Excel.
+`YieldProventos = Proventos / CustoTotal * 100`
 
-Application
-→ não deve depender do formato físico da planilha.
+quando `CustoTotal > 0`.
 
-Essa separação deve ser preservada.
+O consolidado recompõe os componentes por ticker a partir dos dashboards
+individuais e mantém a mesma semântica.
 
----
+Observação importante:
 
-# 60. QUANDO RETOMAR O PROJETO EM OUTRA CONVERSA
-
-Antes de propor qualquer alteração:
-
-1. Ler este CODEX.md.
-2. Identificar o "Estado atual exato do desenvolvimento".
-3. Não reconstruir decisões já tomadas.
-4. Não alterar arquitetura validada sem motivo concreto.
-5. Pedir arquivo atual somente quando ele realmente for necessário.
-6. Sempre devolver arquivos completos quando houver alteração.
-7. Prosseguir a partir do próximo passo registrado neste documento.
+descontos fiscais de opções são globais. Como não existe regra de rateio por
+ativo, a soma dos resultados econômicos individuais por ativo pode diferir do
+resultado consolidado pelo valor desses descontos. Não criar rateio implícito
+sem decisão explícita de negócio.
 
 ---
 
-# 61. REFERÊNCIAS UTILIZADAS PELO FRONTEND
+# 59. VALOR ATUAL E ATIVOS SEM COTAÇÃO DE MERCADO
 
-Última atualização deste registro: 2026-09-05.
+Ativos negociados com cotação usam a última cotação disponível.
 
-## Instruções do projeto
+Alguns investimentos são marcados por valor patrimonial informado, e não por
+cotação:
 
-- `C:\Silvio\Projetos\Investimentos\CODEX.md`
-  - Documento de contexto, regras de arquitetura e etapas do projeto.
+- PREVIDENCIA / label visual PREV
+- CDB NEON
+- CDB BTG
+- FMP ELETROBRAS
 
-## Fontes de dados e referência visual
+Esses ativos usam o último valor patrimonial persistido por
+ativo/investidor.
 
-- `C:\Silvio\Investimentos\Investimentos.xlsx`
-  - Fonte dos dados usados no snapshot local do frontend: carteira,
-    rentabilidade, saldos disponíveis, cotações, proventos, opções,
-    resultado mensal e IRPF.
-- `C:\Silvio\Investimentos\CarteiraInvestimentos.pbix`
-  - Referência visual e funcional do dashboard original, incluindo os
-    indicadores, tabelas e agrupamentos exibidos no Power BI.
+PREVIDENCIA permanece fora do indicador `ValorAplicado` do Painel, mas
+integra o patrimônio estimado.
 
-## Implementação frontend
+---
 
-- `C:\Silvio\Projetos\Investimentos\frontend\investimentos-web\src\App.tsx`
-  - Composição da tela, filtros, integração com a API e fallback para o
-    snapshot local.
-- `C:\Silvio\Projetos\Investimentos\frontend\investimentos-web\src\App.css`
-  - Estilos e layout responsivo do dashboard.
-- `C:\Silvio\Projetos\Investimentos\frontend\investimentos-web\src\index.css`
-  - Estilos globais e tipografia.
-- `C:\Silvio\Projetos\Investimentos\frontend\investimentos-web\src\data\dashboardSnapshot.ts`
-  - Snapshot legado mantido apenas para referência durante a transição; não
-    é fonte dos indicadores consolidados quando a API está disponível.
+# 60. REFRESH / INVALIDAÇÃO GLOBAL
 
-## Integração consolidada com o banco
+`frontend/investimentos-web/src/App.tsx` possui o fluxo central:
 
-- `C:\Silvio\Projetos\Investimentos\Investimentos.Api\Program.cs`
-  - Expõe `GET /api/dashboard` para o painel consolidado.
-- `C:\Silvio\Projetos\Investimentos\Investimentos.Application\Dashboard\ConsultarDashboardConsolidadoHandler.cs`
-  - Consolida carteira, proventos e opções de todos os investidores
-    cadastrados no banco.
-- `C:\Silvio\Projetos\Investimentos\Investimentos.Application\Interfaces\ISaldoDisponivelRepository.cs`
-- `C:\Silvio\Projetos\Investimentos\Investimentos.Application\Interfaces\IHistoricoPatrimonioRepository.cs`
-  - Contratos para consultar os últimos saldos e patrimônios por investidor.
-- `C:\Silvio\Projetos\Investimentos\src\Investimentos.Infrastructure\Persistence\Repositories\SaldoDisponivelRepository.cs`
-- `C:\Silvio\Projetos\Investimentos\src\Investimentos.Infrastructure\Persistence\Repositories\HistoricoPatrimonioRepository.cs`
-  - Consultas dos dados consolidados nas tabelas do banco.
-- `C:\Silvio\Projetos\Investimentos\src\Investimentos.Infrastructure\Persistence\Repositories\CotacaoAtivoRepository.cs`
-  - Consulta a última cotação por ativo para calcular o valor aplicado.
-- `C:\Silvio\Projetos\Investimentos\Investimentos.Application\Interfaces\IHistoricoPatrimonioRepository.cs`
-  - Contrato do histórico usado pelo endpoint de evolução.
-- `GET /api/dashboard/evolucao`
-  - Retorna uma série histórica do banco para cada investidor.
+- `carregarDadosAtuais()`
+- `atualizarTudo()`
 
-## Normalização de opções
+Após alterações relevantes, o frontend deve invalidar/recarregar os dados
+globais através desse fluxo, em vez de manter versões financeiras paralelas.
 
-- `EXECUTADA` substitui `EXERCIDA` como status de execução.
-- `ENCERRADA` permanece como status de fechamento por recompra.
-- `C:\Silvio\Projetos\Investimentos\src\Investimentos.Infrastructure\Migrations\20260905160000_NormalizarStatusOpcoes.cs`
-  - Migration criada para normalizar registros antigos.
-- A correção foi aplicada diretamente no banco `InvestimentosDb`, resultando
-  em 15 opções `EXECUTADA` e 46 opções `ENCERRADA`.
+CRUDs conectados ao refresh global incluem:
 
-## Regra do valor aplicado
+- Ativos
+- Operações
+- Opções
+- Proventos
+- Entradas/Saídas
+- Investidores
+- DARF/descontos fiscais
 
+Não reintroduzir:
 
-Para cada posição consolidada com quantidade positiva:
+- `window.location.reload()`;
+- contador artificial `versaoDados`;
+- recargas parciais que atualizem apenas um dashboard e deixem os demais
+  estados financeiros defasados;
+- remount forçado de telas como mecanismo de sincronização.
 
-`Valor aplicado = Quantidade atual × Última cotação do ativo`
+O botão lateral `Atualizar` executa a mesma recarga global contra a API.
 
-O total é a soma dessa operação para todos os investidores e ativos.
-O ativo `PREV` fica fora deste indicador e aparece somente na carteira.
+---
 
-## Regra do resultado realizado do painel
+# 61. RECONCILIAÇÃO E INTEGRIDADE
 
-- Resultado consolidado: premio liquido de opcoes + proventos e dividendos
-  + valorizacao das posicoes ativas contra o custo medio remanescente.
-- A valorizacao somente considera ativos cuja primeira compra ocorreu ha mais
-  de um mes; compras recentes continuam no valor aplicado, mas nao geram
-  valorizacao no resultado.
-- `PREV` fica restrito a carteira e nao entra na valorizacao ou no resultado.
+Existe relatório administrativo em:
 
-- O premio liquido de opcoes usa o `ResultadoInformado`/`MyProfit` das opcoes
-  encerradas, abatido pelos lancamentos persistidos em `DescontoFiscal` dos
-  tipos `DARF`, `SPRAD` e `DARF_SPRAD`. Os valores agregados da aba Resultado
-  Mensal foram carregados como `DARF_SPRAD` para o investidor Silvio.
+`Administração -> Integridade`
 
-- O painel exibe o premio liquido de opcoes no bloco superior, com barras
-  verticais por investidor e o total consolidado vindo da API.
+Endpoint:
 
-- Opções: soma de `ResultadoInformado` (origem `MyProfit`) somente para
-  opções com situação `ENCERRADA`.
-- Ativos: soma de `Quantidade líquida × Última cotação - Custo médio
-  remanescente` apenas para posições com quantidade líquida maior que zero.
-- O banco possui 46 opções encerradas com `ResultadoInformado` preenchido.
+`GET /api/admin/integridade`
 
-## Regra de manutenção
+Contrato:
 
-Sempre que uma nova fonte for usada ou um arquivo relevante do frontend for
-alterado, atualizar esta seção com o caminho, a finalidade e a data da
-alteração. As referências não substituem as instruções técnicas deste
-documento.
+`Investimentos.Application/Administracao/Integridade`
+
+Implementação:
+
+`src/Investimentos.Infrastructure/Persistence/Repositories/IntegridadeRepository.cs`
+
+A verificação atual procura:
+
+- venda superior à posição disponível;
+- tipo de operação não reconhecido;
+- opção com quantidade, strike ou datas incompatíveis;
+- opção ENCERRADA sem data de finalização ou preço de recompra;
+- finalização de opção anterior à operação;
+- provento com quantidade, valor ou datas incompatíveis;
+- posição atual sem cotação, quando o ativo depende de cotação;
+- cotação duplicada por ativo/data;
+- saldo disponível duplicado por investidor/data.
+
+Severidades:
+
+- ERRO
+- AVISO
+
+O relatório é diagnóstico. Não deve corrigir dados automaticamente.
+
+Ao encontrar inconsistência, identificar primeiro a origem e corrigir pelo
+fluxo de domínio/CRUD apropriado.
+
+---
+
+# 62. OPÇÕES — SEMÂNTICA ATUAL
+
+Status persistidos atualmente relevantes:
+
+- ABERTA
+- EXECUTADA
+- ENCERRADA
+- EXPIRADA
+
+A interface atual cadastra novas opções e as marca imediatamente como
+`EXECUTADA`.
+
+No contexto atual da aplicação, `EXECUTADA` representa a operação de opção
+registrada/ativa. Não interpretar o nome isoladamente como prova de exercício
+da ação-base.
+
+`ENCERRADA` representa fechamento por recompra e exige:
+
+- DataFinalizacao
+- PrecoRecompraUnitario
+
+`ValorExecucao > 0` é o sinal histórico utilizado quando existe liquidação
+por exercício/atribuição que deve impactar a operação da ação-base.
+
+Na manutenção administrativa:
+
+- dados originais de uma EXECUTADA são preservados;
+- EXECUTADA pode ser finalizada como ENCERRADA com os dados de fechamento;
+- ENCERRADA mantém edição restrita aos dados de finalização/resultado.
+
+Não voltar a usar `EXERCIDA` como status persistido sem migration e revisão
+das regras atuais.
+
+---
+
+# 63. EXERCÍCIO DE OPÇÕES E PREÇO MÉDIO
+
+`CalcularCarteiraService` calcula posição e preço médio a partir das
+operações.
+
+Regras principais:
+
+- COMPRA aumenta quantidade e custo;
+- VENDA realiza resultado usando o preço médio corrente;
+- venda reduz o custo proporcionalmente;
+- o preço médio da posição remanescente não é alterado por uma venda;
+- venda acima da posição disponível é inválida.
+
+Para opções com `ValorExecucao > 0`, a carteira procura a operação normal de
+ação correspondente por ativo, natureza derivada, quantidade e data.
+
+Mapeamento:
+
+- PUT VENDA -> COMPRA
+- PUT COMPRA -> VENDA
+- CALL VENDA -> VENDA
+- CALL COMPRA -> COMPRA
+
+Quando a operação correspondente existe, o preço unitário utilizado no
+cálculo da carteira é substituído pelo valor de execução da opção.
+
+Não criar uma segunda operação automaticamente quando não houver
+correspondência segura.
+
+---
+
+# 64. PROVENTOS
+
+Tipos internos permitidos:
+
+- DIVIDENDO
+- JCP
+- RENDIMENTO
+
+Na interface, JCP pode ser apresentado ao usuário como `JUROS`, mas o valor
+interno/domínio permanece `JCP`.
+
+`ValorRecebido` é o valor líquido efetivamente recebido e deve ser
+preservado.
+
+No cadastro total/rateado, os registros pertencem aos investidores conforme
+a participação utilizada no rateio. O consolidado não deve duplicar o valor
+original ao somar os registros individuais.
+
+---
+
+# 65. ADMINISTRAÇÃO E NAVEGAÇÃO
+
+Telas de consulta principais:
+
+- Painel
+- Carteira
+- Ativos/Análise
+- Opções
+- Proventos
+
+Manutenção fica concentrada em Administração.
+
+Abas administrativas relevantes:
+
+- Ativos
+- Operações
+- Opções
+- Proventos
+- Entradas / Saídas
+- Investidores
+- DARF
+- Integridade
+- Parâmetros
+- Usuários
+
+Padrões visuais já adotados:
+
+- indicadores positivos verdes e negativos vermelhos;
+- labels financeiros principais verdes;
+- botões Editar/Excluir padronizados;
+- evitar scroll horizontal;
+- filtro TODOS quando aplicável;
+- label visual PREV para previdência.
+
+---
+
+# 66. TESTES E VALIDAÇÃO
+
+A regra econômica central possui testes em
+`Investimentos.Application.Tests`.
+
+Coberturas importantes:
+
+- `CalculadoraResultadoCarteiraTests`;
+- dashboard individual;
+- dashboard consolidado;
+- cálculo da carteira e resultado realizado;
+- regras atuais de atualização/exclusão de opções;
+- YieldProventos calculado no backend.
+
+Após alteração financeira ou estrutural relevante, executar:
+
+```bash
+dotnet test Investimentos.Application.Tests/Investimentos.Application.Tests.csproj
+```
+
+Frontend:
+
+```bash
+cd frontend/investimentos-web
+npm run build
+```
+
+O build da solução completa pode apresentar o problema histórico MSB4249
+relacionado ao projeto Web/Solution. Para validar a API isoladamente:
+
+```bash
+cd Investimentos.Api
+dotnet build Investimentos.Api.csproj
+```
+
+Não tratar MSB4249 como erro da regra financeira sem confirmar o projeto que
+falhou.
+
+---
+
+# 67. EXECUÇÃO LOCAL
+
+API:
+
+```bash
+cd Investimentos.Api
+dotnet run
+```
+
+Perfil HTTPS conhecido:
+
+`https://localhost:7237`
+
+HTTP alternativo:
+
+`http://localhost:5001`
+
+Frontend:
+
+```bash
+cd frontend/investimentos-web
+npm run dev
+```
+
+`VITE_API_URL` deve apontar para a API correta. O fallback atual do frontend
+é `https://localhost:7237`.
+
+Se necessário:
+
+```bash
+dotnet dev-certs https --trust
+```
+
+---
+
+# 68. MIGRATIONS
+
+Regras permanentes:
+
+- não editar migrations antigas;
+- não editar ModelSnapshot manualmente;
+- criar migration nova para alteração real de modelo;
+- aplicar migration antes de concluir que o modelo está inconsistente.
+
+O sistema executa `Database.MigrateAsync()` na inicialização da API.
+
+Migrations posteriores às primeiras versões incluem normalização de opções,
+descontos fiscais, movimentações financeiras e valor patrimonial por ativo.
+
+Consultar a pasta `src/Investimentos.Infrastructure/Migrations` para a lista
+canônica atual, em vez de confiar em uma lista histórica fixa neste documento.
+
+---
+
+# 69. LIMITAÇÕES CONHECIDAS / DECISÕES PENDENTES
+
+1. `RentabilidadeAno` é um nome legado. O cálculo atual representa a
+   rentabilidade econômica acumulada com base no resultado e capital-base;
+   não é ainda uma performance temporal anual rigorosa.
+
+2. Entradas e saídas são expostas no dashboard, mas ainda não compõem uma
+   metodologia temporal como Modified Dietz/TWR/XIRR.
+
+3. O campo/indicador `ValorAplicado` do Painel representa atualmente valor
+   de mercado das posições elegíveis, e o nome é legado.
+
+4. Descontos fiscais globais de opções não são rateados por ativo.
+
+5. Histórico/auditoria completa da carteira e performance temporal pertencem
+   à próxima fase funcional.
+
+Essas limitações devem ser tratadas explicitamente. Não alterar a semântica
+silenciosamente.
+
+---
+
+# 70. PRÓXIMA FASE FUNCIONAL
+
+Com a estabilização técnica concluída, a ordem funcional planejada é:
+
+1. Dashboard avançado de Opções:
+   - capital comprometido em PUT;
+   - ações comprometidas em CALL;
+   - prêmios líquidos;
+   - retorno sobre capital comprometido;
+   - próximos vencimentos;
+   - exposição a exercício.
+
+2. Metas por ativo.
+
+3. Histórico/auditoria da carteira e metodologia adequada de performance.
+
+4. Evolução fiscal/DARF.
+
+A ordem pode ser revista por decisão explícita de produto.
+
+---
+
+# 71. REFERÊNCIAS PRINCIPAIS DO CÓDIGO
+
+Motor financeiro:
+
+- `Investimentos.Application/Dashboard/CalculadoraResultadoCarteira.cs`
+- `Investimentos.Application/Dashboard/ConsultarDashboardHandler.cs`
+- `Investimentos.Application/Dashboard/ConsultarDashboardConsolidadoHandler.cs`
+- `Investimentos.Application/Carteira/ConsultarCarteira/CalcularCarteiraService.cs`
+- `Investimentos.Application/Carteira/ConsultarCarteira/PosicaoAtivoDto.cs`
+
+Refresh frontend:
+
+- `frontend/investimentos-web/src/App.tsx`
+
+Administração:
+
+- `frontend/investimentos-web/src/pages/Administracao/AdministracaoView.tsx`
+
+Integridade:
+
+- `Investimentos.Application/Administracao/Integridade/IntegridadeDto.cs`
+- `Investimentos.Application/Administracao/Integridade/IIntegridadeRepository.cs`
+- `src/Investimentos.Infrastructure/Persistence/Repositories/IntegridadeRepository.cs`
+- `frontend/investimentos-web/src/pages/Administracao/components/IntegridadeTab.tsx`
+
+API:
+
+- `Investimentos.Api/Program.cs`
+
+---
+
+# 72. QUANDO RETOMAR O PROJETO
+
+Antes de propor mudança estrutural:
+
+1. Ler este `CODEX.md`.
+2. Conferir o estado atual e as limitações conhecidas.
+3. Não reimplementar cálculos no frontend quando o backend já os fornece.
+4. Preservar o motor financeiro único.
+5. Usar o refresh global após CRUD financeiro.
+6. Executar Integridade quando houver suspeita de divergência nos dados.
+7. Não alterar migrations antigas nem ModelSnapshot manualmente.
+8. Compilar/testar uma unidade coerente antes de avançar.
+9. Atualizar este documento quando uma decisão estrutural mudar.
+
+---
+
+# 73. REGRA DE MANUTENÇÃO DO CODEX
+
+Este documento é a referência técnica viva do projeto.
+
+Atualizar a data e as seções afetadas sempre que houver mudança em:
+
+- regra financeira;
+- arquitetura de refresh;
+- semântica de opções;
+- persistência/modelo;
+- reconciliação;
+- fluxo principal de navegação;
+- metodologia de performance;
+- roadmap funcional.
+
+Não manter instruções de \"próximo passo\" que já tenham sido concluídas.
+O estado atual deve prevalecer sobre registros históricos.
