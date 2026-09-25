@@ -778,28 +778,20 @@ export function DashboardView({
     0
 
   /*
-   * RENTABILIDADE AUTOMÁTICA
-   *
-   * patrimônio atual = capital líquido + resultado.
-   * Compras e vendas internas não são tratadas como
-   * aportes/retiradas e, portanto, não inflam o fluxo.
+   * Indicadores sempre referentes ao ano atual.
+   * O backend filtra as operações pelo ano corrente.
    */
-  const capitalLiquido =
-    patrimonioEstimado -
-    resultadoRealizado
-
   const entradas =
-    Math.max(capitalLiquido, 0)
+    dashboard?.entradasAno ??
+    0
 
   const saidas =
-    Math.max(-capitalLiquido, 0)
+    dashboard?.saidasAno ??
+    0
 
   const rentabilidade =
-    entradas > 0
-      ? (resultadoRealizado /
-          entradas) *
-        100
-      : 0
+    dashboard?.rentabilidadeAno ??
+    0
 
   /*
    * DISTRIBUIÇÃO POR INVESTIDOR
