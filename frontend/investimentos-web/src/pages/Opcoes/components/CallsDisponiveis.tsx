@@ -22,16 +22,17 @@ export function CallsDisponiveis({
   opcoes
     .filter(
       (opcao) =>
-        opcao.tipoOpcao === 'CALL' &&
-        opcao.natureza === 'VENDA' &&
-        opcao.situacao !== 'EXECUTADA' &&
-        opcao.situacao !== 'ENCERRADA' &&
-        opcao.situacao !== 'EXPIRADA',
+        opcao.tipoOpcao.trim().toUpperCase() === 'CALL' &&
+        opcao.natureza.trim().toUpperCase() === 'VENDA' &&
+        opcao.situacao.trim().toUpperCase() === 'ABERTA',
     )
     .forEach((opcao) => {
+      const tickerAtivo =
+        opcao.tickerAtivo.trim().toUpperCase()
+
       callsComprometidas.set(
-        opcao.tickerAtivo,
-        (callsComprometidas.get(opcao.tickerAtivo) ?? 0) +
+        tickerAtivo,
+        (callsComprometidas.get(tickerAtivo) ?? 0) +
           opcao.quantidade,
       )
     })
@@ -43,8 +44,11 @@ export function CallsDisponiveis({
         posicao.tipoAtivoCodigo === 'ACAO',
     )
     .map((posicao) => {
+      const ticker =
+        posicao.ticker.trim().toUpperCase()
+
       const comprometida =
-        callsComprometidas.get(posicao.ticker) ?? 0
+        callsComprometidas.get(ticker) ?? 0
       const livre = Math.max(
         posicao.quantidade - comprometida,
         0,
