@@ -384,6 +384,17 @@ function EditarOpcaoModal({
     })
   }, [opcao])
 
+  const executada =
+    opcao.situacao === 'EXECUTADA'
+
+  const encerrada =
+    opcao.situacao === 'ENCERRADA'
+
+  const formularioValido =
+    form.dataFinalizacao != null &&
+    form.dataFinalizacao !== '' &&
+    form.precoRecompraUnitario != null
+
   return (
     <Modal
       title={opcao.tickerOpcao}
@@ -405,7 +416,10 @@ function EditarOpcaoModal({
           <button
             type="button"
             className="options-primary-button"
-            disabled={salvando}
+            disabled={
+              salvando ||
+              !formularioValido
+            }
             onClick={() =>
               onSalvar(form)
             }
@@ -483,15 +497,7 @@ function EditarOpcaoModal({
               value={
                 form.quantidade
               }
-              onChange={(event) =>
-                setForm({
-                  ...form,
-                  quantidade:
-                    Number(
-                      event.target.value,
-                    ),
-                })
-              }
+              disabled
             />
           </label>
 
@@ -508,20 +514,8 @@ function EditarOpcaoModal({
                     {
                       minimumFractionDigits: 2,
                       maximumFractionDigits: 2,
-                    },
-                  )
-                }
-                onChange={(event) =>
-                  setForm({
-                    ...form,
-                    strike:
-                      moedaParaNumero(
-                        formatarMoedaEntrada(
-                          event.target.value,
-                        ),
-                      ),
-                  })
-                }
+                    }
+                disabled
               />
             </div>
           </label>
@@ -537,13 +531,7 @@ function EditarOpcaoModal({
                   10,
                 )
               }
-              onChange={(event) =>
-                setForm({
-                  ...form,
-                  vencimento:
-                    event.target.value,
-                })
-              }
+              disabled
             />
           </label>
 
@@ -560,20 +548,8 @@ function EditarOpcaoModal({
                     {
                       minimumFractionDigits: 2,
                       maximumFractionDigits: 2,
-                    },
-                  )
-                }
-                onChange={(event) =>
-                  setForm({
-                    ...form,
-                    premioUnitario:
-                      moedaParaNumero(
-                        formatarMoedaEntrada(
-                          event.target.value,
-                        ),
-                      ),
-                  })
-                }
+                    }
+                disabled
               />
             </div>
           </label>
@@ -581,26 +557,33 @@ function EditarOpcaoModal({
           <label>
             <span>Status</span>
 
-            <select
-              value={
-                form.situacao
-              }
-              onChange={(event) =>
-                setForm({
-                  ...form,
-                  situacao:
-                    event.target.value,
-                })
-              }
-            >
-              <option value="ENCERRADA">
-                ENCERRADA
-              </option>
-
-              <option value="EXECUTADA">
-                EXECUTADA
-              </option>
-            </select>
+            {executada ? (
+              <select
+                value={form.situacao}
+                onChange={() =>
+                  setForm({
+                    ...form,
+                    situacao: 'ENCERRADA',
+                  })
+                }
+              >
+                <option value="EXECUTADA" disabled>
+                  EXECUTADA
+                </option>
+                <option value="ENCERRADA">
+                  ENCERRADA
+                </option>
+              </select>
+            ) : (
+              <input
+                value={
+                  encerrada
+                    ? 'ENCERRADA'
+                    : form.situacao
+                }
+                disabled
+              />
+            )}
           </label>
 
           <label>
@@ -664,46 +647,7 @@ function EditarOpcaoModal({
             </div>
           </label>
 
-          {form.situacao === 'EXECUTADA' ? (
-            <label>
-              <span>Valor de execução</span>
 
-              <div className="admin-money-input">
-                <span>R$</span>
-                <input
-                  inputMode="numeric"
-                  value={
-                    form.valorExecucao == null
-                      ? ''
-                      : form.valorExecucao.toLocaleString(
-                          'pt-BR',
-                          {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2,
-                          },
-                        )
-                  }
-                  onChange={(event) => {
-                    const valor =
-                      formatarMoedaEntrada(
-                        event.target.value,
-                      )
-
-                    setForm({
-                      ...form,
-                      valorExecucao:
-                        valor === ''
-                          ? null
-                          : moedaParaNumero(
-                              valor,
-                            ),
-                    })
-                  }}
-                  placeholder="Opcional"
-                />
-              </div>
-            </label>
-          ) : null}
 
           <label>
             <span>Resultado informado</span>
