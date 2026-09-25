@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { PageHeader } from '../../components/PageHeader'
 import { SectionTitle } from '../../components/SectionTitle'
 
-import type { Dashboard, EvolucaoInvestidor } from '../../types/dashboard'
+import type { Dashboard } from '../../types/dashboard'
 import type { Investidor } from '../../types/investidor'
 
 import {
@@ -23,8 +23,7 @@ interface CarteiraViewProps {
   selectedInvestor: string
   onSelectInvestor: (nome: string) => void
   snapshotSeries: Record<string, { data: string; carteira: number }[]>
-  evolucao: readonly EvolucaoInvestidor[]
-  saldosDisponiveis?: ReadonlyArray<{
+   saldosDisponiveis?: ReadonlyArray<{
     investidor: string
     valor: number
   }>
@@ -78,8 +77,7 @@ export function CarteiraView({
   investidores,
   dashboardConsolidado,
   carteiras,
-  evolucao,
-  onSelectInvestor,
+   onSelectInvestor,
 }: CarteiraViewProps) {
   const [filtroInvestidor, setFiltroInvestidor] = useState('TOTAL')
 
