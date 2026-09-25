@@ -36,11 +36,15 @@ namespace Investimentos.Domain.Entities
         }
 
         public void Atualizar(
+            Investidor investidor,
             DateTime data,
             string tipo,
             decimal valor,
             string? descricao = null)
         {
+            if (investidor is null)
+                throw new ArgumentException("O investidor é obrigatório.");
+
             var tipoNormalizado = tipo.Trim().ToUpperInvariant();
 
             if (tipoNormalizado != "APORTE" && tipoNormalizado != "RETIRADA")
@@ -48,6 +52,8 @@ namespace Investimentos.Domain.Entities
             if (valor <= 0)
                 throw new ArgumentException("O valor deve ser maior que zero.");
 
+            Investidor = investidor;
+            InvestidorId = investidor.Id;
             Data = data.Date;
             Tipo = tipoNormalizado;
             Valor = valor;
