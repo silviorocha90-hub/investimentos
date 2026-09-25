@@ -212,13 +212,7 @@ export function CarteiraTab({ dados, recarregar }: CarteiraTabProps) {
                   <td>{formatarMoeda(x.resultadoComumOpcoes)}</td>
                   <td>{formatarMoeda(x.resultadoDayTradeOpcoes)}</td>
                   <td>{formatarMoeda(x.irEstimadoOpcoes)}</td>
-                  <td>
-                    {x.darfPago > 0 ? (
-                      <span className="admin-status-paid">✓ Pago · {formatarMoeda(x.darfPago)}</span>
-                    ) : (
-                      <span>—</span>
-                    )}
-                  </td>
+                  <td>{formatarMoeda(x.darfPago)}</td>
                   <td>{formatarMoeda(x.diferencaEstimadoPago)}</td>
                   <td>{x.operacoesConsideradas}</td>
                 </tr>
@@ -234,7 +228,7 @@ export function CarteiraTab({ dados, recarregar }: CarteiraTabProps) {
         <div className="admin-table-wrap">
           <table className="data-table admin-table">
             <thead>
-              <tr><th>Pagamento</th><th>Investidor</th><th>Descrição</th><th>Valor</th><th>Ações</th></tr>
+              <tr><th>Pagamento</th><th>Investidor</th><th>Descrição</th><th>Valor</th><th>Status</th><th>Ações</th></tr>
             </thead>
             <tbody>
               {descontosFiltrados.map((desconto) => (
@@ -243,6 +237,7 @@ export function CarteiraTab({ dados, recarregar }: CarteiraTabProps) {
                   <td>{desconto.investidorNome ?? 'Não atribuído'}</td>
                   <td>{desconto.descricao ?? '—'}</td>
                   <td>{formatarMoeda(desconto.valor)}</td>
+                  <td><span className="admin-status-paid">✓ Pago</span></td>
                   <td>
                     <div className="admin-row-actions">
                       <button type="button" className="admin-action" onClick={() => abrirEdicao(desconto)}>Editar</button>
@@ -251,7 +246,7 @@ export function CarteiraTab({ dados, recarregar }: CarteiraTabProps) {
                   </td>
                 </tr>
               ))}
-              {descontosFiltrados.length === 0 ? <tr><td colSpan={5}>Nenhum DARF cadastrado.</td></tr> : null}
+              {descontosFiltrados.length === 0 ? <tr><td colSpan={6}>Nenhum DARF cadastrado.</td></tr> : null}
             </tbody>
           </table>
         </div>
