@@ -87,65 +87,55 @@ export function CallsDisponiveis({
     0,
   )
 
-  const maiorPosicao =
-    Math.max(
-      ...disponiveis.map((item) => item.quantidade),
-      1,
-    )
-
   return (
-    <article className="panel options-chart-card options-call-ranking-card">
-      <header className="options-chart-header">
-        <strong>
-          Disponível para CALL
-        </strong>
+    <article className="panel options-call-clean">
+      <header className="options-call-clean-header">
+        <div>
+          <strong>Disponível para CALL</strong>
+          <span>Posição e cobertura por ativo</span>
+        </div>
+
+        <div className="options-call-clean-summary">
+          <b>{quantidade.format(totalAcoes)}</b>
+          <span>ações livres · {totalLotes} lotes</span>
+        </div>
       </header>
 
       {disponiveis.length > 0 ? (
-        <div className="options-ranking options-call-ranking">
-          {disponiveis.map(
-            (item, index) => (
-              <div
-                className="options-ranking-row"
-                key={item.ticker}
-                title={`Posição: ${quantidade.format(item.quantidade)} | CALL comprometida: ${quantidade.format(item.comprometida)}`}
-              >
-                <span className="options-ranking-position">
-                  {index + 1}
-                </span>
+        <div className="options-call-clean-list">
+          {disponiveis.map((item) => {
+            const percentualLivre =
+              item.quantidade > 0
+                ? Math.max(
+                    Math.min(
+                      (item.livre / item.quantidade) * 100,
+                      100,
+                    ),
+                    0,
+                  )
+                : 0
 
-                <strong>
+            return (
+              <div
+                className="options-call-clean-row"
+                key={item.ticker}
+              >
+                <strong className="options-call-clean-ticker">
                   {item.ticker}
                 </strong>
 
-                <div className="options-ranking-track">
-                  <i
-                    className={
-                      item.livre === 0
-                        ? 'negative'
-                        : ''
-                    }
-                    style={{
-                      width: `${item.livre > 0
-                        ? Math.max(
-                            (item.livre / maiorPosicao) * 100,
-                            3,
-                          )
-                        : 0}%`,
-                    }}
-                  />
-                </div>
+                <div className="options-call-clean-position">
+                  <div className="options-call-clean-bar">
+                    <i
+                      style={{
+                        width: `${percentualLivre}%`,
+                      }}
+                    />
+                  </div>
 
-                <span
-                  className={`options-ranking-value ${item.livre === 0 ? 'negative' : ''}`}
-                >
-                  <span className="options-call-ranking-numbers">
-                    <b>{quantidade.format(item.livre)} livres</b>
+                  <span>
+                    {quantidade.format(item.quantidade)} ações
                     <small>
-                      {quantidade.format(item.quantidade)} total
-                      <span aria-hidden="true"> · </span>
-                      {quantidade.format(item.comprometida)} comprometidas
-                      <span aria-hidden="true"> · </span>
                       PM {item.precoMedio.toLocaleString(
                         'pt-BR',
                         {
@@ -155,10 +145,23 @@ export function CallsDisponiveis({
                       )}
                     </small>
                   </span>
-                </span>
+                </div>
+
+                <div className="options-call-clean-metric">
+                  <span>Comprometidas</span>
+                  <b>{quantidade.format(item.comprometida)}</b>
+                </div>
+
+                <div
+                  className={`options-call-clean-metric options-call-clean-free ${item.livre === 0 ? 'empty' : ''}`}
+                >
+                  <span>Disponíveis</span>
+                  <b>{quantidade.format(item.livre)}</b>
+                  <small>{item.lotes} lote{item.lotes !== 1 ? 's' : ''}</small>
+                </div>
               </div>
-            ),
-          )}
+            )
+          })}
         </div>
       ) : (
         <div className="options-chart-empty">
