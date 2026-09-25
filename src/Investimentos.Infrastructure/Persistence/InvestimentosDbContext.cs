@@ -47,6 +47,9 @@ namespace Investimentos.Infrastructure.Persistence
         public DbSet<SaldoDisponivel> SaldosDisponiveis =>
             Set<SaldoDisponivel>();
 
+        public DbSet<MovimentacaoFinanceira> MovimentacoesFinanceiras =>
+            Set<MovimentacaoFinanceira>();
+
         public DbSet<HistoricoPatrimonio>
             HistoricosPatrimonio =>
                 Set<HistoricoPatrimonio>();
