@@ -154,6 +154,7 @@ namespace Investimentos.Infrastructure.Persistence.Repositories
             var descontosBanco =
                 await _context.DescontosFiscais
                     .AsNoTracking()
+                    .Include(x => x.Investidor)
                     .OrderByDescending(
                         x => x.DataPagamento)
                     .ThenBy(x => x.Tipo)
@@ -419,7 +420,9 @@ namespace Investimentos.Infrastructure.Persistence.Repositories
                             x.Tipo,
                             x.DataPagamento,
                             x.Valor,
-                            x.Descricao))
+                            x.Descricao,
+                            x.InvestidorId,
+                            x.Investidor != null ? x.Investidor.Nome : null))
                     .ToList();
 
             var classes =
