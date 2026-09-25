@@ -1016,18 +1016,20 @@ app.MapGet(
 
 app.MapGet(
     "/api/fiscal",
-    (Delegate)(async (
+    async Task<IResult> (
         Guid? investidorId,
         int? ano,
         IFiscalRepository repository,
         CancellationToken cancellationToken) =>
     {
-        return Results.Ok(
+        var resultado =
             await repository.ConsultarAsync(
                 investidorId,
                 ano,
-                cancellationToken));
-    }));
+                cancellationToken);
+
+        return Results.Ok(resultado);
+    });
 
 app.MapGet(
     "/api/descontos-fiscais",
