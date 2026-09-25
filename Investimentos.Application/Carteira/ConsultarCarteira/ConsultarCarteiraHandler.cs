@@ -5,13 +5,16 @@ namespace Investimentos.Application.Carteira.ConsultarCarteira
     public class ConsultarCarteiraHandler
     {
         private readonly ICarteiraRepository _repository;
+        private readonly IOperacaoOpcaoRepository _opcaoRepository;
         private readonly CalcularCarteiraService _calcularCarteiraService;
 
         public ConsultarCarteiraHandler(
             ICarteiraRepository repository,
+            IOperacaoOpcaoRepository opcaoRepository,
             CalcularCarteiraService calcularCarteiraService)
         {
             _repository = repository;
+            _opcaoRepository = opcaoRepository;
             _calcularCarteiraService =
                 calcularCarteiraService;
         }
@@ -56,9 +59,61 @@ namespace Investimentos.Application.Carteira.ConsultarCarteira
                     "O investidor é obrigatório.");
             }
 
-            return await _repository.ObterOperacoesAsync(
-                investidorId,
-                cancellationToken);
+            var operacoes =
+                (await _repository.ObterOperacoesAsync(
+                    investidorId,
+                    cancellationToken))
+                .ToList();
+
+            var opcoes =
+                await _opcaoRepository.ListarAsync(
+                    investidorId,
+                    cancellationToken);
+
+            var exercicios =
+                opcoes
+                    .Where(x =>
+                        x.Situacao == "ENCERRADA" &&
+                        x.ValorExecucao.HasValue &&
+                        x.ValorExecucao.Value > 0 &&
+                        x.DataFinalizacao.HasValue)
+                    .Select(x =>
+                    {
+                        var tipoOperacao =
+                            x.TipoOpcao == "PUT"
+                                ? x.Natureza == "VENDA"
+                                    ? "COMPRA"
+                                    : "VENDA"
+                                : x.Natureza == "VENDA"
+                                    ? "VENDA"
+                                    : "COMPRA";
+
+                        return new OperacaoCarteiraDto(
+                            x.Id,
+                            x.AtivoId,
+                            x.Ativo.Ticker.Codigo,
+                            x.Ativo.Nome,
+                            tipoOperacao,
+                            x.Quantidade,
+                            x.ValorExecucao!.Value,
+                            0m,
+                            x.DataFinalizacao!.Value,
+                            int.MaxValue)
+                        {
+                            TipoAtivoCodigo =
+                                x.Ativo.TipoAtivo.Codigo,
+                            TipoAtivoNome =
+                                x.Ativo.TipoAtivo.Nome
+                        };
+                    });
+
+            operacoes.AddRange(
+                exercicios);
+
+            return operacoes
+                .OrderBy(x => x.Data)
+                .ThenBy(x => x.Sequencia)
+                .ToList();
         }
     }
 }
