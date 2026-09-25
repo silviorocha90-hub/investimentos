@@ -16,5 +16,13 @@
         public decimal ValorAtual { get; init; }
 
         public decimal Valorizacao { get; init; }
+
+        public decimal Proventos { get; init; }
+
+        public decimal ResultadoOpcoes { get; init; }
+
+        public decimal ResultadoEconomico { get; init; }
+
+        public decimal RentabilidadeEconomica { get; init; }
     }
 }
