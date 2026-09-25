@@ -82,6 +82,68 @@
             }
         }
 
+        public bool EstaAtiva =>
+            Situacao == "ABERTA" ||
+            Situacao == "EXECUTADA";
+
+        public decimal CapitalComprometidoPut =>
+            EstaAtiva &&
+            TipoOpcao == "PUT" &&
+            Natureza == "VENDA"
+                ? Strike * Quantidade
+                : 0;
+
+        public decimal AcoesComprometidasCall =>
+            EstaAtiva &&
+            TipoOpcao == "CALL" &&
+            Natureza == "VENDA"
+                ? Quantidade
+                : 0;
+
+        public decimal PremioRecebidoAtivo =>
+            EstaAtiva &&
+            Natureza == "VENDA"
+                ? PremioTotal - Taxas
+                : 0;
+
+        public decimal DistanciaStrikePercentual
+        {
+            get
+            {
+                if (!ValorAcaoAtual.HasValue ||
+                    ValorAcaoAtual.Value <= 0)
+                {
+                    return 0;
+                }
+
+                return
+                    (Strike - ValorAcaoAtual.Value) /
+                    ValorAcaoAtual.Value *
+                    100m;
+            }
+        }
+
+        public bool EmRiscoExercicio
+        {
+            get
+            {
+                if (!EstaAtiva ||
+                    !ValorAcaoAtual.HasValue)
+                {
+                    return false;
+                }
+
+                return TipoOpcao switch
+                {
+                    "PUT" =>
+                        ValorAcaoAtual.Value <= Strike,
+                    "CALL" =>
+                        ValorAcaoAtual.Value >= Strike,
+                    _ => false
+                };
+            }
+        }
+
         public decimal? PercentualGanho
         {
             get
