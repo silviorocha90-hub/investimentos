@@ -270,7 +270,7 @@ namespace Investimentos.Application.Tests.Carteira
         }
 
         [Fact]
-        public void DeveManterResultadoMesmoComPosicaoZerada()
+        public void DeveManterResultadoRealizadoMesmoComPosicaoZerada()
         {
             var ativoId = Guid.NewGuid();
 
@@ -293,17 +293,27 @@ namespace Investimentos.Application.Tests.Carteira
                     2)
             };
 
-            var resultado =
+            /*
+             * A consulta de posições devolve somente ativos
+             * atualmente em carteira.
+             */
+            var posicoes =
                 _service.Calcular(operacoes);
 
-            Assert.Single(resultado);
+            Assert.Empty(posicoes);
 
-            var posicao = resultado[0];
+            /*
+             * O resultado realizado continua disponível
+             * pela consulta específica, mesmo após zerar
+             * completamente a posição.
+             */
+            var resultadoRealizado =
+                _service.CalcularResultadoRealizado(
+                    operacoes);
 
-            Assert.Equal(0, posicao.Quantidade);
-            Assert.Equal(0, posicao.PrecoMedio);
-            Assert.Equal(0, posicao.CustoTotal);
-            Assert.Equal(500.00m, posicao.ResultadoRealizado);
+            Assert.Equal(
+                500.00m,
+                resultadoRealizado);
         }
 
         [Fact]
