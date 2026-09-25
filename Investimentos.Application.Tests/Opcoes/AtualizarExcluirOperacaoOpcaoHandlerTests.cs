@@ -9,9 +9,9 @@ namespace Investimentos.Application.Tests.Opcoes;
 public class AtualizarExcluirOperacaoOpcaoHandlerTests
 {
     [Fact]
-    public async Task Atualizar_AbertaParaEncerrada_DevePersistirResultado()
+    public async Task Atualizar_ExecutadaParaEncerrada_DevePersistirResultado()
     {
-        var opcao = CriarOpcao();
+        var opcao = CriarOpcaoExecutada();
         var repository = new FakeRepository(opcao);
         var handler = new AtualizarOperacaoOpcaoHandler(repository);
         var finalizacao = new DateTime(2026, 9, 15);
@@ -34,9 +34,9 @@ public class AtualizarExcluirOperacaoOpcaoHandlerTests
     }
 
     [Fact]
-    public async Task Atualizar_EncerradaSemDataFinalizacao_DeveFalhar()
+    public async Task Atualizar_ExecutadaSemDataFinalizacao_DeveFalhar()
     {
-        var opcao = CriarOpcao();
+        var opcao = CriarOpcaoExecutada();
         var handler = new AtualizarOperacaoOpcaoHandler(new FakeRepository(opcao));
 
         await Assert.ThrowsAsync<ArgumentException>(
@@ -50,9 +50,9 @@ public class AtualizarExcluirOperacaoOpcaoHandlerTests
     }
 
     [Fact]
-    public async Task Atualizar_EncerradaSemPrecoRecompra_DeveFalhar()
+    public async Task Atualizar_ExecutadaSemPrecoRecompra_DeveFalhar()
     {
-        var opcao = CriarOpcao();
+        var opcao = CriarOpcaoExecutada();
         var handler = new AtualizarOperacaoOpcaoHandler(new FakeRepository(opcao));
 
         await Assert.ThrowsAsync<ArgumentException>(
@@ -66,46 +66,16 @@ public class AtualizarExcluirOperacaoOpcaoHandlerTests
     }
 
     [Fact]
-    public async Task Atualizar_AbertaParaExecutada_DeveManterDataFinalizacaoNula()
-    {
-        var opcao = CriarOpcao();
-        var repository = new FakeRepository(opcao);
-        var handler = new AtualizarOperacaoOpcaoHandler(repository);
-
-        await handler.HandleAsync(
-            CriarCommand(opcao, situacao: "EXECUTADA", valorExecucao: 500m),
-            CancellationToken.None);
-
-        Assert.Equal("EXECUTADA", opcao.Situacao);
-        Assert.Null(opcao.DataFinalizacao);
-        Assert.Equal(500m, opcao.ValorExecucao);
-        Assert.Equal(1, repository.Salvamentos);
-    }
-
-    [Fact]
-    public async Task Atualizar_AbertaParaExpirada_DeveUsarVencimentoQuandoDataNula()
-    {
-        var opcao = CriarOpcao();
-        var repository = new FakeRepository(opcao);
-        var handler = new AtualizarOperacaoOpcaoHandler(repository);
-
-        await handler.HandleAsync(
-            CriarCommand(opcao, situacao: "EXPIRADA"),
-            CancellationToken.None);
-
-        Assert.Equal("EXPIRADA", opcao.Situacao);
-        Assert.Equal(opcao.Vencimento, opcao.DataFinalizacao);
-    }
-
-    [Fact]
-    public async Task Atualizar_ComSituacaoInvalida_DeveFalhar()
+    public async Task Atualizar_Aberta_DeveFalhar()
     {
         var opcao = CriarOpcao();
         var handler = new AtualizarOperacaoOpcaoHandler(new FakeRepository(opcao));
 
-        await Assert.ThrowsAsync<ArgumentException>(
+        await Assert.ThrowsAsync<InvalidOperationException>(
             () => handler.HandleAsync(
-                CriarCommand(opcao, situacao: "CANCELADA"),
+                CriarCommand(
+                    opcao,
+                    situacao: "EXECUTADA"),
                 CancellationToken.None));
     }
 
@@ -181,6 +151,13 @@ public class AtualizarExcluirOperacaoOpcaoHandlerTests
             precoRecompra,
             valorExecucao,
             resultadoInformado);
+
+    private static OperacaoOpcao CriarOpcaoExecutada()
+    {
+        var opcao = CriarOpcao();
+        opcao.MarcarExecutada(500m);
+        return opcao;
+    }
 
     private static OperacaoOpcao CriarOpcao()
     {
