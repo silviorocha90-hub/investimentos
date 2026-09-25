@@ -222,12 +222,6 @@ export function AdministracaoView({
     )
 
   const [
-    pagina,
-    setPagina,
-  ] =
-    useState(1)
-
-  const [
     investidorSelecionadoId,
     setInvestidorSelecionadoId,
   ] =
