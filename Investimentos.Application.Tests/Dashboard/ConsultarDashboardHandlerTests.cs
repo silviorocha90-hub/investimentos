@@ -128,6 +128,7 @@ namespace Investimentos.Application.Tests.Dashboard
             var carteiraHandler =
                 new ConsultarCarteiraHandler(
                     carteiraRepository,
+                    opcaoRepository,
                     new CalcularCarteiraService());
 
             var proventosHandler =
