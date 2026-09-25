@@ -37,6 +37,7 @@ namespace Investimentos.Infrastructure.Persistence.Repositories
         {
             return await _context.DescontosFiscais
                 .AsNoTracking()
+                .Include(x => x.Investidor)
                 .OrderByDescending(
                     x => x.DataPagamento)
                 .ThenBy(
