@@ -992,21 +992,22 @@ export function OpcoesView({
       </article>
 
       {!modoAdministracao ? (
-        <OpcoesGraficos
+        <>
+          <OpcoesGraficos
             opcoes={
               opcoes
             }
-            callsDisponiveis={
-              <CallsDisponiveis
-                posicoes={
-                  posicoesConsulta
-                }
-                opcoes={
-                  opcoes
-                }
-              />
+          />
+
+          <CallsDisponiveis
+            posicoes={
+              posicoesConsulta
+            }
+            opcoes={
+              opcoes
             }
           />
+        </>
       ) : null}
 
       <OpcoesFiltros
