@@ -184,79 +184,55 @@ export function CarteiraView({
         .trim()
         .toLocaleUpperCase('pt-BR')
 
-    const series =
+    const dashboards =
       filtroInvestidor === 'TOTAL'
-        ? evolucao
-        : evolucao.filter(
-            (item) =>
-              normalizarNome(item.investidor) ===
-              normalizarNome(filtroInvestidor),
-          )
-
-    const pontos =
-      series
-        .map((serie) => {
-          const ordenados = [...serie.pontos]
-            .sort((a, b) =>
-              a.data.localeCompare(b.data),
-            )
-
-          if (ordenados.length === 0) {
-            return null
-          }
-
-          return {
-            inicial: ordenados[0].carteira,
-            atual:
-              ordenados[ordenados.length - 1].carteira,
-          }
-        })
-        .filter(
-          (
-            item,
-          ): item is {
-            inicial: number
-            atual: number
-          } => item !== null,
-        )
-
-    if (pontos.length === 0) {
-      return null
-    }
-
-    const inicial = pontos.reduce(
-      (total, item) => total + item.inicial,
-      0,
-    )
-
-    const atualHistorico = pontos.reduce(
-      (total, item) => total + item.atual,
-      0,
-    )
-
-    const atualDashboard =
-      filtroInvestidor === 'TOTAL'
-        ? (dashboardConsolidado?.patrimonioEstimado ?? 0)
-        : (
-            carteiras.find(
+        ? carteiras.map((item) => item.dashboard)
+        : carteiras
+            .filter(
               (item) =>
                 normalizarNome(item.nome) ===
                 normalizarNome(filtroInvestidor),
-            )?.dashboard.patrimonioEstimado ?? 0
-          )
+            )
+            .map((item) => item.dashboard)
 
-    const atual =
-      atualDashboard > 0
-        ? atualDashboard
-        : atualHistorico
-
-    if (inicial <= 0) {
+    if (dashboards.length === 0) {
       return null
     }
 
-    return ((atual - inicial) / inicial) * 100
+    const valorAplicadoInicial =
+      dashboards.reduce(
+        (total, dashboard) =>
+          total + (dashboard.valorAplicado ?? 0),
+        0,
+      )
+
+    const patrimonioAtual =
+      filtroInvestidor === 'TOTAL'
+        ? (
+            dashboardConsolidado?.patrimonioEstimado ??
+            dashboards.reduce(
+              (total, dashboard) =>
+                total +
+                (dashboard.patrimonioEstimado ?? 0),
+              0,
+            )
+          )
+        : dashboards.reduce(
+            (total, dashboard) =>
+              total +
+              (dashboard.patrimonioEstimado ?? 0),
+            0,
+          )
+
+    if (valorAplicadoInicial <= 0) {
+      return null
+    }
+
+    return (
+      (patrimonioAtual - valorAplicadoInicial) /
+      valorAplicadoInicial
+    ) * 100
   }, [
-    evolucao,
     filtroInvestidor,
     carteiras,
     dashboardConsolidado,
