@@ -362,6 +362,214 @@ app.MapGet(
         return Results.Ok(resultado);
     });
 
+
+app.MapPost(
+    "/api/proventos/ratear",
+    async (
+        SalvarProventoTotalRequest request,
+        IProventoRepository repository,
+        InvestimentosDbContext context,
+        CancellationToken cancellationToken) =>
+    {
+        if (request.ValorTotal <= 0)
+        {
+            return Results.BadRequest(
+                new { mensagem = "O valor total deve ser maior que zero." });
+        }
+
+        var ativo =
+            await repository.ObterAtivoPorTickerAsync(
+                request.Ticker,
+                cancellationToken);
+
+        if (ativo is null)
+        {
+            return Results.NotFound(
+                new { mensagem = "Ativo não encontrado." });
+        }
+
+        var dataBase =
+            (request.DataCom ?? request.DataPagamento).Date;
+
+        var operacoesAtivo =
+            await context.Operacoes
+                .AsNoTracking()
+                .Where(x =>
+                    x.AtivoId == ativo.Id &&
+                    x.Data.Date <= dataBase)
+                .Select(x => new
+                {
+                    x.InvestidorId,
+                    Tipo = x.TipoOperacao.Codigo,
+                    x.Quantidade
+                })
+                .ToListAsync(cancellationToken);
+
+        var posicoes =
+            operacoesAtivo
+                .GroupBy(x => x.InvestidorId)
+                .Select(grupo => new
+                {
+                    InvestidorId = grupo.Key,
+                    Quantidade = grupo.Sum(x =>
+                        x.Tipo == "COMPRA"
+                            ? x.Quantidade
+                            : x.Tipo == "VENDA"
+                                ? -x.Quantidade
+                                : 0)
+                })
+                .Where(x => x.Quantidade > 0)
+                .ToList();
+
+        var quantidadeTotal =
+            posicoes.Sum(x => x.Quantidade);
+
+        if (quantidadeTotal <= 0)
+        {
+            return Results.BadRequest(
+                new
+                {
+                    mensagem =
+                        $"Não existem posições de {request.Ticker.ToUpperInvariant()} na data-base {dataBase:dd/MM/yyyy}."
+                });
+        }
+
+        var investidoresRateio =
+            await context.Investidores
+                .Where(x =>
+                    posicoes.Select(p => p.InvestidorId)
+                        .Contains(x.Id))
+                .ToDictionaryAsync(
+                    x => x.Id,
+                    cancellationToken);
+
+        var valorUnitario =
+            request.ValorTotal /
+            quantidadeTotal;
+
+        decimal distribuido = 0;
+
+        for (var indice = 0;
+             indice < posicoes.Count;
+             indice++)
+        {
+            var posicao =
+                posicoes[indice];
+
+            var valorRecebido =
+                indice == posicoes.Count - 1
+                    ? request.ValorTotal - distribuido
+                    : Math.Round(
+                        request.ValorTotal *
+                        posicao.Quantidade /
+                        quantidadeTotal,
+                        2,
+                        MidpointRounding.AwayFromZero);
+
+            distribuido +=
+                valorRecebido;
+
+            context.Proventos.Add(
+                new Provento(
+                    investidoresRateio[posicao.InvestidorId],
+                    ativo,
+                    request.Tipo,
+                    request.Descricao,
+                    request.DataCom,
+                    request.DataPagamento,
+                    posicao.Quantidade,
+                    valorUnitario,
+                    valorRecebido));
+        }
+
+        await context.SaveChangesAsync(
+            cancellationToken);
+
+        return Results.Ok(
+            new
+            {
+                quantidadeTotal,
+                valorUnitario,
+                investidores =
+                    posicoes.Count,
+                valorTotal =
+                    request.ValorTotal
+            });
+    });
+
+app.MapPut(
+    "/api/proventos/{id:guid}",
+    async (
+        Guid id,
+        AtualizarProventoRequest request,
+        IProventoRepository repository,
+        CancellationToken cancellationToken) =>
+    {
+        var provento =
+            await repository.ObterPorIdAsync(
+                id,
+                cancellationToken);
+
+        if (provento is null)
+        {
+            return Results.NotFound(
+                new { mensagem = "Provento não encontrado." });
+        }
+
+        var ativo =
+            await repository.ObterAtivoPorTickerAsync(
+                request.Ticker,
+                cancellationToken);
+
+        if (ativo is null)
+        {
+            return Results.NotFound(
+                new { mensagem = "Ativo não encontrado." });
+        }
+
+        provento.Atualizar(
+            ativo,
+            request.Tipo,
+            request.Descricao,
+            request.DataCom,
+            request.DataPagamento,
+            request.QuantidadeBase,
+            request.ValorPorUnidade,
+            request.ValorRecebido);
+
+        await repository.SalvarAlteracoesAsync(
+            cancellationToken);
+
+        return Results.NoContent();
+    });
+
+app.MapDelete(
+    "/api/proventos/{id:guid}",
+    async (
+        Guid id,
+        IProventoRepository repository,
+        CancellationToken cancellationToken) =>
+    {
+        var provento =
+            await repository.ObterPorIdAsync(
+                id,
+                cancellationToken);
+
+        if (provento is null)
+        {
+            return Results.NotFound(
+                new { mensagem = "Provento não encontrado." });
+        }
+
+        repository.Excluir(
+            provento);
+
+        await repository.SalvarAlteracoesAsync(
+            cancellationToken);
+
+        return Results.NoContent();
+    });
+
 /*
  * OPÇÕES
  *
@@ -1093,6 +1301,24 @@ public record CadastrarProventoRequest(
     decimal ValorPorUnidade,
     decimal ValorRecebido,
     string? Descricao);
+
+public record SalvarProventoTotalRequest(
+    string Ticker,
+    string Tipo,
+    string? Descricao,
+    DateTime? DataCom,
+    DateTime DataPagamento,
+    decimal ValorTotal);
+
+public record AtualizarProventoRequest(
+    string Ticker,
+    string Tipo,
+    string? Descricao,
+    DateTime? DataCom,
+    DateTime DataPagamento,
+    decimal QuantidadeBase,
+    decimal ValorPorUnidade,
+    decimal ValorRecebido);
 
 public record CadastrarDescontoFiscalRequest(
     string Tipo,
