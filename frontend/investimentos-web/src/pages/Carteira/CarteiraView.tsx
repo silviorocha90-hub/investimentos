@@ -185,31 +185,46 @@ export function CarteiraView({
               item.investidor === filtroInvestidor,
           )
 
-    const pontosPorData = new Map<string, number>()
+    const pontos =
+      series
+        .map((serie) => {
+          const ordenados = [...serie.pontos]
+            .sort((a, b) =>
+              a.data.localeCompare(b.data),
+            )
 
-    series.forEach((serie) => {
-      serie.pontos.forEach((ponto) => {
-        const data = ponto.data.slice(0, 10)
+          if (ordenados.length === 0) {
+            return null
+          }
 
-        pontosPorData.set(
-          data,
-          (pontosPorData.get(data) ?? 0) +
-            ponto.carteira,
+          return {
+            inicial: ordenados[0].carteira,
+            atual:
+              ordenados[ordenados.length - 1].carteira,
+          }
+        })
+        .filter(
+          (
+            item,
+          ): item is {
+            inicial: number
+            atual: number
+          } => item !== null,
         )
-      })
-    })
 
-    const pontos = [...pontosPorData.entries()]
-      .sort(([dataA], [dataB]) =>
-        dataA.localeCompare(dataB),
-      )
-
-    if (pontos.length < 2) {
+    if (pontos.length === 0) {
       return 0
     }
 
-    const inicial = pontos[0][1]
-    const atual = pontos[pontos.length - 1][1]
+    const inicial = pontos.reduce(
+      (total, item) => total + item.inicial,
+      0,
+    )
+
+    const atual = pontos.reduce(
+      (total, item) => total + item.atual,
+      0,
+    )
 
     return inicial > 0
       ? ((atual - inicial) / inicial) * 100
