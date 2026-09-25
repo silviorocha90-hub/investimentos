@@ -368,13 +368,14 @@ namespace Investimentos.Application.Dashboard
                 dashboards.Sum(x =>
                     x.SaidasAno);
 
-            var capitalLiquidoAno =
-                entradasAno - saidasAno;
+            var capitalInvestido =
+                patrimonioEstimado -
+                resultadoCarteira;
 
             var rentabilidadeAno =
-                capitalLiquidoAno > 0
+                capitalInvestido > 0
                     ? resultadoCarteira /
-                      capitalLiquidoAno * 100
+                      capitalInvestido * 100
                     : 0;
 
             return new DashboardDto(
