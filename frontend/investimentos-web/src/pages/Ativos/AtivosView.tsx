@@ -136,22 +136,54 @@ export function AtivosView({
 
   const ativos = dados.ativos
 
-  const totais = useMemo(() => ({
-    ativos: ativos.length,
-    valorAtual: ativos.reduce((t, x) => t + x.valorAtual, 0),
-    proventos: dados.totalProventosHistorico,
-    rentabilidade:
-      ativos.reduce((t, x) => t + x.custoTotal, 0) > 0
-        ? (
-            (
-              ativos.reduce((t, x) => t + x.valorAtual, 0) -
-              ativos.reduce((t, x) => t + x.custoTotal, 0) +
-              dados.totalProventosHistorico
-            ) /
-            ativos.reduce((t, x) => t + x.custoTotal, 0)
-          ) * 100
-        : 0,
-  }), [ativos, dados.totalProventosHistorico])
+  const dashboardsSelecionados =
+    investidor === 'TOTAL'
+      ? carteiras.map((item) => item.dashboard)
+      : carteiras
+          .filter((item) => item.nome === investidor)
+          .map((item) => item.dashboard)
+
+  const totais = useMemo(() => {
+    const resultadoCarteira =
+      dashboardsSelecionados.reduce(
+        (total, dashboard) =>
+          total + (dashboard.resultadoRealizado ?? 0),
+        0,
+      )
+
+    const capitalBase =
+      dashboardsSelecionados.reduce(
+        (total, dashboard) =>
+          total +
+          Math.max(
+            (dashboard.patrimonioEstimado ?? 0) -
+              (dashboard.resultadoRealizado ?? 0),
+            0,
+          ),
+        0,
+      )
+
+    const rentabilidade =
+      dashboardsSelecionados.length === 1
+        ? (dashboardsSelecionados[0].rentabilidadeAno ?? 0)
+        : capitalBase > 0
+          ? (resultadoCarteira / capitalBase) * 100
+          : 0
+
+    return {
+      ativos: ativos.length,
+      valorAtual: ativos.reduce(
+        (total, item) => total + item.valorAtual,
+        0,
+      ),
+      proventos: dados.totalProventosHistorico,
+      rentabilidade,
+    }
+  }, [
+    ativos,
+    dados.totalProventosHistorico,
+    dashboardsSelecionados,
+  ])
 
   const maiorValor = Math.max(...ativos.map((x) => x.valorAtual), 1)
 
@@ -168,7 +200,7 @@ export function AtivosView({
 
       <div className="ativos-kpis">
         <article className="kpi-violet"><span>Ativos em carteira</span><strong>{totais.ativos}</strong><i>◆</i></article>
-        <article className="kpi-blue"><span>Rentabilidade total</span><strong className={totais.rentabilidade >= 0 ? 'positive' : 'negative'}>{percentual(totais.rentabilidade)}</strong><i>↗</i></article>
+        <article className="kpi-blue"><span>Rentabilidade</span><strong className={totais.rentabilidade >= 0 ? 'positive' : 'negative'}>{percentual(totais.rentabilidade)}</strong><i>↗</i></article>
         <article className="kpi-green"><span>Valor atual</span><strong>{formatarMoeda(totais.valorAtual)}</strong><i>●</i></article>
         <article className="kpi-gold"><span>Proventos recebidos</span><strong>{formatarMoeda(totais.proventos)}</strong><i>★</i></article>
       </div>
