@@ -144,7 +144,8 @@ namespace Investimentos.Application.Tests.Dashboard
                     proventosHandler,
                     opcoesHandler,
                     cotacaoRepository,
-                    saldoRepository);
+                    saldoRepository,
+                    new FakeMovimentacaoFinanceiraRepository());
 
             var resultado =
                 await handler.HandleAsync(
@@ -463,6 +464,22 @@ namespace Investimentos.Application.Tests.Dashboard
             {
                 return Task.FromResult(
                     _cotacoes);
+            }
+        }
+
+        private class FakeMovimentacaoFinanceiraRepository
+            : IMovimentacaoFinanceiraRepository
+        {
+            public Task<IReadOnlyList<MovimentacaoFinanceira>>
+                ListarAnoAsync(
+                    Guid investidorId,
+                    int ano,
+                    CancellationToken cancellationToken = default)
+            {
+                IReadOnlyList<MovimentacaoFinanceira> resultado =
+                    Array.Empty<MovimentacaoFinanceira>();
+
+                return Task.FromResult(resultado);
             }
         }
 
