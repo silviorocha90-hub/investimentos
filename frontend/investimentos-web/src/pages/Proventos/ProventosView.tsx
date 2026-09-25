@@ -559,15 +559,21 @@ export function ProventosView({
       if (
         proventoEditando
       ) {
-        const {
-          investidorId:
-            _investidorId,
-          ...dados
-        } = request
+        const dados =
+          request as SalvarProventoRequest
 
         await atualizarProvento(
           proventoEditando.id,
-          dados,
+          {
+            ticker: dados.ticker,
+            tipo: dados.tipo,
+            descricao: dados.descricao,
+            dataCom: dados.dataCom,
+            dataPagamento: dados.dataPagamento,
+            quantidadeBase: dados.quantidadeBase,
+            valorPorUnidade: dados.valorPorUnidade,
+            valorRecebido: dados.valorRecebido,
+          },
         )
       } else {
         await criarProventoRateado(
