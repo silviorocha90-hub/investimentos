@@ -451,7 +451,7 @@ export function ProventoModal({
               </option>
 
               <option value="JCP">
-                Juros
+                JUROS
               </option>
 
               <option value="RENDIMENTO">
