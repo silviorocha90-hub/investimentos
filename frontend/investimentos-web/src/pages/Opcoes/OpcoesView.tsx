@@ -54,6 +54,8 @@ interface OpcoesViewProps {
   ) => void
 
   modo?: 'consulta' | 'administracao'
+
+  onDataChanged?: () => Promise<void>
 }
 
 async function lerErroApi(
@@ -89,6 +91,7 @@ export function OpcoesView({
   selectedInvestor,
   onSelectInvestor,
   modo = 'consulta',
+  onDataChanged,
 }: OpcoesViewProps) {
   const modoAdministracao =
     modo === 'administracao'
@@ -630,6 +633,8 @@ export function OpcoesView({
         setModalInclusaoAberto(
           false,
         )
+
+        await onDataChanged?.()
       } catch (error) {
         setErroOpcao(
           error instanceof Error
@@ -778,6 +783,8 @@ export function OpcoesView({
         )
 
         setOpcaoEmEdicao(null)
+
+        await onDataChanged?.()
       } catch (error) {
         setErroOpcao(
           error instanceof Error
@@ -829,7 +836,15 @@ export function OpcoesView({
           )
         }
 
-        window.location.reload()
+        setOpcoesLocais(
+          (atuais) =>
+            (atuais ?? opcoesCarteira).filter(
+              (item) =>
+                item.id !== opcao.id,
+            ),
+        )
+
+        await onDataChanged?.()
       } catch (error) {
         const mensagem =
           error instanceof Error
