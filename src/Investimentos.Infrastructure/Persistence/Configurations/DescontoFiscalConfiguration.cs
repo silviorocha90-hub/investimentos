@@ -35,6 +35,13 @@ namespace Investimentos.Infrastructure.Persistence.Configurations
                     x => x.Descricao)
                 .HasMaxLength(250);
 
+            builder.HasOne(x => x.Investidor)
+                .WithMany()
+                .HasForeignKey(x => x.InvestidorId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasIndex(x => x.InvestidorId);
+
             builder.HasIndex(
                 x => new
                 {
