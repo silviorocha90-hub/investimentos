@@ -528,6 +528,17 @@ namespace Investimentos.Application.Tests.Dashboard
             : IMovimentacaoFinanceiraRepository
         {
             public Task<IReadOnlyList<MovimentacaoFinanceira>>
+                ListarAsync(
+                    Guid? investidorId = null,
+                    CancellationToken cancellationToken = default)
+            {
+                IReadOnlyList<MovimentacaoFinanceira> resultado =
+                    Array.Empty<MovimentacaoFinanceira>();
+
+                return Task.FromResult(resultado);
+            }
+
+            public Task<IReadOnlyList<MovimentacaoFinanceira>>
                 ListarAnoAsync(
                     Guid investidorId,
                     int ano,
