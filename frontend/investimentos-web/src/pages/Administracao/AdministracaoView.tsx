@@ -143,6 +143,8 @@ interface AdministracaoViewProps {
     ) => Promise<void>
 
   onOperationCreated?: () => Promise<void>
+
+  onDataChanged?: () => Promise<void>
 }
 
 export function AdministracaoView({
@@ -150,6 +152,7 @@ export function AdministracaoView({
   carteiras,
   onSaveOperation,
   onOperationCreated,
+  onDataChanged,
 }: AdministracaoViewProps) {
   const hoje =
     new Date()
@@ -534,6 +537,7 @@ export function AdministracaoView({
       )
 
       await carregar()
+      await onDataChanged?.()
     } catch (error) {
       setErro(
         error instanceof Error
@@ -804,6 +808,7 @@ export function AdministracaoView({
       )
 
       await carregar()
+      await onDataChanged?.()
     } catch (error) {
       setErro(
         error instanceof Error
