@@ -153,9 +153,9 @@ export function CarteiraView({
     carteirasSelecionadas.reduce(
       (total, item) => total + (item.dashboard.caixaDisponivel ?? 0), 0,
     )
-  const resultadoRealizadoAcoes = dashboardTotal?.resultadoRealizadoAcoes ??
+  const resultadoRealizadoAcoes = dashboardTotal?.resultadoCarteiraAcoes ??
     carteirasSelecionadas.reduce(
-      (total, item) => total + (item.dashboard.resultadoRealizadoAcoes ?? 0), 0,
+      (total, item) => total + (item.dashboard.resultadoCarteiraAcoes ?? 0), 0,
     )
   const totalProventos = dashboardTotal?.totalProventos ??
     carteirasSelecionadas.reduce(
@@ -176,11 +176,11 @@ export function CarteiraView({
    * evitando manter uma segunda implementação da fórmula no React.
    */
   const resultadoCarteira =
-    dashboardTotal?.resultadoRealizado ??
+    dashboardTotal?.resultadoCarteira ??
     carteirasSelecionadas.reduce(
       (total, item) =>
         total +
-        (item.dashboard.resultadoRealizado ?? 0),
+        (item.dashboard.resultadoCarteira ?? 0),
       0,
     )
 
@@ -202,7 +202,7 @@ export function CarteiraView({
               carteirasSelecionadas.reduce(
                 (total, item) =>
                   total +
-                  (item.dashboard.resultadoRealizado ?? 0),
+                  (item.dashboard.resultadoCarteira ?? 0),
                 0,
               )
 
