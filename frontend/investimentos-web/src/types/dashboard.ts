@@ -68,6 +68,12 @@ export interface OperacaoOpcao {
   resultadoLiquido?: number | null
   percentualGanho?: number | null
   percentualGanhoPremio?: number | null
+  estaAtiva: boolean
+  capitalComprometidoPut: number
+  acoesComprometidasCall: number
+  premioRecebidoAtivo: number
+  distanciaStrikePercentual: number
+  emRiscoExercicio: boolean
 }
 
 export interface DistribuicaoTipoAtivo {
