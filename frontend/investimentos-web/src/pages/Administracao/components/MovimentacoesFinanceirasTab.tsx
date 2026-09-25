@@ -172,9 +172,11 @@ export function MovimentacoesFinanceirasTab({ investidores }: Props) {
                 <td><strong className={item.tipo === 'APORTE' ? 'movement-entry' : 'movement-exit'}>{item.tipo}</strong></td>
                 <td>{moeda.format(item.valor)}</td>
                 <td>{item.descricao || '—'}</td>
-                <td className="admin-user-actions">
-                  <button className="admin-action" type="button" onClick={() => editar(item)}>Editar</button>
-                  <button className="admin-action admin-action-danger" type="button" onClick={() => void excluir(item)}>Excluir</button>
+                <td>
+                  <div className="admin-row-actions">
+                    <button className="admin-action admin-movement-edit" type="button" onClick={() => editar(item)}>Editar</button>
+                    <button className="admin-action admin-action-danger admin-movement-delete" type="button" onClick={() => void excluir(item)}>Excluir</button>
+                  </div>
                 </td>
               </tr>
             ))}
