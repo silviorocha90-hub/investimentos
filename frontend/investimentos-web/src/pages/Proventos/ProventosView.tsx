@@ -911,12 +911,14 @@ export function ProventosView({
                 modoAdministracao
               }
               onEditar={
-                modoAdministracao
+                modoAdministracao &&
+                investidorAtivo !== 'TOTAL'
                   ? editar
                   : undefined
               }
               onExcluir={
-                modoAdministracao
+                modoAdministracao &&
+                investidorAtivo !== 'TOTAL'
                   ? excluir
                   : undefined
               }
@@ -927,13 +929,16 @@ export function ProventosView({
 
       {modoAdministracao &&
       modalAberto &&
-      investidor ? (
+      (
+        investidor ||
+        !proventoEditando
+      ) ? (
         <ProventoModal
           provento={
             proventoEditando
           }
           investidorId={
-            investidor.id
+            investidor?.id ?? ''
           }
           tickers={
             tickers
