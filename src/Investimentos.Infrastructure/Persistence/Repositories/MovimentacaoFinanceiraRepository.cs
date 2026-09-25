@@ -13,6 +13,24 @@ namespace Investimentos.Infrastructure.Persistence.Repositories
             _context = context;
         }
 
+        public async Task<IReadOnlyList<MovimentacaoFinanceira>> ListarAsync(
+            Guid? investidorId = null,
+            CancellationToken cancellationToken = default)
+        {
+            var query = _context.MovimentacoesFinanceiras
+                .AsNoTracking()
+                .AsQueryable();
+
+            if (investidorId.HasValue)
+            {
+                query = query.Where(x => x.InvestidorId == investidorId.Value);
+            }
+
+            return await query
+                .OrderBy(x => x.Data)
+                .ToListAsync(cancellationToken);
+        }
+
         public async Task<IReadOnlyList<MovimentacaoFinanceira>> ListarAnoAsync(
             Guid investidorId,
             int ano,
