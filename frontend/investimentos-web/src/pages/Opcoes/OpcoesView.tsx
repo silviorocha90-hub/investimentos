@@ -18,6 +18,10 @@ import {
 } from './components/OpcoesGraficos'
 
 import {
+  OpcoesDashboard,
+} from './components/OpcoesDashboard'
+
+import {
   OpcoesFiltros,
 } from './components/OpcoesFiltros'
 
@@ -1008,6 +1012,12 @@ export function OpcoesView({
 
       {!modoAdministracao ? (
         <>
+          <OpcoesDashboard
+            opcoes={
+              opcoes
+            }
+          />
+
           <OpcoesGraficos
             opcoes={
               opcoes
