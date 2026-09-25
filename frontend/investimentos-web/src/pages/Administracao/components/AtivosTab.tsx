@@ -102,7 +102,6 @@ export function AtivosTab({
   setFiltroAtivo,
   setFiltroClasse,
   setFiltroTipo,
-  setPagina,
 
   abrirNovoAtivo,
   abrirEditarAtivo,
