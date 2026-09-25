@@ -12,6 +12,10 @@ export interface PosicaoAtivo {
   precoAtual?: number | null
   valorAtual: number
   valorizacao: number
+  proventos?: number
+  resultadoOpcoes?: number
+  resultadoEconomico?: number
+  rentabilidadeEconomica?: number
 }
 
 export interface Provento {
