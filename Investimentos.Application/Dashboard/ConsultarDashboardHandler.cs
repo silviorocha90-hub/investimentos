@@ -235,51 +235,32 @@ namespace Investimentos.Application.Dashboard
             const decimal descontosFiscais = 0;
 
             /*
-             * INDICADORES DO ANO ATUAL
+             * ENTRADAS E SAÍDAS
              *
-             * Entradas = compras realizadas no ano + taxas.
-             * Saídas = vendas realizadas no ano - taxas.
-             * A rentabilidade usa o resultado econômico atual
-             * sobre o capital líquido movimentado no ano.
+             * Compra e venda de ativos são movimentações
+             * internas da carteira e NÃO representam
+             * aporte ou retirada de capital.
+             *
+             * Até existir um livro explícito de
+             * APORTE/RETIRADA, não inventamos estes valores.
              */
-            var anoAtual = DateTime.Today.Year;
+            const decimal entradasAno = 0;
+            const decimal saidasAno = 0;
 
-            var operacoesAno =
-                (await _carteiraHandler.ObterOperacoesAsync(
-                    investidorId,
-                    cancellationToken))
-                .Where(x => x.Data.Year == anoAtual)
-                .ToList();
-
-            var entradasAno =
-                operacoesAno
-                    .Where(x =>
-                        x.TipoOperacao.Equals(
-                            "COMPRA",
-                            StringComparison.OrdinalIgnoreCase))
-                    .Sum(x =>
-                        x.Quantidade * x.PrecoUnitario +
-                        x.Taxas);
-
-            var saidasAno =
-                operacoesAno
-                    .Where(x =>
-                        x.TipoOperacao.Equals(
-                            "VENDA",
-                            StringComparison.OrdinalIgnoreCase))
-                    .Sum(x =>
-                        Math.Max(
-                            x.Quantidade * x.PrecoUnitario -
-                            x.Taxas,
-                            0));
-
-            var capitalLiquidoAno =
-                entradasAno - saidasAno;
+            /*
+             * Rentabilidade econômica da carteira.
+             * O capital investido é inferido pelo patrimônio
+             * menos o resultado acumulado, sem usar o giro
+             * de compras e vendas como base.
+             */
+            var capitalInvestido =
+                patrimonioEstimado -
+                resultadoCarteira;
 
             var rentabilidadeAno =
-                capitalLiquidoAno > 0
+                capitalInvestido > 0
                     ? resultadoCarteira /
-                      capitalLiquidoAno * 100
+                      capitalInvestido * 100
                     : 0;
 
             var quantidadeAtivos =
