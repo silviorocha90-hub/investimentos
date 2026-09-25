@@ -201,7 +201,7 @@ export function CarteiraTab({ dados, recarregar }: CarteiraTabProps) {
             <thead>
               <tr>
                 <th>Competência</th><th>Investidor</th><th>Comum</th><th>Day trade</th>
-                <th>IR estimado</th><th>DARF pago</th><th>Diferença</th><th>Operações</th>
+                <th>IR estimado</th><th>Diferença</th><th>Operações</th>
               </tr>
             </thead>
             <tbody>
@@ -212,12 +212,11 @@ export function CarteiraTab({ dados, recarregar }: CarteiraTabProps) {
                   <td>{formatarMoeda(x.resultadoComumOpcoes)}</td>
                   <td>{formatarMoeda(x.resultadoDayTradeOpcoes)}</td>
                   <td>{formatarMoeda(x.irEstimadoOpcoes)}</td>
-                  <td>{formatarMoeda(x.darfPago)}</td>
                   <td>{formatarMoeda(x.diferencaEstimadoPago)}</td>
                   <td>{x.operacoesConsideradas}</td>
                 </tr>
               ))}
-              {competenciasAtuaisEFuturas.length === 0 ? <tr><td colSpan={8}>Sem competências atuais ou futuras.</td></tr> : null}
+              {competenciasAtuaisEFuturas.length === 0 ? <tr><td colSpan={7}>Sem competências atuais ou futuras.</td></tr> : null}
             </tbody>
           </table>
         </div>
