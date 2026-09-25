@@ -53,7 +53,9 @@
         string Tipo,
         DateTime DataPagamento,
         decimal Valor,
-        string? Descricao);
+        string? Descricao,
+        Guid? InvestidorId,
+        string? InvestidorNome);
 
     public record ClasseAtivoAdministracaoDto(
         int Id,
