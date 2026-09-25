@@ -3,7 +3,7 @@ import {
 } from '../../../utils/formatters'
 
 interface ProventosResumoProps {
-  totalAno: number
+  totalProventos: number
   totalMes: number
   mediaMensal: number
   maiorPagador?: {
@@ -13,7 +13,7 @@ interface ProventosResumoProps {
 }
 
 export function ProventosResumo({
-  totalAno,
+  totalProventos,
   totalMes,
   mediaMensal,
   maiorPagador,
@@ -22,17 +22,17 @@ export function ProventosResumo({
     <div className="proventos-resumo">
       <article className="provento-kpi provento-kpi-destaque">
         <span>
-          Proventos no ano
+          Proventos
         </span>
 
         <strong>
           {formatarMoeda(
-            totalAno,
+            totalProventos,
           )}
         </strong>
 
         <small>
-          Total recebido no ano
+          Total recebido acumulado
         </small>
       </article>
 
