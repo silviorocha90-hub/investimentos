@@ -143,3 +143,28 @@ export interface OperacaoCarteira {
   data: string
   sequencia: number
 }
+export interface PerformancePonto {
+  dataInicio: string
+  dataFim: string
+  patrimonioInicial: number
+  patrimonioFinal: number
+  aportes: number
+  retiradas: number
+  fluxoLiquido: number
+  ganhoLiquido: number
+  rentabilidadePeriodo: number
+  rentabilidadeAcumulada: number
+}
+
+export interface PerformanceCarteira {
+  metodologia: string
+  dataInicio?: string | null
+  dataFim?: string | null
+  patrimonioInicial: number
+  patrimonioFinal: number
+  aportes: number
+  retiradas: number
+  ganhoLiquido: number
+  rentabilidadeAcumulada: number
+  periodos: PerformancePonto[]
+}
