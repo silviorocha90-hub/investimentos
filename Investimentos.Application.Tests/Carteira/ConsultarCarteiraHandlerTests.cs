@@ -49,6 +49,7 @@ namespace Investimentos.Application.Tests.Carteira
             var handler =
                 new ConsultarCarteiraHandler(
                     repository,
+                    new FakeOperacaoOpcaoRepository(),
                     service);
 
             var resultado =
@@ -93,11 +94,21 @@ namespace Investimentos.Application.Tests.Carteira
             var handler =
                 new ConsultarCarteiraHandler(
                     repository,
+                    new FakeOperacaoOpcaoRepository(),
                     service);
 
             await Assert.ThrowsAsync<ArgumentException>(
                 () => handler.HandleAsync(
                     Guid.Empty));
+        }
+
+        private class FakeOperacaoOpcaoRepository
+            : IOperacaoOpcaoRepository
+        {
+            public Task AdicionarAsync(Investimentos.Domain.Entities.OperacaoOpcao operacao, CancellationToken cancellationToken = default) => Task.CompletedTask;
+            public Task<Investimentos.Domain.Entities.Investidor?> ObterInvestidorAsync(Guid investidorId, CancellationToken cancellationToken = default) => Task.FromResult<Investimentos.Domain.Entities.Investidor?>(null);
+            public Task<Investimentos.Domain.Entities.Ativo?> ObterAtivoPorTickerAsync(string ticker, CancellationToken cancellationToken = default) => Task.FromResult<Investimentos.Domain.Entities.Ativo?>(null);
+            public Task<IReadOnlyList<Investimentos.Domain.Entities.OperacaoOpcao>> ListarAsync(Guid investidorId, CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<Investimentos.Domain.Entities.OperacaoOpcao>>(Array.Empty<Investimentos.Domain.Entities.OperacaoOpcao>());
         }
 
         private class FakeCarteiraRepository
