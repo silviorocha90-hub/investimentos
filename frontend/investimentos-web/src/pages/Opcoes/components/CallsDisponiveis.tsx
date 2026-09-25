@@ -140,14 +140,12 @@ export function CallsDisponiveis({
                   className={`options-ranking-value ${item.livre === 0 ? 'negative' : ''}`}
                 >
                   <span className="options-call-ranking-numbers">
-                    <b>{quantidade.format(item.livre)} disponíveis</b>
+                    <b>{quantidade.format(item.livre)} livres</b>
                     <small>
-                      Total {quantidade.format(item.quantidade)} ações
-                    </small>
-                    <small>
-                      Comprometidas {quantidade.format(item.comprometida)}
-                    </small>
-                    <small>
+                      {quantidade.format(item.quantidade)} total
+                      <span aria-hidden="true"> · </span>
+                      {quantidade.format(item.comprometida)} comprometidas
+                      <span aria-hidden="true"> · </span>
                       PM {item.precoMedio.toLocaleString(
                         'pt-BR',
                         {
