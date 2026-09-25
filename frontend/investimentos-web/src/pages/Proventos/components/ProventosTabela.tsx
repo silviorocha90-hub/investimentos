@@ -147,7 +147,7 @@ export function ProventosTabela({
                     <span
                       className={`provento-tipo provento-tipo-${item.tipo.toLowerCase()}`}
                     >
-                      {item.tipo === 'JCP' ? 'Juros' : item.tipo}
+                      {item.tipo === 'JCP' ? 'JUROS' : item.tipo}
                     </span>
                   </td>
 
