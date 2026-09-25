@@ -346,17 +346,15 @@ namespace Investimentos.Application.Dashboard
                 descontosFiscais;
 
             /*
-             * RESULTADO ECONÔMICO DA CARTEIRA
+             * RESULTADO ECONÔMICO PADRÃO
              *
-             * Valorização não realizada
-             * + resultado realizado em ações
-             * + proventos líquidos
-             * + opções após descontos fiscais
-             *   efetivamente registrados.
+             * Mesma regra do dashboard individual:
+             * valorização dos ativos em carteira
+             * + proventos/dividendos líquidos recebidos
+             * + prêmio líquido (ganho) de opções.
              */
             var resultadoCarteira =
                 valorizacaoAtivos +
-                resultadoRealizadoAcoes +
                 totalProventos +
                 premioLiquidoOpcoes;
 
