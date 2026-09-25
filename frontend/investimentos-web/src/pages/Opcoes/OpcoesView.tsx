@@ -200,7 +200,7 @@ export function OpcoesView({
   const opcoesCarteira =
     useMemo(
       () =>
-        investidorAtivo === 'TOTAL' && !modoAdministracao
+        investidorAtivo === 'TOTAL'
           ? carteiras.flatMap((item) => item.dashboard.opcoes ?? [])
           : carteira?.opcoes ?? [],
       [carteira?.opcoes, carteiras, modoAdministracao, investidorAtivo],
@@ -928,11 +928,9 @@ export function OpcoesView({
               }
             }}
           >
-            {!modoAdministracao ? (
-              <option value="TOTAL">
-                Todos
-              </option>
-            ) : null}
+            <option value="TOTAL">
+              Todos
+            </option>
             {investidoresComOpcoes.map(
               (
                 investidor,
