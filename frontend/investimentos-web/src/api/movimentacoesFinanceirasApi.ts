@@ -70,7 +70,7 @@ export async function criarMovimentacaoFinanceira(
 
 export async function atualizarMovimentacaoFinanceira(
   id: string,
-  request: Omit<SalvarMovimentacaoFinanceira, 'investidorId'>,
+  request: SalvarMovimentacaoFinanceira,
 ) {
   const response = await fetch(
     `${API_URL}/api/movimentacoes-financeiras/${id}`,
