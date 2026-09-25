@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import type {
   OperacaoOpcao,
 } from '../../../types/dashboard'
@@ -7,6 +8,7 @@ import {
 
 interface OpcoesGraficosProps {
   opcoes: readonly OperacaoOpcao[]
+  callsDisponiveis?: ReactNode
 }
 
 const MESES = [
@@ -45,6 +47,7 @@ function obterDataReferencia(
 
 export function OpcoesGraficos({
   opcoes,
+  callsDisponiveis,
 }: OpcoesGraficosProps) {
   const anos =
     opcoes
@@ -153,7 +156,7 @@ export function OpcoesGraficos({
     )
 
   return (
-    <div className="options-charts-grid">
+    <div className="options-charts-grid options-charts-grid-three">
       <article className="panel options-chart-card">
         <header className="options-chart-header">
           <strong>
@@ -220,6 +223,8 @@ export function OpcoesGraficos({
           )}
         </div>
       </article>
+
+      {callsDisponiveis}
 
       <article className="panel options-chart-card">
         <header className="options-chart-header">
