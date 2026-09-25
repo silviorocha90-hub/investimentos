@@ -2148,10 +2148,41 @@ A meta não é fixa em 1.000 unidades: a quantidade desejada é configurável po
 Persistência adicionada pela migration `20260925205931_AdicionarMetasAtivos`, com FKs para
 Investidor e Ativo e índice único para impedir metas duplicadas da mesma combinação.
 
+## Histórico/auditoria da carteira e performance temporal — concluído
+
+A rentabilidade temporal passou a ser calculada separadamente do resultado econômico acumulado da carteira.
+
+A metodologia adotada é **Modified Dietz**, utilizando os snapshots de `HistoricoPatrimonio` como limites dos períodos e `MovimentacaoFinanceira` para identificar aportes e retiradas. Os fluxos são ponderados pelo tempo em que permaneceram investidos no período.
+
+Regras principais:
+
+- aporte não é tratado como rendimento;
+- retirada não é tratada como prejuízo;
+- ganho líquido do período = patrimônio final - patrimônio inicial - fluxo líquido;
+- retornos dos períodos são encadeados geometricamente para formar a rentabilidade acumulada;
+- no consolidado, a série começa somente quando todos os investidores presentes no histórico possuem referência patrimonial, evitando entrada artificial de patrimônio como performance;
+- o resultado econômico oficial da carteira permanece separado e continua sendo valorização dos ativos + proventos/dividendos líquidos + prêmio líquido de opções.
+
+A API expõe `GET /api/performance`, com filtro opcional `investidorId`.
+
+O Painel usa a performance temporal quando existem ao menos dois snapshots patrimoniais e apresenta uma área de auditoria com patrimônio inicial/final, aportes, retiradas, ganho líquido, retorno do período e retorno acumulado. Sem histórico suficiente, mantém o indicador econômico existente como fallback.
+
+Arquivos centrais:
+
+- `Investimentos.Application/Performance/CalculadoraPerformanceCarteira.cs`
+- `Investimentos.Application/Performance/ConsultarPerformanceCarteiraService.cs`
+- `Investimentos.Application/Performance/PerformanceCarteiraDto.cs`
+- `frontend/investimentos-web/src/pages/Dashboard/DashboardView.tsx`
+
+Validação da unidade concluída em 25/09/2026:
+
+- Application Tests: 78/78 aprovados;
+- frontend: `npm run build` concluído com sucesso;
+- permanece apenas o warning nullable já existente em `CalcularCarteiraService.cs`, sem falha de build.
+
 ## Próximos itens
 
-1. Histórico/auditoria da carteira e metodologia adequada de performance.
-2. Evolução fiscal/DARF.
+1. Evolução fiscal/DARF.
 
 A ordem pode ser revista por decisão explícita de produto.
 
