@@ -416,6 +416,76 @@ a {
   box-shadow: 0 0 12px rgba(99, 230, 200, 0.18);
 }
 
+.portfolio-return-list {
+  display: grid;
+  gap: 18px;
+  padding-top: 8px;
+}
+
+.portfolio-return-row {
+  display: grid;
+  gap: 8px;
+}
+
+.portfolio-return-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.portfolio-return-head > div {
+  display: grid;
+  gap: 2px;
+}
+
+.portfolio-return-head strong {
+  color: var(--text);
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.portfolio-return-head small {
+  color: var(--muted);
+  font-size: 0.66rem;
+}
+
+.portfolio-return-head > span {
+  color: var(--muted-strong);
+  font-size: 0.82rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.portfolio-return-track {
+  height: 9px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.055);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.22);
+}
+
+.portfolio-return-track i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  transition: width 240ms ease;
+}
+
+.portfolio-return-track .return-positive {
+  background: linear-gradient(90deg, rgba(99, 230, 200, 0.98), rgba(74, 220, 160, 0.95));
+  box-shadow: 0 0 12px rgba(99, 230, 200, 0.18);
+}
+
+.portfolio-return-track .return-negative,
+.portfolio-return-track .return-exit {
+  background: linear-gradient(90deg, rgba(255, 107, 129, 0.95), rgba(255, 130, 110, 0.92));
+}
+
+.portfolio-return-track .return-entry {
+  background: linear-gradient(90deg, rgba(74, 169, 255, 0.96), rgba(99, 230, 200, 0.92));
+}
+
 .table-wrap {
   flex: 1;
   min-height: 0;
