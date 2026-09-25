@@ -199,13 +199,6 @@ export function CarteiraView({
       return null
     }
 
-    const valorAplicadoInicial =
-      dashboards.reduce(
-        (total, dashboard) =>
-          total + (dashboard.valorAplicado ?? 0),
-        0,
-      )
-
     const patrimonioAtual =
       filtroInvestidor === 'TOTAL'
         ? (
@@ -224,13 +217,38 @@ export function CarteiraView({
             0,
           )
 
-    if (valorAplicadoInicial <= 0) {
+    const resultadoAcumulado =
+      filtroInvestidor === 'TOTAL' &&
+      dashboardConsolidado
+        ? (dashboardConsolidado.resultadoRealizado ?? 0)
+        : dashboards.reduce(
+            (total, dashboard) =>
+              total +
+              (dashboard.resultadoRealizado ?? 0),
+            0,
+          )
+
+    /*
+     * Crescimento econômico desde o início dos dados.
+     *
+     * O patrimônio atual já contém a marcação a mercado.
+     * O resultado acumulado contém valorização não realizada,
+     * vendas realizadas, proventos e opções.
+     *
+     * Subtraindo o resultado do patrimônio obtemos a base de
+     * capital que formou a carteira, sem confundir valor atual
+     * dos ativos com capital aplicado.
+     */
+    const capitalBase =
+      patrimonioAtual - resultadoAcumulado
+
+    if (capitalBase <= 0) {
       return null
     }
 
     return (
-      (patrimonioAtual - valorAplicadoInicial) /
-      valorAplicadoInicial
+      resultadoAcumulado /
+      capitalBase
     ) * 100
   }, [
     filtroInvestidor,
