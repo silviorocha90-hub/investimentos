@@ -84,6 +84,7 @@ export interface SaldoInvestidor {
 export interface Dashboard {
   valorAplicado: number
   resultadoRealizado: number
+  resultadoCarteira: number
   resultadoRealizadoAcoes?: number
   totalProventos: number
   premioLiquidoOpcoes: number
