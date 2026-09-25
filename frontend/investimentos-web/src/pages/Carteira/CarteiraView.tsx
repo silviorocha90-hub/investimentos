@@ -104,39 +104,21 @@ export function CarteiraView({
       ? carteiras
       : carteiras.filter((item) => item.nome === filtroInvestidor)
 
-  const posicoes = useMemo(() => {
-    const mapa = new Map<string, Dashboard['posicoes'][number]>()
+  const dashboardSelecionado =
+    filtroInvestidor === 'TOTAL'
+      ? dashboardConsolidado
+      : carteirasSelecionadas[0]?.dashboard ?? null
 
-    carteirasSelecionadas.forEach(({ dashboard }) => {
-      dashboard.posicoes.forEach((posicao) => {
-        if (posicao.quantidade <= 0 || posicao.valorAtual <= 0) return
-
-        const atual = mapa.get(posicao.ticker)
-        if (!atual) {
-          mapa.set(posicao.ticker, { ...posicao })
-          return
-        }
-
-        const quantidade = atual.quantidade + posicao.quantidade
-        const custoTotal = atual.custoTotal + posicao.custoTotal
-        const valorAtual = atual.valorAtual + posicao.valorAtual
-
-        mapa.set(posicao.ticker, {
-          ...atual,
-          quantidade,
-          custoTotal,
-          valorAtual,
-          precoMedio: quantidade > 0 ? custoTotal / quantidade : 0,
-          precoAtual: quantidade > 0 ? valorAtual / quantidade : null,
-          valorizacao: atual.valorizacao + posicao.valorizacao,
-          resultadoRealizado:
-            atual.resultadoRealizado + posicao.resultadoRealizado,
-        })
-      })
-    })
-
-    return [...mapa.values()]
-  }, [carteirasSelecionadas])
+  const posicoes = useMemo(
+    () =>
+      (dashboardSelecionado?.posicoes ?? [])
+        .filter(
+          (posicao) =>
+            posicao.quantidade > 0 &&
+            posicao.valorAtual > 0,
+        ),
+    [dashboardSelecionado],
+  )
 
   const dashboardTotal =
     filtroInvestidor === 'TOTAL' ? dashboardConsolidado : null
@@ -185,36 +167,7 @@ export function CarteiraView({
     )
 
   const crescimentoCarteira =
-    dashboardTotal?.rentabilidadeAno ??
-    (
-      carteirasSelecionadas.length === 1
-        ? (carteirasSelecionadas[0].dashboard.rentabilidadeAno ?? null)
-        : (() => {
-            const patrimonioSelecionado =
-              carteirasSelecionadas.reduce(
-                (total, item) =>
-                  total +
-                  (item.dashboard.patrimonioEstimado ?? 0),
-                0,
-              )
-
-            const resultadoSelecionado =
-              carteirasSelecionadas.reduce(
-                (total, item) =>
-                  total +
-                  (item.dashboard.resultadoCarteira ?? 0),
-                0,
-              )
-
-            const capitalBase =
-              patrimonioSelecionado -
-              resultadoSelecionado
-
-            return capitalBase > 0
-              ? (resultadoSelecionado / capitalBase) * 100
-              : null
-          })()
-    )
+    dashboardSelecionado?.rentabilidadeAno ?? null
 
   const rendaVariavel = posicoes
     .filter((posicao) => !ehOutroInvestimento(posicao.ticker, posicao.tipoAtivoCodigo))
@@ -266,9 +219,7 @@ export function CarteiraView({
               <tbody>
                 {rendaVariavel.map((posicao) => {
                   const rentabilidade =
-                    posicao.custoTotal > 0
-                      ? (posicao.valorizacao / posicao.custoTotal) * 100
-                      : 0
+                    posicao.rentabilidadeEconomica ?? 0
                   return (
                     <tr key={posicao.ticker}>
                       <td><span className="ticker">{posicao.ticker}</span></td>
