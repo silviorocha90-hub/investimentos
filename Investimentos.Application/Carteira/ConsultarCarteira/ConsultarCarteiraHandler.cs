@@ -45,7 +45,7 @@ namespace Investimentos.Application.Carteira.ConsultarCarteira
                     operacoes);
         }
 
-        private async Task<IReadOnlyList<OperacaoCarteiraDto>>
+        public async Task<IReadOnlyList<OperacaoCarteiraDto>>
             ObterOperacoesAsync(
                 Guid investidorId,
                 CancellationToken cancellationToken)
