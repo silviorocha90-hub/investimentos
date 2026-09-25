@@ -10,6 +10,7 @@ import './Ativos.css'
 interface AtivosViewProps {
   investidores: readonly Investidor[]
   carteiras: ReadonlyArray<{ nome: string; dashboard: Dashboard }>
+  dashboardConsolidado: Dashboard | null
 }
 
 interface AtivoAnalise extends PosicaoAtivo {
@@ -28,6 +29,7 @@ function percentual(valor: number) {
 export function AtivosView({
   investidores,
   carteiras,
+  dashboardConsolidado,
 }: AtivosViewProps) {
   const [investidor, setInvestidor] = useState('TOTAL')
 
@@ -52,166 +54,90 @@ export function AtivosView({
     [investidores, carteiras],
   )
 
+  const dashboardSelecionado =
+    investidor === 'TOTAL'
+      ? dashboardConsolidado
+      : carteiras.find(
+          (item) =>
+            item.nome === investidor,
+        )?.dashboard ?? null
+
   const dados = useMemo(() => {
-    const selecionadas =
-      investidor === 'TOTAL'
-        ? carteiras
-        : carteiras.filter((item) => item.nome === investidor)
+    if (!dashboardSelecionado) {
+      return {
+        ativos: [] as AtivoAnalise[],
+        totalProventosHistorico: 0,
+      }
+    }
 
-    const mapa = new Map<string, AtivoAnalise>()
-
-    selecionadas.forEach(({ dashboard }) => {
-      dashboard.posicoes.forEach((posicao) => {
-        if (posicao.quantidade <= 0) return
-
-        const atual = mapa.get(posicao.ticker)
-        const proventos = dashboard.proventos
-          .filter((item) => item.ticker === posicao.ticker)
-          .reduce((total, item) => total + item.valorRecebido, 0)
-
-        if (!atual) {
-          mapa.set(posicao.ticker, {
-            ...posicao,
-            proventos,
-            participacaoProventos: 0,
-            rentabilidade: 0,
-          })
-          return
-        }
-
-        atual.quantidade += posicao.quantidade
-        atual.custoTotal += posicao.custoTotal
-        atual.valorAtual += posicao.valorAtual
-        atual.valorizacao += posicao.valorizacao
-        atual.resultadoRealizado += posicao.resultadoRealizado
-        atual.proventos += proventos
-        atual.precoMedio =
-          atual.quantidade > 0
-            ? atual.custoTotal / atual.quantidade
-            : 0
-      })
-    })
-
-    const lista = [...mapa.values()]
-    const totalProventosHistorico = selecionadas.reduce(
-      (total, item) =>
-        total +
-        item.dashboard.proventos.reduce(
-          (subtotal, provento) =>
-            subtotal +
-            provento.valorRecebido,
-          0,
-        ),
-      0,
-    )
-
-    const totalProventos = lista.reduce((total, item) => total + item.proventos, 0)
-
-    lista.forEach((item) => {
-      /*
-       * Resultado e rentabilidade por ativo vêm do backend.
-       * O React apenas consolida investidores quando o filtro é TOTAL.
-       */
-      const componentesBackend =
-        selecionadas
-          .map(({ dashboard }) =>
-            dashboard.posicoes.find(
-              (posicao) =>
-                posicao.ticker === item.ticker,
-            ),
-          )
-          .filter(
-            (
-              posicao,
-            ): posicao is PosicaoAtivo =>
-              posicao != null,
-          )
-
-      const resultadoEconomico =
-        componentesBackend.reduce(
-          (total, posicao) =>
-            total +
-            (posicao.resultadoEconomico ?? 0),
-          0,
+    const posicoesVisiveis =
+      dashboardSelecionado.posicoes
+        .filter(
+          (posicao) =>
+            posicao.quantidade > 0 &&
+            posicao.valorAtual > 0,
         )
 
-      item.rentabilidade =
-        item.custoTotal > 0
-          ? (resultadoEconomico / item.custoTotal) * 100
-          : 0
-
-      item.participacaoProventos =
-        totalProventos > 0 ? (item.proventos / totalProventos) * 100 : 0
-    })
-
-    const listaVisivel = lista
-      .filter(
-        (item) =>
-          item.quantidade > 0 &&
-          item.valorAtual > 0,
+    const totalProventos =
+      posicoesVisiveis.reduce(
+        (total, posicao) =>
+          total +
+          (posicao.proventos ?? 0),
+        0,
       )
-      .sort(
-        (a, b) =>
-          b.valorAtual -
-          a.valorAtual,
-      )
+
+    const ativos =
+      posicoesVisiveis
+        .map(
+          (posicao): AtivoAnalise => ({
+            ...posicao,
+            proventos:
+              posicao.proventos ?? 0,
+            participacaoProventos:
+              totalProventos > 0
+                ? ((posicao.proventos ?? 0) /
+                    totalProventos) *
+                  100
+                : 0,
+            rentabilidade:
+              posicao.rentabilidadeEconomica ?? 0,
+          }),
+        )
+        .sort(
+          (a, b) =>
+            b.valorAtual -
+            a.valorAtual,
+        )
 
     return {
-      ativos: listaVisivel,
-      totalProventosHistorico,
+      ativos,
+      totalProventosHistorico:
+        dashboardSelecionado.totalProventos,
     }
-  }, [carteiras, investidor])
+  }, [dashboardSelecionado])
 
   const ativos = dados.ativos
 
-  const dashboardsSelecionados =
-    investidor === 'TOTAL'
-      ? carteiras.map((item) => item.dashboard)
-      : carteiras
-          .filter((item) => item.nome === investidor)
-          .map((item) => item.dashboard)
-
-  const totais = useMemo(() => {
-    const resultadoCarteira =
-      dashboardsSelecionados.reduce(
-        (total, dashboard) =>
-          total + (dashboard.resultadoRealizado ?? 0),
-        0,
-      )
-
-    const capitalBase =
-      dashboardsSelecionados.reduce(
-        (total, dashboard) =>
-          total +
-          Math.max(
-            (dashboard.patrimonioEstimado ?? 0) -
-              (dashboard.resultadoRealizado ?? 0),
-            0,
-          ),
-        0,
-      )
-
-    const rentabilidade =
-      dashboardsSelecionados.length === 1
-        ? (dashboardsSelecionados[0].rentabilidadeAno ?? 0)
-        : capitalBase > 0
-          ? (resultadoCarteira / capitalBase) * 100
-          : 0
-
-    return {
+  const totais = useMemo(
+    () => ({
       ativos: ativos.length,
       valorAtual: ativos.reduce(
-        (total, item) => total + item.valorAtual,
+        (total, item) =>
+          total +
+          item.valorAtual,
         0,
       ),
-      proventos: dados.totalProventosHistorico,
-      rentabilidade,
-    }
-  }, [
-    ativos,
-    dados.totalProventosHistorico,
-    dashboardsSelecionados,
-  ])
+      proventos:
+        dados.totalProventosHistorico,
+      rentabilidade:
+        dashboardSelecionado?.rentabilidadeAno ?? 0,
+    }),
+    [
+      ativos,
+      dados.totalProventosHistorico,
+      dashboardSelecionado,
+    ],
+  )
 
   const maiorValor = Math.max(...ativos.map((x) => x.valorAtual), 1)
 
