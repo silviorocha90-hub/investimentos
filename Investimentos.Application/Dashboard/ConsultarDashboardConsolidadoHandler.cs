@@ -360,6 +360,23 @@ namespace Investimentos.Application.Dashboard
                 totalProventos +
                 premioLiquidoOpcoes;
 
+            var entradasAno =
+                dashboards.Sum(x =>
+                    x.EntradasAno);
+
+            var saidasAno =
+                dashboards.Sum(x =>
+                    x.SaidasAno);
+
+            var capitalLiquidoAno =
+                entradasAno - saidasAno;
+
+            var rentabilidadeAno =
+                capitalLiquidoAno > 0
+                    ? resultadoCarteira /
+                      capitalLiquidoAno * 100
+                    : 0;
+
             return new DashboardDto(
                 valorAplicado,
                 resultadoCarteira,
@@ -384,7 +401,10 @@ namespace Investimentos.Application.Dashboard
                 irProventos,
                 opcoesBrutas,
                 irEstimadoOpcoes,
-                resultadoRealizadoAcoes);
+                resultadoRealizadoAcoes,
+                rentabilidadeAno,
+                entradasAno,
+                saidasAno);
         }
 
         private static bool EhAtivoSemMarcacaoPorCotacao(
