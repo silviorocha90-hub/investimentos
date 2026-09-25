@@ -10,6 +10,7 @@ import {
   obterDashboardPorInvestidor,
   obterEvolucaoConsolidada,
   obterOperacoes,
+  obterPerformance,
 } from './api/dashboardApi'
 
 import {
@@ -52,6 +53,7 @@ import type {
   Dashboard,
   EvolucaoInvestidor,
   OperacaoCarteira,
+  PerformanceCarteira,
 } from './types/dashboard'
 
 import type {
@@ -172,6 +174,11 @@ function App() {
         dashboard: Dashboard
       }>
     >([])
+
+  const [
+    performance,
+    setPerformance,
+  ] = useState<PerformanceCarteira | null>(null)
 
   const [
     operacoes,
@@ -384,6 +391,7 @@ function App() {
     const [
       dadosDashboard,
       dadosEvolucao,
+      dadosPerformance,
       resultadosCarteiras,
     ] = await Promise.all([
       podeDashboard
@@ -393,6 +401,10 @@ function App() {
       podeDashboard
         ? obterEvolucaoConsolidada()
         : Promise.resolve([]),
+
+      podeDashboard
+        ? obterPerformance()
+        : Promise.resolve(null),
 
       podeDashboard ||
       podeConsultarCarteiras
@@ -442,6 +454,10 @@ function App() {
 
     setEvolucao(
       dadosEvolucao,
+    )
+
+    setPerformance(
+      dadosPerformance,
     )
 
     setCarteirasPainel(
@@ -717,12 +733,15 @@ function App() {
         const [
           dadosDashboard,
           dadosEvolucao,
+          dadosPerformance,
           resultadosCarteiras,
         ] =
           await Promise.all([
             obterDashboardConsolidado(),
 
             obterEvolucaoConsolidada(),
+
+            obterPerformance(),
 
             Promise.allSettled(
               todosInvestidores.map(
@@ -776,6 +795,10 @@ function App() {
           dadosEvolucao,
         )
 
+        setPerformance(
+          dadosPerformance,
+        )
+
         setCarteirasPainel(
           carteirasComSucesso,
         )
@@ -788,6 +811,7 @@ function App() {
         ) {
           setDashboard(null)
           setEvolucao([])
+          setPerformance(null)
           setCarteirasPainel([])
 
           setErro(
@@ -1192,6 +1216,9 @@ function App() {
             }
             evolucao={
               evolucao
+            }
+            performance={
+              performance
             }
             apiDisponivel={
               apiDisponivel
