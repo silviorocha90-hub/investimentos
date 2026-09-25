@@ -54,6 +54,7 @@ namespace Investimentos.Infrastructure.Persistence.Repositories
             return await _context.OperacoesOpcoes
                 .AsNoTracking()
                 .Include(x => x.Ativo)
+                    .ThenInclude(x => x.TipoAtivo)
                 .Where(x =>
                     x.InvestidorId == investidorId)
                 .OrderByDescending(x =>
