@@ -109,10 +109,27 @@ export function OpcoesView({
                   investidor.nome.trim().toLocaleLowerCase('pt-BR'),
               )
 
+            const possuiAtivoElegivelParaOpcao =
+              (
+                carteiraInvestidor?.dashboard.posicoes ??
+                []
+              ).some(
+                (posicao) =>
+                  posicao.quantidade > 0 &&
+                  posicao.tipoAtivoCodigo === 'ACAO' &&
+                  posicao.ticker.trim().toUpperCase() !== 'LFTB11',
+              )
+
+            const possuiOpcao =
+              (
+                carteiraInvestidor?.dashboard.opcoes ??
+                []
+              ).length > 0
+
             return (
-              carteiraInvestidor?.dashboard.opcoes ??
-              []
-            ).length > 0
+              possuiAtivoElegivelParaOpcao ||
+              possuiOpcao
+            )
           },
         )
       },
