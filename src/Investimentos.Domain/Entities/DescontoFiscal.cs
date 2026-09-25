@@ -8,6 +8,8 @@ namespace Investimentos.Domain.Entities
         public DateTime DataPagamento { get; private set; }
         public decimal Valor { get; private set; }
         public string? Descricao { get; private set; }
+        public Guid? InvestidorId { get; private set; }
+        public Investidor? Investidor { get; private set; }
 
         private DescontoFiscal()
         {
@@ -18,7 +20,8 @@ namespace Investimentos.Domain.Entities
             string tipo,
             DateTime dataPagamento,
             decimal valor,
-            string? descricao = null)
+            string? descricao = null,
+            Investidor? investidor = null)
         {
             ValidarTipo(tipo);
             ValidarValor(valor);
@@ -28,13 +31,16 @@ namespace Investimentos.Domain.Entities
             DataPagamento = dataPagamento;
             Valor = valor;
             Descricao = NormalizarDescricao(descricao);
+            Investidor = investidor;
+            InvestidorId = investidor?.Id;
         }
 
         public void Atualizar(
             string tipo,
             DateTime dataPagamento,
             decimal valor,
-            string? descricao = null)
+            string? descricao = null,
+            Investidor? investidor = null)
         {
             ValidarTipo(tipo);
             ValidarValor(valor);
@@ -43,6 +49,8 @@ namespace Investimentos.Domain.Entities
             DataPagamento = dataPagamento;
             Valor = valor;
             Descricao = NormalizarDescricao(descricao);
+            Investidor = investidor;
+            InvestidorId = investidor?.Id;
         }
 
         private static void ValidarTipo(
