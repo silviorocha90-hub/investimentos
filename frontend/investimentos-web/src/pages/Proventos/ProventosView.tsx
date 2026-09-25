@@ -911,14 +911,12 @@ export function ProventosView({
                 modoAdministracao
               }
               onEditar={
-                modoAdministracao &&
-                investidorAtivo !== 'TOTAL'
+                modoAdministracao
                   ? editar
                   : undefined
               }
               onExcluir={
-                modoAdministracao &&
-                investidorAtivo !== 'TOTAL'
+                modoAdministracao
                   ? excluir
                   : undefined
               }
@@ -931,6 +929,7 @@ export function ProventosView({
       modalAberto &&
       (
         investidor ||
+        investidorAtivo === 'TOTAL' ||
         !proventoEditando
       ) ? (
         <ProventoModal
