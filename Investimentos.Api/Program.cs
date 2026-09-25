@@ -2,6 +2,7 @@ using Investimentos.Api.Endpoints;
 using Investimentos.Api.ExceptionHandling;
 using Investimentos.Api.Startup;
 using Investimentos.Application.Administracao;
+using Investimentos.Application.Administracao.Integridade;
 using Investimentos.Application.Ativos.CadastrarAtivo;
 using Investimentos.Application.Carteira.ConsultarCarteira;
 using Investimentos.Application.Dashboard;
@@ -141,6 +142,10 @@ builder.Services.AddScoped<
 builder.Services.AddScoped<
     IInvestidorAdministracaoRepository,
     InvestidorAdministracaoRepository>();
+
+builder.Services.AddScoped<
+    IIntegridadeRepository,
+    IntegridadeRepository>();
 
 var app = builder.Build();
 
@@ -1089,6 +1094,19 @@ app.MapDelete(
             cancellationToken);
 
         return Results.NoContent();
+    });
+
+app.MapGet(
+    "/api/admin/integridade",
+    async (
+        IIntegridadeRepository repository,
+        CancellationToken cancellationToken) =>
+    {
+        var resultado =
+            await repository.VerificarAsync(
+                cancellationToken);
+
+        return Results.Ok(resultado);
     });
 
 app.MapGet(
