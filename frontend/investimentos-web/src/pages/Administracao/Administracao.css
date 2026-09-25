@@ -998,3 +998,29 @@
 .admin-movement-description {
   grid-column: 1 / -1;
 }
+
+
+/* Entradas / Saídas — ações padronizadas */
+.admin-movement-table .admin-movement-edit {
+  border-color: rgba(99, 230, 200, 0.3);
+  background: transparent;
+  color: var(--accent);
+}
+
+.admin-movement-table .admin-movement-edit:hover:not(:disabled) {
+  border-color: rgba(99, 230, 200, 0.6);
+  background: rgba(99, 230, 200, 0.08);
+  color: var(--accent);
+}
+
+.admin-movement-table .admin-movement-delete {
+  border-color: rgba(255, 88, 108, 0.3);
+  background: transparent;
+  color: var(--negative);
+}
+
+.admin-movement-table .admin-movement-delete:hover:not(:disabled) {
+  border-color: rgba(255, 88, 108, 0.55);
+  background: rgba(255, 88, 108, 0.08);
+  color: var(--negative);
+}
