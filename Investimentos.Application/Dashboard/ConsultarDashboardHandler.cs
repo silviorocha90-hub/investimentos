@@ -222,6 +222,62 @@ namespace Investimentos.Application.Dashboard
                         x.Valorizacao);
 
             /*
+             * RESULTADO ECONÔMICO POR ATIVO
+             *
+             * Mantém a mesma regra central da carteira:
+             * valorização + proventos líquidos + resultado
+             * operacional das opções finalizadas.
+             *
+             * O IR estimado das opções continua apenas
+             * informativo e não é descontado aqui.
+             */
+            posicoes =
+                posicoes
+                    .Select(posicao =>
+                    {
+                        var proventosAtivo =
+                            proventos
+                                .Where(x =>
+                                    string.Equals(
+                                        x.Ticker,
+                                        posicao.Ticker,
+                                        StringComparison.OrdinalIgnoreCase))
+                                .Sum(x =>
+                                    x.ValorLiquido);
+
+                        var resultadoOpcoesAtivo =
+                            opcoesFinalizadas
+                                .Where(x =>
+                                    string.Equals(
+                                        x.TickerAtivo,
+                                        posicao.Ticker,
+                                        StringComparison.OrdinalIgnoreCase))
+                                .Sum(x =>
+                                    x.ResultadoBruto ?? 0);
+
+                        var resultadoEconomicoAtivo =
+                            CalculadoraResultadoCarteira.CalcularResultado(
+                                posicao.Valorizacao,
+                                proventosAtivo,
+                                resultadoOpcoesAtivo);
+
+                        var rentabilidadeEconomica =
+                            posicao.CustoTotal > 0
+                                ? resultadoEconomicoAtivo /
+                                  posicao.CustoTotal * 100
+                                : 0;
+
+                        return posicao with
+                        {
+                            Proventos = proventosAtivo,
+                            ResultadoOpcoes = resultadoOpcoesAtivo,
+                            ResultadoEconomico = resultadoEconomicoAtivo,
+                            RentabilidadeEconomica = rentabilidadeEconomica
+                        };
+                    })
+                    .ToList();
+
+            /*
              * RESULTADO ECONÔMICO PADRÃO
              *
              * Regra única usada por rentabilidade e
