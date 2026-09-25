@@ -163,16 +163,30 @@ export function CarteiraView({
     )
   const resultadoOpcoes =
     (dashboardTotal
-      ? (dashboardTotal.opcoesBrutas ?? dashboardTotal.premioLiquidoOpcoes ?? 0)
+      ? (dashboardTotal.premioLiquidoOpcoes ?? 0)
       : carteirasSelecionadas.reduce(
           (total, item) =>
-            total + (item.dashboard.opcoesBrutas ?? item.dashboard.premioLiquidoOpcoes ?? 0),
+            total + (item.dashboard.premioLiquidoOpcoes ?? 0),
           0,
         ))
-  const resultadoCarteira = dashboardTotal?.resultadoRealizado ??
-    carteirasSelecionadas.reduce(
-      (total, item) => total + (item.dashboard.resultadoRealizado ?? 0), 0,
+
+  const valorizacaoAtivos =
+    posicoes.reduce(
+      (total, posicao) =>
+        total + (posicao.valorizacao ?? 0),
+      0,
     )
+
+  /*
+   * Regra padrão do projeto:
+   * Resultado da Carteira =
+   * valorização dos ativos + proventos/dividendos +
+   * prêmio líquido (ganho) de opções.
+   */
+  const resultadoCarteira =
+    valorizacaoAtivos +
+    totalProventos +
+    resultadoOpcoes
 
   const crescimentoCarteira = useMemo(() => {
     const normalizarNome = (valor: string) =>
@@ -230,8 +244,8 @@ export function CarteiraView({
      * Crescimento econômico desde o início dos dados.
      *
      * O patrimônio atual já contém a marcação a mercado.
-     * O resultado acumulado contém valorização não realizada,
-     * vendas realizadas, proventos e opções.
+     * O resultado acumulado contém valorização dos ativos,
+     * proventos/dividendos e prêmio líquido de opções.
      *
      * Subtraindo o resultado do patrimônio obtemos a base de
      * capital que formou a carteira, sem confundir valor atual
