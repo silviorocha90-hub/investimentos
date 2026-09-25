@@ -18,6 +18,8 @@ import type {
 interface ProventoModalProps {
   provento?: Provento | null
   investidorId: string
+  investidores: readonly { id: string; nome: string }[]
+  modoRateio: boolean
   tickers: readonly string[]
   salvando: boolean
   erro?: string | null
@@ -43,12 +45,19 @@ function paraDataInput(
 export function ProventoModal({
   provento,
   investidorId,
+  investidores,
+  modoRateio,
   tickers,
   salvando,
   erro,
   onClose,
   onSalvar,
 }: ProventoModalProps) {
+  const [
+    investidorSelecionadoId,
+    setInvestidorSelecionadoId,
+  ] = useState(investidorId)
+
   const [
     ticker,
     setTicker,
@@ -143,6 +152,12 @@ export function ProventoModal({
       return
     }
 
+    setInvestidorSelecionadoId(
+      investidorId ||
+      investidores[0]?.id ||
+      '',
+    )
+
     setTicker(
       tickers[0] ?? '',
     )
@@ -167,6 +182,8 @@ export function ProventoModal({
   }, [
     provento,
     tickers,
+    investidorId,
+    investidores,
   ])
 
   const quantidade =
@@ -220,11 +237,12 @@ export function ProventoModal({
         dataPagamento
           .length > 0 &&
         (
-          provento
-            ? quantidade > 0 &&
+          modoRateio && !provento
+            ? total > 0
+            : investidorSelecionadoId.length > 0 &&
+              quantidade > 0 &&
               valorUnitario >= 0 &&
               recebido >= 0
-            : total > 0
         ),
       [
         ticker,
@@ -234,6 +252,8 @@ export function ProventoModal({
         recebido,
         total,
         provento,
+        modoRateio,
+        investidorSelecionadoId,
       ],
     )
 
@@ -244,7 +264,7 @@ export function ProventoModal({
       return
     }
 
-    if (!provento) {
+    if (!provento && modoRateio) {
       await onSalvar({
         ticker:
           ticker.trim().toUpperCase(),
@@ -260,7 +280,8 @@ export function ProventoModal({
     }
 
     await onSalvar({
-      investidorId,
+      investidorId:
+        investidorSelecionadoId,
 
       ticker:
         ticker
@@ -350,6 +371,27 @@ export function ProventoModal({
         ) : null}
 
         <div className="provento-form-grid">
+          {!modoRateio ? (
+            <label className="provento-field-full">
+              <span>
+                Investidor
+              </span>
+              <select
+                value={investidorSelecionadoId}
+                onChange={(event) =>
+                  setInvestidorSelecionadoId(event.target.value)
+                }
+                disabled={Boolean(provento)}
+              >
+                {investidores.map((item) => (
+                  <option key={item.id} value={item.id}>
+                    {item.nome}
+                  </option>
+                ))}
+              </select>
+            </label>
+          ) : null}
+
           <label>
             <span>
               Ativo
@@ -461,7 +503,7 @@ export function ProventoModal({
             />
           </label>
 
-          {!provento ? (
+          {modoRateio && !provento ? (
             <label className="provento-field-full">
               <span>
                 Valor total do provento
@@ -586,7 +628,7 @@ export function ProventoModal({
           </label>
         </div>
 
-        {provento ? (
+        {!modoRateio || provento ? (
         <div className="provento-calculo">
           <div>
             <span>
