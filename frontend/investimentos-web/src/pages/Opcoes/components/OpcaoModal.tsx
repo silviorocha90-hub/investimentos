@@ -514,7 +514,9 @@ function EditarOpcaoModal({
                     {
                       minimumFractionDigits: 2,
                       maximumFractionDigits: 2,
-                    }
+                    },
+                  )
+                }
                 disabled
               />
             </div>
