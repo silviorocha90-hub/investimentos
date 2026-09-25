@@ -161,7 +161,10 @@ namespace Investimentos.Infrastructure.Persistence.Repositories
                     {
                         AtivoId = grupo.Key,
                         Quantidade = grupo.Sum(x =>
-                            x.TipoOperacao.Codigo == "COMPRA"
+                            string.Equals(
+                                x.TipoOperacao.Codigo,
+                                "COMPRA",
+                                StringComparison.OrdinalIgnoreCase)
                                 ? x.Quantidade
                                 : -x.Quantidade)
                     })
