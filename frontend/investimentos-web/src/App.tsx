@@ -221,6 +221,16 @@ function App() {
   ] =
     useState(false)
 
+  const [
+    versaoDados,
+    setVersaoDados,
+  ] = useState(0)
+
+  const [
+    atualizandoDados,
+    setAtualizandoDados,
+  ] = useState(false)
+
   definirOcultacaoValores(
     valoresOcultos,
   )
@@ -335,6 +345,29 @@ function App() {
     return permissaoNoInvestidor(
       configuracao.permissao,
     )
+  }
+
+  async function atualizarTudo() {
+    if (atualizandoDados) {
+      return
+    }
+
+    try {
+      setAtualizandoDados(true)
+
+      const dados =
+        await listarInvestidores()
+
+      setTodosInvestidores(dados)
+      setApiDisponivel(true)
+      setErro(null)
+      setVersaoDados((atual) => atual + 1)
+    } catch (error) {
+      console.error(error)
+      setErro('Não foi possível atualizar os dados.')
+    } finally {
+      setAtualizandoDados(false)
+    }
   }
 
   function navegar(
@@ -644,6 +677,7 @@ function App() {
     apiDisponivel,
     todosInvestidores,
     usuario,
+    versaoDados,
   ])
 
   useEffect(() => {
@@ -733,6 +767,7 @@ function App() {
     apiDisponivel,
     investidores,
     usuario,
+    versaoDados,
   ])
 
   async function recarregarOperacoesSelecionadas() {
@@ -1058,6 +1093,19 @@ function App() {
               </button>
             )
           })()}
+
+          <button
+            className="menu-item"
+            type="button"
+            disabled={atualizandoDados}
+            title="Atualizar todos os dados"
+            onClick={() => void atualizarTudo()}
+          >
+            <span className="menu-icone">
+              {atualizandoDados ? '◌' : '↻'}
+            </span>
+            {atualizandoDados ? 'Atualizando...' : 'Atualizar'}
+          </button>
         </nav>
 
         <div className="sidebar-rodape">
@@ -1264,6 +1312,9 @@ function App() {
             }
             onOperationCreated={
               recarregarOperacoesSelecionadas
+            }
+            onDataChanged={
+              atualizarTudo
             }
           />
         ) : null}
