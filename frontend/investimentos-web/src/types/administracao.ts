@@ -37,6 +37,8 @@ export interface DescontoFiscalAdministracao {
   dataPagamento: string
   valor: number
   descricao?: string | null
+  investidorId?: string | null
+  investidorNome?: string | null
 }
 
 export interface InvestidorAdministracao {
