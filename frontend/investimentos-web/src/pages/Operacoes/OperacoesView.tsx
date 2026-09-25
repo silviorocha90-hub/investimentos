@@ -57,6 +57,7 @@ interface OperacoesViewProps {
   ) => Promise<void>
 
   onOperationCreated?: () => Promise<void>
+  onDataChanged?: () => Promise<void>
 }
 
 function criarFormularioInicial(): NovaOperacaoForm {
@@ -79,6 +80,7 @@ export function OperacoesView({
   operacoes = [],
   onSaveOperation,
   onOperationCreated,
+  onDataChanged,
 }: OperacoesViewProps) {
   const [
     operacaoEmEdicao,
@@ -292,7 +294,7 @@ export function OperacoesView({
           )
         }
 
-        window.location.reload()
+        await onDataChanged?.()
       } catch (error) {
         console.error(
           'Erro ao deletar operação:',
