@@ -26,6 +26,11 @@ import {
 } from './components/OpcoesTabela'
 
 import {
+  CallsDisponiveis,
+  obterPosicoesConsulta,
+} from './components/CallsDisponiveis'
+
+import {
   OpcaoModal,
   type NovaOpcaoForm,
 } from './components/OpcaoModal'
@@ -196,6 +201,21 @@ export function OpcoesView({
         item.nome ===
         investidorAtivo,
     )?.dashboard
+
+  const posicoesConsulta =
+    useMemo(
+      () =>
+        obterPosicoesConsulta(
+          investidorAtivo,
+          carteira,
+          carteiras,
+        ),
+      [
+        investidorAtivo,
+        carteira,
+        carteiras,
+      ],
+    )
 
   const opcoesCarteira =
     useMemo(
@@ -955,6 +975,17 @@ export function OpcoesView({
 
       {!modoAdministracao ? (
         <OpcoesGraficos
+          opcoes={
+            opcoes
+          }
+        />
+      ) : null}
+
+      {!modoAdministracao ? (
+        <CallsDisponiveis
+          posicoes={
+            posicoesConsulta
+          }
           opcoes={
             opcoes
           }
