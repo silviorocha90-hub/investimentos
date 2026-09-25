@@ -970,9 +970,6 @@ export function AdministracaoView({
           setFiltroTipo={
             setFiltroTipo
           }
-          setPagina={
-            setPagina
-          }
           abrirNovoAtivo={
             abrirNovoAtivo
           }
