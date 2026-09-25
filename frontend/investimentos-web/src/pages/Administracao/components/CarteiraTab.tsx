@@ -58,6 +58,16 @@ export function CarteiraTab({ dados, recarregar }: CarteiraTabProps) {
     [dados.descontosFiscais, investidorId],
   )
 
+  const competenciasAtuaisEFuturas = useMemo(() => {
+    const hoje = new Date()
+    const anoAtual = hoje.getFullYear()
+    const mesAtual = hoje.getMonth() + 1
+
+    return (fiscal?.meses ?? []).filter(
+      (x) => x.ano > anoAtual || (x.ano === anoAtual && x.mes >= mesAtual),
+    )
+  }, [fiscal?.meses])
+
   function abrirNovo() {
     setNovo(true)
     setEditando(null)
@@ -195,19 +205,25 @@ export function CarteiraTab({ dados, recarregar }: CarteiraTabProps) {
               </tr>
             </thead>
             <tbody>
-              {fiscal?.meses.map((x) => (
+              {competenciasAtuaisEFuturas.map((x) => (
                 <tr key={`${x.ano}-${x.mes}-${x.investidorId ?? 'sem'}`}>
                   <td>{String(x.mes).padStart(2, '0')}/{x.ano}</td>
                   <td>{x.investidor}</td>
                   <td>{formatarMoeda(x.resultadoComumOpcoes)}</td>
                   <td>{formatarMoeda(x.resultadoDayTradeOpcoes)}</td>
                   <td>{formatarMoeda(x.irEstimadoOpcoes)}</td>
-                  <td>{formatarMoeda(x.darfPago)}</td>
+                  <td>
+                    {x.darfPago > 0 ? (
+                      <span className="admin-status-paid">✓ Pago · {formatarMoeda(x.darfPago)}</span>
+                    ) : (
+                      <span>—</span>
+                    )}
+                  </td>
                   <td>{formatarMoeda(x.diferencaEstimadoPago)}</td>
                   <td>{x.operacoesConsideradas}</td>
                 </tr>
               ))}
-              {!fiscal?.meses.length ? <tr><td colSpan={8}>Sem dados fiscais para o período.</td></tr> : null}
+              {competenciasAtuaisEFuturas.length === 0 ? <tr><td colSpan={8}>Sem competências atuais ou futuras.</td></tr> : null}
             </tbody>
           </table>
         </div>
