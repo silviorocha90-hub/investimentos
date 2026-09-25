@@ -139,7 +139,18 @@ export function CallsDisponiveis({
                 <span
                   className={`options-ranking-value ${item.livre === 0 ? 'negative' : ''}`}
                 >
-                  {quantidade.format(item.livre)} ações
+                  <span className="options-call-ranking-numbers">
+                    <b>{quantidade.format(item.livre)} ações</b>
+                    <small>
+                      PM {item.precoMedio.toLocaleString(
+                        'pt-BR',
+                        {
+                          style: 'currency',
+                          currency: 'BRL',
+                        },
+                      )}
+                    </small>
+                  </span>
                 </span>
               </div>
             ),
