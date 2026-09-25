@@ -1084,6 +1084,9 @@ export function AdministracaoView({
           onOperationCreated={
             onOperationCreated
           }
+          onDataChanged={
+            onDataChanged
+          }
         />
       ) : null}
 
@@ -1122,6 +1125,9 @@ export function AdministracaoView({
             setInvestidorAdministracao
           }
           modo="administracao"
+          onDataChanged={
+            onDataChanged
+          }
         />
       ) : null}
 
