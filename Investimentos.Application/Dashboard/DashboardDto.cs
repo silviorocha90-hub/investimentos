@@ -47,6 +47,13 @@ namespace Investimentos.Application.Dashboard
         decimal EntradasAno = 0,
         decimal SaidasAno = 0)
     {
+        /// <summary>
+        /// Nome explícito do resultado econômico padrão da carteira.
+        /// Mantém ResultadoRealizado no contrato por compatibilidade.
+        /// </summary>
+        public decimal ResultadoCarteira =>
+            ResultadoRealizado;
+
         [Obsolete("Use ValorAplicado.")]
         public decimal PatrimonioPorCusto =>
             ValorAplicado;
