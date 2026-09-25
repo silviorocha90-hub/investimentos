@@ -68,8 +68,8 @@ export function CallsDisponiveis({
       }
     })
     .sort((a, b) => {
-      if (a.livre !== b.livre) {
-        return b.livre - a.livre
+      if (a.quantidade !== b.quantidade) {
+        return b.quantidade - a.quantidade
       }
 
       return a.ticker.localeCompare(
