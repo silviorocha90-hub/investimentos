@@ -44,7 +44,8 @@ export function CallsDisponiveis({
     .filter(
       (posicao) =>
         posicao.quantidade > 0 &&
-        posicao.tipoAtivoCodigo === 'ACAO',
+        posicao.tipoAtivoCodigo === 'ACAO' &&
+        posicao.ticker.trim().toUpperCase() !== 'LFTB11',
     )
     .map((posicao) => {
       const ticker =
