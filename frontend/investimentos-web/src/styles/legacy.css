@@ -3096,3 +3096,45 @@ a {
     grid-template-columns: 1fr;
   }
 }
+
+
+.performance-audit {
+  display: grid;
+  gap: 14px;
+}
+
+.performance-audit-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 24px;
+  font-size: 0.88rem;
+}
+
+.performance-audit-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.performance-audit-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+}
+
+.performance-audit-table th,
+.performance-audit-table td {
+  padding: 9px 8px;
+  border-bottom: 1px solid var(--border);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.performance-audit-table th:first-child,
+.performance-audit-table td:first-child {
+  text-align: left;
+}
+
+.performance-audit-table th {
+  font-weight: 600;
+  opacity: 0.78;
+}
