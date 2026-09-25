@@ -221,7 +221,7 @@ export function CarteiraView({
         )
 
     if (pontos.length === 0) {
-      return 0
+      return null
     }
 
     const inicial = pontos.reduce(
@@ -229,15 +229,38 @@ export function CarteiraView({
       0,
     )
 
-    const atual = pontos.reduce(
+    const atualHistorico = pontos.reduce(
       (total, item) => total + item.atual,
       0,
     )
 
-    return inicial > 0
-      ? ((atual - inicial) / inicial) * 100
-      : 0
-  }, [evolucao, filtroInvestidor])
+    const atualDashboard =
+      filtroInvestidor === 'TOTAL'
+        ? (dashboardConsolidado?.patrimonioEstimado ?? 0)
+        : (
+            carteiras.find(
+              (item) =>
+                normalizarNome(item.nome) ===
+                normalizarNome(filtroInvestidor),
+            )?.dashboard.patrimonioEstimado ?? 0
+          )
+
+    const atual =
+      atualDashboard > 0
+        ? atualDashboard
+        : atualHistorico
+
+    if (inicial <= 0) {
+      return null
+    }
+
+    return ((atual - inicial) / inicial) * 100
+  }, [
+    evolucao,
+    filtroInvestidor,
+    carteiras,
+    dashboardConsolidado,
+  ])
 
   const rendaVariavel = posicoes
     .filter((posicao) => !ehOutroInvestimento(posicao.ticker, posicao.tipoAtivoCodigo))
@@ -273,7 +296,7 @@ export function CarteiraView({
         <article className="carteira-kpi kpi-violet"><span>Patrimônio Atual</span><strong>{formatarMoeda(patrimonio)}</strong><i>◆</i></article>
         <article className="carteira-kpi kpi-blue"><span>Valor Aplicado</span><strong>{formatarMoeda(valorAplicado)}</strong><i>▥</i></article>
         <article className="carteira-kpi kpi-green"><span>Disponível</span><strong>{formatarMoeda(valorDisponivel)}</strong><i>●</i></article>
-        <article className="carteira-kpi kpi-gold"><span>Crescimento da Carteira</span><strong>{percentual(crescimentoCarteira)}</strong><i>↗</i></article>
+        <article className="carteira-kpi kpi-gold"><span>Crescimento da Carteira</span><strong className={crescimentoCarteira == null ? '' : classeResultado(crescimentoCarteira)}>{crescimentoCarteira == null ? '-' : percentual(crescimentoCarteira)}</strong><i>↗</i></article>
       </div>
 
       <article className="panel portfolio-positions portfolio-variable-income carteira-panel">
