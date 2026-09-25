@@ -1103,6 +1103,9 @@ export function AdministracaoView({
             setInvestidorAdministracao
           }
           modo="administracao"
+          onDataChanged={
+            onDataChanged
+          }
         />
       ) : null}
 
@@ -1127,6 +1130,9 @@ export function AdministracaoView({
         <MovimentacoesFinanceirasTab
           investidores={
             investidores
+          }
+          onDataChanged={
+            onDataChanged
           }
         />
       ) : null}
