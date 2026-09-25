@@ -35,9 +35,6 @@ interface AtivosTabProps {
   setFiltroTipo:
     Dispatch<SetStateAction<string>>
 
-  setPagina:
-    Dispatch<SetStateAction<number>>
-
   abrirNovoAtivo: () => void
 
   abrirEditarAtivo:
