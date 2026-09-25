@@ -222,11 +222,6 @@ function App() {
     useState(false)
 
   const [
-    versaoDados,
-    setVersaoDados,
-  ] = useState(0)
-
-  const [
     atualizandoDados,
     setAtualizandoDados,
   ] = useState(false)
@@ -497,16 +492,6 @@ function App() {
 
       await carregarDadosAtuais()
 
-      /*
-       * A versão existe apenas para componentes administrativos
-       * que mantêm estado local próprio. Os dados financeiros
-       * principais já foram substituídos acima pela resposta
-       * fresca da API.
-       */
-      setVersaoDados(
-        (atual) =>
-          atual + 1,
-      )
     } catch (error) {
       console.error(error)
 
@@ -825,7 +810,6 @@ function App() {
     apiDisponivel,
     todosInvestidores,
     usuario,
-    versaoDados,
   ])
 
   useEffect(() => {
@@ -915,67 +899,7 @@ function App() {
     apiDisponivel,
     investidores,
     usuario,
-    versaoDados,
   ])
-
-  async function recarregarOperacoesSelecionadas() {
-    const investidor =
-      investidores.find(
-        (item) =>
-          item.nome ===
-          investidorSelecionado,
-      )
-
-    if (!investidor) {
-      return
-    }
-
-    const [
-      dashboardAtualizado,
-      operacoesAtualizadas,
-    ] = await Promise.all([
-      obterDashboardPorInvestidor(
-        investidor.id,
-      ),
-      obterOperacoes(
-        investidor.id,
-      ),
-    ])
-
-    setCarteirasPorInvestidor(
-      (atuais) =>
-        atuais.map(
-          (item) =>
-            item.nome ===
-            investidorSelecionado
-              ? {
-                  ...item,
-                  dashboard:
-                    dashboardAtualizado,
-                }
-              : item,
-        ),
-    )
-
-    setCarteirasPainel(
-      (atuais) =>
-        atuais.map(
-          (item) =>
-            item.nome ===
-            investidorSelecionado
-              ? {
-                  ...item,
-                  dashboard:
-                    dashboardAtualizado,
-                }
-              : item,
-        ),
-    )
-
-    setOperacoes(
-      operacoesAtualizadas,
-    )
-  }
 
   async function salvarOperacao(
     operacao: Pick<
@@ -1002,66 +926,7 @@ function App() {
       operacao,
     )
 
-    const investidor =
-      investidores.find(
-        (item) =>
-          item.nome ===
-          investidorSelecionado,
-      )
-
-    if (!investidor) {
-      return
-    }
-
-    const [
-      dashboardAtualizado,
-      operacoesAtualizadas,
-    ] =
-      await Promise.all([
-        obterDashboardPorInvestidor(
-          investidor.id,
-        ),
-
-        obterOperacoes(
-          investidor.id,
-        ),
-      ])
-
-    setCarteirasPorInvestidor(
-      (atuais) =>
-        atuais.map(
-          (item) =>
-            item.nome ===
-            investidorSelecionado
-              ? {
-                  ...item,
-
-                  dashboard:
-                    dashboardAtualizado,
-                }
-              : item,
-        ),
-    )
-
-    setCarteirasPainel(
-      (atuais) =>
-        atuais.map(
-          (item) =>
-            item.nome ===
-            investidorSelecionado
-              ? {
-                  ...item,
-
-                  dashboard:
-                    dashboardAtualizado,
-                }
-              : item,
-        ),
-    )
-
-    setOperacoes(
-      operacoesAtualizadas,
-    )
+    await atualizarTudo()
   }
 
   const modoSnapshot =
@@ -1459,7 +1324,7 @@ function App() {
               salvarOperacao
             }
             onOperationCreated={
-              recarregarOperacoesSelecionadas
+              atualizarTudo
             }
             onDataChanged={
               atualizarTudo
