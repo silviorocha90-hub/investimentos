@@ -8,6 +8,7 @@ using Investimentos.Application.Ativos.CadastrarAtivo;
 using Investimentos.Application.Carteira.ConsultarCarteira;
 using Investimentos.Application.Dashboard;
 using Investimentos.Application.Interfaces;
+using Investimentos.Application.Fiscal;
 using Investimentos.Application.Investidores.CadastrarInvestidor;
 using Investimentos.Application.Investidores.ListarInvestidores;
 using Investimentos.Application.Performance;
@@ -113,6 +114,7 @@ builder.Services.AddScoped<IMovimentacaoFinanceiraRepository, MovimentacaoFinanc
 builder.Services.AddScoped<ConsultarDashboardHandler>();
 builder.Services.AddScoped<ConsultarDashboardConsolidadoHandler>();
 builder.Services.AddScoped<ConsultarPerformanceCarteiraService>();
+builder.Services.AddScoped<IFiscalRepository, FiscalRepository>();
 
 builder.Services.AddScoped<AdministrarUsuariosService>();
 
@@ -1013,6 +1015,21 @@ app.MapGet(
     });
 
 app.MapGet(
+    "/api/fiscal",
+    async (
+        Guid? investidorId,
+        int? ano,
+        IFiscalRepository repository,
+        CancellationToken cancellationToken) =>
+    {
+        return Results.Ok(
+            await repository.ConsultarAsync(
+                investidorId,
+                ano,
+                cancellationToken));
+    });
+
+app.MapGet(
     "/api/descontos-fiscais",
     async (
         IDescontoFiscalRepository repository,
@@ -1030,7 +1047,11 @@ app.MapGet(
                     x.Tipo,
                     x.DataPagamento,
                     x.Valor,
-                    x.Descricao
+                    x.Descricao,
+                    x.InvestidorId,
+                    InvestidorNome = x.Investidor != null
+                        ? x.Investidor.Nome
+                        : null
                 }));
     });
 
@@ -1039,8 +1060,18 @@ app.MapPost(
     async (
         CadastrarDescontoFiscalRequest request,
         IDescontoFiscalRepository repository,
+        InvestimentosDbContext dbContext,
         CancellationToken cancellationToken) =>
     {
+        var investidor = request.InvestidorId.HasValue
+            ? await dbContext.Investidores.FirstOrDefaultAsync(
+                x => x.Id == request.InvestidorId.Value,
+                cancellationToken)
+            : null;
+
+        if (request.InvestidorId.HasValue && investidor is null)
+            return Results.NotFound(new { detail = "Investidor não encontrado." });
+
         var desconto =
             new DescontoFiscal(
                 request.Tipo
@@ -1048,7 +1079,8 @@ app.MapPost(
                     .ToUpperInvariant(),
                 request.DataPagamento,
                 request.Valor,
-                request.Descricao);
+                request.Descricao,
+                investidor);
 
         await repository.AdicionarAsync(
             desconto,
@@ -1065,8 +1097,18 @@ app.MapPut(
         Guid id,
         AtualizarDescontoFiscalRequest request,
         IDescontoFiscalRepository repository,
+        InvestimentosDbContext dbContext,
         CancellationToken cancellationToken) =>
     {
+        var investidor = request.InvestidorId.HasValue
+            ? await dbContext.Investidores.FirstOrDefaultAsync(
+                x => x.Id == request.InvestidorId.Value,
+                cancellationToken)
+            : null;
+
+        if (request.InvestidorId.HasValue && investidor is null)
+            return Results.NotFound(new { detail = "Investidor não encontrado." });
+
         var desconto =
             await repository.ObterPorIdAsync(
                 id,
@@ -1082,7 +1124,8 @@ app.MapPut(
             "DARF",
             request.DataPagamento,
             request.Valor,
-            request.Descricao);
+            request.Descricao,
+            investidor);
 
         await repository.SalvarAlteracoesAsync(
             cancellationToken);
@@ -1537,12 +1580,14 @@ public record CadastrarDescontoFiscalRequest(
     string Tipo,
     DateTime DataPagamento,
     decimal Valor,
-    string? Descricao);
+    string? Descricao,
+    Guid? InvestidorId);
 
 public record AtualizarDescontoFiscalRequest(
     DateTime DataPagamento,
     decimal Valor,
-    string? Descricao);
+    string? Descricao,
+    Guid? InvestidorId);
 
 /*
  * Novo contrato da tela de inclusão.
