@@ -204,25 +204,31 @@ export function AdministracaoView({
   const [
     investidorAdministracao,
     setInvestidorAdministracao,
-  ] = useState('TODOS')
+  ] = useState('TOTAL')
 
   const [
     operacoesAdministracao,
     setOperacoesAdministracao,
-  ] = useState<OperacaoCarteira[]>([])
+  ] = useState<
+    Array<{
+      nome: string
+      operacoes: OperacaoCarteira[]
+    }>
+  >([])
 
   useEffect(() => {
     let ativo = true
 
     void Promise.all(
-      investidores.map((investidor) =>
-        obterOperacoes(investidor.id),
-      ),
+      investidores.map(async (investidor) => ({
+        nome: investidor.nome,
+        operacoes: await obterOperacoes(investidor.id),
+      })),
     )
       .then((listas) => {
         if (ativo) {
           setOperacoesAdministracao(
-            listas.flat(),
+            listas,
           )
         }
       })
@@ -1039,9 +1045,14 @@ export function AdministracaoView({
             setInvestidorAdministracao
           }
           operacoes={
-            investidorAdministracao === 'TODOS'
-              ? operacoesAdministracao
-              : operacoes
+            investidorAdministracao === 'TOTAL'
+              ? operacoesAdministracao.flatMap(
+                  (item) => item.operacoes,
+                )
+              : operacoesAdministracao.find(
+                  (item) =>
+                    item.nome === investidorAdministracao,
+                )?.operacoes ?? []
           }
           onSaveOperation={
             onSaveOperation
