@@ -19,6 +19,7 @@ import type {
 import {
   atualizarProvento,
   criarProventoRateado,
+  criarProvento,
   excluirProvento,
   listarProventos,
   type SalvarProventoRequest,
@@ -99,6 +100,11 @@ export function ProventosView({
   const [
     modalAberto,
     setModalAberto,
+  ] = useState(false)
+
+  const [
+    novoRateado,
+    setNovoRateado,
   ] = useState(false)
 
   const [
@@ -510,6 +516,10 @@ export function ProventosView({
       null,
     )
 
+    setNovoRateado(
+      investidorAtivo === 'TOTAL',
+    )
+
     setErroModal(
       null,
     )
@@ -531,6 +541,8 @@ export function ProventosView({
     setProventoEditando(
       item,
     )
+
+    setNovoRateado(false)
 
     setErroModal(
       null,
@@ -575,9 +587,13 @@ export function ProventosView({
             valorRecebido: dados.valorRecebido,
           },
         )
-      } else {
+      } else if (novoRateado) {
         await criarProventoRateado(
           request as SalvarProventoTotalRequest,
+        )
+      } else {
+        await criarProvento(
+          request as SalvarProventoRequest,
         )
       }
 
@@ -739,15 +755,31 @@ export function ProventosView({
               </div>
 
               {modoAdministracao ? (
-                <button
-                  type="button"
-                  className="proventos-new-button"
-                  onClick={
-                    novo
-                  }
-                >
-                  + Novo provento
-                </button>
+                <div className="admin-row-actions">
+                  <button
+                    type="button"
+                    className="proventos-new-button"
+                    onClick={() => {
+                      setNovoRateado(true)
+                      setProventoEditando(null)
+                      setErroModal(null)
+                      setModalAberto(true)
+                    }}
+                  >
+                    + Provento total
+                  </button>
+
+                  <button
+                    type="button"
+                    className="proventos-new-button"
+                    onClick={() => {
+                      setNovoRateado(false)
+                      novo()
+                    }}
+                  >
+                    + Por investidor
+                  </button>
+                </div>
               ) : null}
             </header>
 
@@ -938,6 +970,12 @@ export function ProventosView({
           }
           investidorId={
             investidor?.id ?? ''
+          }
+          investidores={
+            investidores
+          }
+          modoRateio={
+            novoRateado
           }
           tickers={
             tickers
