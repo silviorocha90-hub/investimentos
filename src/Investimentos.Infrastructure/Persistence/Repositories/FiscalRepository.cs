@@ -81,7 +81,7 @@ namespace Investimentos.Infrastructure.Persistence.Repositories
 
             var meses = chaves.Select(chave =>
             {
-                var grupo = itens.Where(x => x.Ano == chave.Ano && x.Month == chave.Mes && (Guid?)x.InvestidorId == chave.InvestidorId).ToList();
+                var grupo = itens.Where(x => x.Year == chave.Ano && x.Month == chave.Mes && (Guid?)x.InvestidorId == chave.InvestidorId).ToList();
                 var pago = darfs.Where(x => x.DataPagamento.Year == chave.Ano && x.DataPagamento.Month == chave.Mes && x.InvestidorId == chave.InvestidorId).Sum(x => x.Valor);
                 var estimado = grupo.Sum(x => x.Estimado);
 
