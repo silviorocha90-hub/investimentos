@@ -135,9 +135,9 @@ export function CarteiraView({
     carteirasSelecionadas.reduce(
       (total, item) => total + (item.dashboard.caixaDisponivel ?? 0), 0,
     )
-  const resultadoRealizadoAcoes = dashboardTotal?.resultadoCarteiraAcoes ??
+  const resultadoRealizadoAcoes = dashboardTotal?.resultadoRealizadoAcoes ??
     carteirasSelecionadas.reduce(
-      (total, item) => total + (item.dashboard.resultadoCarteiraAcoes ?? 0), 0,
+      (total, item) => total + (item.dashboard.resultadoRealizadoAcoes ?? 0), 0,
     )
   const totalProventos = dashboardTotal?.totalProventos ??
     carteirasSelecionadas.reduce(
