@@ -373,3 +373,36 @@ export function excluirTipoOperacaoParametro(
     'DELETE',
   )
 }
+
+export interface ProblemaIntegridade {
+  codigo: string
+  severidade: 'ERRO' | 'AVISO'
+  entidade: string
+  referencia: string
+  mensagem: string
+}
+
+export interface RelatorioIntegridade {
+  integro: boolean
+  totalProblemas: number
+  problemas: ProblemaIntegridade[]
+}
+
+export async function verificarIntegridade():
+  Promise<RelatorioIntegridade> {
+  const response =
+    await fetch(
+      `${apiUrl}/api/admin/integridade`,
+      {
+        cache: 'no-store',
+      },
+    )
+
+  if (!response.ok) {
+    throw new Error(
+      await lerErro(response),
+    )
+  }
+
+  return response.json()
+}
