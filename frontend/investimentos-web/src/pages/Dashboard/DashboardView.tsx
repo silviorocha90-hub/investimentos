@@ -1,6 +1,5 @@
 import { useMemo } from 'react'
 import { SectionTitle } from '../../components/SectionTitle'
-import { dashboardSnapshot } from '../../data/dashboardSnapshot'
 import type {
   Dashboard,
   EvolucaoInvestidor,
@@ -10,7 +9,6 @@ import {
   formatarMilhares,
   formatarMilharesInteiros,
   formatarMoeda,
-  formatarPercentual,
   normalizarDataEvolucao,
   obterCorInvestidor,
   ordenarDecrescente,
@@ -34,44 +32,72 @@ interface DashboardViewProps {
   erro: string | null
 }
 
-function MetricBarList({
-  items,
-  formatter,
-  tone = 'calmo',
+function PortfolioReturnBars({
+  rentabilidade,
+  entradas,
+  saidas,
+  resultado,
 }: {
-  items: readonly SimpleMetric[]
-  formatter: (value: number) => string
-  tone?: 'calmo' | 'vibrante'
+  rentabilidade: number
+  entradas: number
+  saidas: number
+  resultado: number
 }) {
-  const max = Math.max(
-    ...items.map((item) => Math.abs(item.value)),
-    1,
-  )
+  const fluxoMax = Math.max(entradas, saidas, 1)
+  const rentabilidadeWidth = Math.min(Math.abs(rentabilidade), 100)
+
+  const rows = [
+    {
+      label: 'Rentabilidade',
+      subtitle: 'Resultado ' + formatarMoeda(resultado),
+      value:
+        rentabilidade.toLocaleString('pt-BR', {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        }) + '%',
+      width: rentabilidadeWidth,
+      tone: rentabilidade >= 0 ? 'return-positive' : 'return-negative',
+    },
+    {
+      label: 'Entradas',
+      subtitle: 'Capital líquido na carteira',
+      value: formatarMoeda(entradas),
+      width: (entradas / fluxoMax) * 100,
+      tone: 'return-entry',
+    },
+    {
+      label: 'Saídas',
+      subtitle: 'Capital líquido retirado',
+      value: formatarMoeda(saidas),
+      width: (saidas / fluxoMax) * 100,
+      tone: 'return-exit',
+    },
+  ]
 
   return (
-    <div className="metric-bar-list">
-      {items.map((item) => {
-        const percentual =
-          (Math.abs(item.value) / max) * 100
-
-        return (
-          <div className="metric-bar-item" key={item.label}>
-            <div className="metric-bar-head">
-              <strong>{item.label}</strong>
-              <span>{formatter(item.value)}</span>
+    <div className="portfolio-return-list">
+      {rows.map((row) => (
+        <div className="portfolio-return-row" key={row.label}>
+          <div className="portfolio-return-head">
+            <div>
+              <strong>{row.label}</strong>
+              <small>{row.subtitle}</small>
             </div>
-
-            <div className={`metric-bar-track ${tone}`}>
-              <div
-                className="metric-bar-fill"
-                style={{
-                  width: `${Math.max(percentual, 2)}%`,
-                }}
-              />
-            </div>
+            <span>{row.value}</span>
           </div>
-        )
-      })}
+          <div className="portfolio-return-track">
+            <i
+              className={row.tone}
+              style={{
+                width: `${Math.max(
+                  row.width,
+                  row.width > 0 ? 2 : 0,
+                )}%`,
+              }}
+            />
+          </div>
+        </div>
+      ))}
     </div>
   )
 }
@@ -752,6 +778,30 @@ export function DashboardView({
     0
 
   /*
+   * RENTABILIDADE AUTOMÁTICA
+   *
+   * patrimônio atual = capital líquido + resultado.
+   * Compras e vendas internas não são tratadas como
+   * aportes/retiradas e, portanto, não inflam o fluxo.
+   */
+  const capitalLiquido =
+    patrimonioEstimado -
+    resultadoRealizado
+
+  const entradas =
+    Math.max(capitalLiquido, 0)
+
+  const saidas =
+    Math.max(-capitalLiquido, 0)
+
+  const rentabilidade =
+    entradas > 0
+      ? (resultadoRealizado /
+          entradas) *
+        100
+      : 0
+
+  /*
    * DISTRIBUIÇÃO POR INVESTIDOR
    *
    * Usa o patrimônio ATUAL retornado
@@ -1067,25 +1117,11 @@ export function DashboardView({
             badge="Carteira"
           />
 
-          {/*
-           * Rentabilidade ainda não possui
-           * fonte operacional própria na API.
-           *
-           * Mantemos temporariamente somente
-           * este quadro vindo do snapshot.
-           *
-           * Nenhum valor patrimonial atual
-           * depende mais dele.
-           */}
-          <MetricBarList
-            items={
-              dashboardSnapshot
-                .rentabilidade
-            }
-            formatter={
-              formatarPercentual
-            }
-            tone="vibrante"
+          <PortfolioReturnBars
+            rentabilidade={rentabilidade}
+            entradas={entradas}
+            saidas={saidas}
+            resultado={resultadoRealizado}
           />
         </article>
 
