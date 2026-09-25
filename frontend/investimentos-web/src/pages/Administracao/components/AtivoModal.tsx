@@ -260,7 +260,7 @@ export function AtivoModal({
                               },
                             ),
                     })
-                  }
+                  }}
                   required
                 >
                   {investidores.map((investidor) => (
