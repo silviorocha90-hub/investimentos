@@ -105,6 +105,8 @@ builder.Services.AddScoped<
     IOperacaoOpcaoCrudRepository,
     OperacaoOpcaoCrudRepository>();
 
+builder.Services.AddScoped<IMovimentacaoFinanceiraRepository, MovimentacaoFinanceiraRepository>();
+
 builder.Services.AddScoped<ConsultarDashboardHandler>();
 builder.Services.AddScoped<ConsultarDashboardConsolidadoHandler>();
 
