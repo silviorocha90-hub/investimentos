@@ -23,8 +23,6 @@ interface AtivosTabProps {
   filtroClasse: string
   filtroTipo: string
 
-  pagina: number
-
   setFiltroInvestidor:
     Dispatch<SetStateAction<string>>
 
@@ -102,8 +100,6 @@ export function AtivosTab({
   filtroAtivo,
   filtroClasse,
   filtroTipo,
-
-  pagina,
 
   setFiltroInvestidor,
   setFiltroAtivo,
