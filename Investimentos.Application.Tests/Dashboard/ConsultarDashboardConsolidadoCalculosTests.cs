@@ -263,6 +263,10 @@ namespace Investimentos.Application.Tests.Dashboard
             Assert.Equal(
                 7.50m,
                 resultado.Posicoes.Single().RentabilidadeEconomica);
+
+            Assert.Equal(
+                2.50m,
+                resultado.Posicoes.Single().YieldProventos);
         }
 
         private static Ativo CriarAtivo()
