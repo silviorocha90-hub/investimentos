@@ -43,61 +43,77 @@ function PortfolioReturnBars({
   saidas: number
   resultado: number
 }) {
-  const fluxoMax = Math.max(entradas, saidas, 1)
-  const rentabilidadeWidth = Math.min(Math.abs(rentabilidade), 100)
+  const rentabilidadeWidth =
+    Math.min(Math.abs(rentabilidade), 100)
 
-  const rows = [
-    {
-      label: 'Rentabilidade',
-      subtitle: 'Resultado ' + formatarMoeda(resultado),
-      value:
-        rentabilidade.toLocaleString('pt-BR', {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2,
-        }) + '%',
-      width: rentabilidadeWidth,
-      tone: rentabilidade >= 0 ? 'return-positive' : 'return-negative',
-    },
-    {
-      label: 'Entradas',
-      subtitle: 'Capital líquido na carteira',
-      value: formatarMoeda(entradas),
-      width: (entradas / fluxoMax) * 100,
-      tone: 'return-entry',
-    },
-    {
-      label: 'Saídas',
-      subtitle: 'Capital líquido retirado',
-      value: formatarMoeda(saidas),
-      width: (saidas / fluxoMax) * 100,
-      tone: 'return-exit',
-    },
-  ]
+  const rentabilidadeFormatada =
+    rentabilidade.toLocaleString('pt-BR', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }) + '%'
 
   return (
-    <div className="portfolio-return-list">
-      {rows.map((row) => (
-        <div className="portfolio-return-row" key={row.label}>
-          <div className="portfolio-return-head">
-            <div>
-              <strong>{row.label}</strong>
-              <small>{row.subtitle}</small>
-            </div>
-            <span>{row.value}</span>
-          </div>
-          <div className="portfolio-return-track">
-            <i
-              className={row.tone}
-              style={{
-                width: `${Math.max(
-                  row.width,
-                  row.width > 0 ? 2 : 0,
-                )}%`,
-              }}
-            />
+    <div className="portfolio-return-card">
+      <div className="portfolio-return-feature">
+        <strong
+          className={
+            rentabilidade >= 0
+              ? 'positive'
+              : 'negative'
+          }
+        >
+          {rentabilidadeFormatada}
+        </strong>
+
+        <div className="portfolio-return-result">
+          <span>Resultado</span>
+          <b
+            className={
+              resultado >= 0
+                ? 'positive'
+                : 'negative'
+            }
+          >
+            {formatarMoeda(resultado)}
+          </b>
+        </div>
+
+        <div className="portfolio-return-track">
+          <i
+            className={
+              rentabilidade >= 0
+                ? 'return-positive'
+                : 'return-negative'
+            }
+            style={{
+              width: `${Math.max(
+                rentabilidadeWidth,
+                rentabilidadeWidth > 0 ? 2 : 0,
+              )}%`,
+            }}
+          />
+        </div>
+      </div>
+
+      <div className="portfolio-flow-grid">
+        <div className="portfolio-flow-card portfolio-flow-entry">
+          <span className="portfolio-flow-icon" aria-hidden="true">↓</span>
+          <div>
+            <span>Entradas</span>
+            <strong>{formatarMoeda(entradas)}</strong>
+            <small>Capital aportado</small>
           </div>
         </div>
-      ))}
+
+        <div className="portfolio-flow-card portfolio-flow-exit">
+          <span className="portfolio-flow-icon" aria-hidden="true">↑</span>
+          <div>
+            <span>Saídas</span>
+            <strong>{formatarMoeda(saidas)}</strong>
+            <small>Capital retirado</small>
+          </div>
+        </div>
+      </div>
     </div>
   )
 }
