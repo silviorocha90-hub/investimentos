@@ -964,9 +964,6 @@ export function AdministracaoView({
           filtroTipo={
             filtroTipo
           }
-          pagina={
-            pagina
-          }
           setFiltroInvestidor={
             setFiltroInvestidor
           }
