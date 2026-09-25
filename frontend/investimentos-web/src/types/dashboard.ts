@@ -16,6 +16,7 @@ export interface PosicaoAtivo {
   resultadoOpcoes?: number
   resultadoEconomico?: number
   rentabilidadeEconomica?: number
+  yieldProventos?: number
 }
 
 export interface Provento {
