@@ -3,6 +3,7 @@ using Investimentos.Api.ExceptionHandling;
 using Investimentos.Api.Startup;
 using Investimentos.Application.Administracao;
 using Investimentos.Application.Administracao.Integridade;
+using Investimentos.Application.Metas;
 using Investimentos.Application.Ativos.CadastrarAtivo;
 using Investimentos.Application.Carteira.ConsultarCarteira;
 using Investimentos.Application.Dashboard;
@@ -146,6 +147,10 @@ builder.Services.AddScoped<
 builder.Services.AddScoped<
     IIntegridadeRepository,
     IntegridadeRepository>();
+
+builder.Services.AddScoped<
+    IMetaAtivoRepository,
+    MetaAtivoRepository>();
 
 var app = builder.Build();
 
@@ -1094,6 +1099,46 @@ app.MapDelete(
             cancellationToken);
 
         return Results.NoContent();
+    });
+
+app.MapGet(
+    "/api/metas-ativos",
+    async (
+        Guid? investidorId,
+        IMetaAtivoRepository repository,
+        CancellationToken cancellationToken) =>
+    {
+        return Results.Ok(
+            await repository.ListarAsync(
+                investidorId,
+                cancellationToken));
+    });
+
+app.MapPut(
+    "/api/metas-ativos",
+    async (
+        SalvarMetaAtivoRequest request,
+        IMetaAtivoRepository repository,
+        CancellationToken cancellationToken) =>
+    {
+        return Results.Ok(
+            await repository.SalvarAsync(
+                request,
+                cancellationToken));
+    });
+
+app.MapDelete(
+    "/api/metas-ativos/{id:guid}",
+    async (
+        Guid id,
+        IMetaAtivoRepository repository,
+        CancellationToken cancellationToken) =>
+    {
+        return await repository.ExcluirAsync(
+            id,
+            cancellationToken)
+                ? Results.NoContent()
+                : Results.NotFound();
     });
 
 app.MapGet(
