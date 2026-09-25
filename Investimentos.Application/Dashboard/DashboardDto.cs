@@ -42,7 +42,10 @@ namespace Investimentos.Application.Dashboard
         decimal IrProventos = 0,
         decimal OpcoesBrutas = 0,
         decimal IrEstimadoOpcoes = 0,
-        decimal ResultadoRealizadoAcoes = 0)
+        decimal ResultadoRealizadoAcoes = 0,
+        decimal RentabilidadeAno = 0,
+        decimal EntradasAno = 0,
+        decimal SaidasAno = 0)
     {
         [Obsolete("Use ValorAplicado.")]
         public decimal PatrimonioPorCusto =>
