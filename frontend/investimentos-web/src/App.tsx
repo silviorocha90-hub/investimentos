@@ -1202,9 +1202,6 @@ function App() {
             carteiras={
               carteirasPorInvestidor
             }
-            evolucao={
-              evolucao
-            }
             selectedInvestor={
               investidorSelecionado
             }
