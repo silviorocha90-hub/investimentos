@@ -13,7 +13,7 @@ namespace Investimentos.Application.Dashboard
         private readonly ICotacaoAtivoRepository _cotacaoRepository;
         private readonly ISaldoDisponivelRepository _saldoRepository;
         private readonly IValorPatrimonialAtivoRepository _valorPatrimonialRepository;
-        private readonly Investimentos.Infrastructure.Persistence.InvestimentosDbContext _context;
+        private readonly IMovimentacaoFinanceiraRepository _movimentacaoRepository;
 
         public ConsultarDashboardHandler(
             ConsultarCarteiraHandler carteiraHandler,
@@ -21,7 +21,7 @@ namespace Investimentos.Application.Dashboard
             ConsultarOpcoesHandler opcoesHandler,
             ICotacaoAtivoRepository cotacaoRepository,
             ISaldoDisponivelRepository saldoRepository,
-            Investimentos.Infrastructure.Persistence.InvestimentosDbContext context,
+            IMovimentacaoFinanceiraRepository movimentacaoRepository,
             IValorPatrimonialAtivoRepository? valorPatrimonialRepository = null)
         {
             _carteiraHandler = carteiraHandler;
@@ -29,7 +29,7 @@ namespace Investimentos.Application.Dashboard
             _opcoesHandler = opcoesHandler;
             _cotacaoRepository = cotacaoRepository;
             _saldoRepository = saldoRepository;
-            _context = context;
+            _movimentacaoRepository = movimentacaoRepository;
             _valorPatrimonialRepository =
                 valorPatrimonialRepository ??
                 new ValorPatrimonialAtivoRepositoryVazio();
@@ -247,22 +247,11 @@ namespace Investimentos.Application.Dashboard
              * Até existir um livro explícito de
              * APORTE/RETIRADA, não inventamos estes valores.
              */
-            var inicioAno =
-                new DateTime(DateTime.Today.Year, 1, 1);
-
-            var inicioProximoAno =
-                inicioAno.AddYears(1);
-
             var movimentacoesAno =
-                await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions
-                    .ToListAsync(
-                        _context.MovimentacoesFinanceiras
-                            .AsNoTracking()
-                            .Where(x =>
-                                x.InvestidorId == investidorId &&
-                                x.Data >= inicioAno &&
-                                x.Data < inicioProximoAno),
-                        cancellationToken);
+                await _movimentacaoRepository.ListarAnoAsync(
+                    investidorId,
+                    DateTime.Today.Year,
+                    cancellationToken);
 
             var entradasAno =
                 movimentacoesAno
