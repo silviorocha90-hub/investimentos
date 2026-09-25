@@ -66,9 +66,7 @@ export function ProventoModal({
   const [
     tipo,
     setTipo,
-  ] = useState(
-    'DIVIDENDO',
-  )
+  ] = useState('')
 
   const [
     descricao,
@@ -152,19 +150,11 @@ export function ProventoModal({
       return
     }
 
-    setInvestidorSelecionadoId(
-      investidorId ||
-      investidores[0]?.id ||
-      '',
-    )
+    setInvestidorSelecionadoId('')
 
-    setTicker(
-      tickers[0] ?? '',
-    )
+    setTicker('')
 
-    setTipo(
-      'DIVIDENDO',
-    )
+    setTipo('')
 
     setDescricao('')
     setDataCom('')
@@ -234,6 +224,7 @@ export function ProventoModal({
       () =>
         ticker.trim()
           .length > 0 &&
+        tipo.length > 0 &&
         dataPagamento
           .length > 0 &&
         (
@@ -246,6 +237,7 @@ export function ProventoModal({
         ),
       [
         ticker,
+        tipo,
         dataPagamento,
         quantidade,
         valorUnitario,
@@ -383,6 +375,9 @@ export function ProventoModal({
                 }
                 disabled={Boolean(provento)}
               >
+                <option value="">
+                  Selecione
+                </option>
                 {investidores.map((item) => (
                   <option key={item.id} value={item.id}>
                     {item.nome}
@@ -447,6 +442,10 @@ export function ProventoModal({
                 )
               }
             >
+              <option value="">
+                Selecione
+              </option>
+
               <option value="DIVIDENDO">
                 Dividendo
               </option>
