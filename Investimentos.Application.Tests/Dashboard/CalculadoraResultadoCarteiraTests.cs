@@ -54,13 +54,85 @@ namespace Investimentos.Application.Tests.Dashboard
                 rentabilidade);
         }
 
-        [Fact]
-        public void DeveRetornarZeroQuandoCapitalBaseNaoForPositivo()
+        [Theory]
+        [InlineData(100, 100)]
+        [InlineData(100, 150)]
+        public void DeveRetornarZeroQuandoCapitalBaseNaoForPositivo(
+            decimal patrimonioAtual,
+            decimal resultadoCarteira)
         {
             Assert.Equal(
                 0m,
                 CalculadoraResultadoCarteira.CalcularRentabilidade(
+                    patrimonioAtual,
+                    resultadoCarteira));
+        }
+
+        [Fact]
+        public void DevePreservarResultadoNegativo()
+        {
+            var resultado =
+                CalculadoraResultadoCarteira.CalcularResultado(
+                    -250m,
+                    40m,
+                    60m);
+
+            Assert.Equal(
+                -150m,
+                resultado);
+        }
+
+        [Fact]
+        public void DeveAceitarResultadoNegativoDeOpcoes()
+        {
+            var resultado =
+                CalculadoraResultadoCarteira.CalcularResultado(
                     100m,
+                    20m,
+                    -50m);
+
+            Assert.Equal(
+                70m,
+                resultado);
+        }
+
+        [Fact]
+        public void DeveRetornarZeroQuandoNaoHaResultado()
+        {
+            Assert.Equal(
+                0m,
+                CalculadoraResultadoCarteira.CalcularResultado(
+                    0m,
+                    0m,
+                    0m));
+        }
+
+        [Fact]
+        public void DeveCalcularRentabilidadeNegativa()
+        {
+            var rentabilidade =
+                CalculadoraResultadoCarteira.CalcularRentabilidade(
+                    900m,
+                    -100m);
+
+            Assert.Equal(
+                -10m,
+                rentabilidade);
+        }
+
+        [Fact]
+        public void CapitalBaseDeveSerPatrimonioMenosResultado()
+        {
+            Assert.Equal(
+                1000m,
+                CalculadoraResultadoCarteira.CalcularCapitalBase(
+                    900m,
+                    -100m));
+
+            Assert.Equal(
+                800m,
+                CalculadoraResultadoCarteira.CalcularCapitalBase(
+                    900m,
                     100m));
         }
     }
