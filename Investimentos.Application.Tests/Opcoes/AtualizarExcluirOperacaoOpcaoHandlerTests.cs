@@ -155,7 +155,7 @@ public class AtualizarExcluirOperacaoOpcaoHandlerTests
     private static OperacaoOpcao CriarOpcaoExecutada()
     {
         var opcao = CriarOpcao();
-        opcao.MarcarExecutada(500m);
+        opcao.MarcarExercida(500m);
         return opcao;
     }
 
