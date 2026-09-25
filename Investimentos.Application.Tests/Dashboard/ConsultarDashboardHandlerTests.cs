@@ -210,6 +210,41 @@ namespace Investimentos.Application.Tests.Dashboard
 
             Assert.Single(
                 resultado.Opcoes);
+
+            /*
+             * A venda realizada de ações não entra no
+             * resultado econômico padrão. Como a cotação
+             * atual é igual ao PM da posição restante,
+             * valorização = 0 e o resultado é somente
+             * o provento líquido de R$ 50,00.
+             */
+            Assert.Equal(
+                50.00m,
+                resultado.ResultadoCarteira);
+
+            Assert.Equal(
+                250.00m,
+                resultado.ResultadoRealizadoAcoes);
+
+            var posicao =
+                Assert.Single(
+                    resultado.Posicoes);
+
+            Assert.Equal(
+                50.00m,
+                posicao.Proventos);
+
+            Assert.Equal(
+                0m,
+                posicao.ResultadoOpcoes);
+
+            Assert.Equal(
+                50.00m,
+                posicao.ResultadoEconomico);
+
+            Assert.Equal(
+                2.50m,
+                posicao.RentabilidadeEconomica);
         }
 
         private static Ativo CriarAtivo()
