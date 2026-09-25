@@ -170,27 +170,19 @@ export function CarteiraView({
           0,
         ))
 
-  const valorizacaoAtivos =
-    posicoes.reduce(
-      (total, posicao) =>
-        total +
-        (
-          (posicao.valorAtual ?? 0) -
-          (posicao.custoTotal ?? 0)
-        ),
-      0,
-    )
-
   /*
-   * Regra padrão do projeto:
-   * Resultado da Carteira =
-   * valorização dos ativos + proventos/dividendos +
-   * prêmio líquido (ganho) de opções.
+   * O resultado econômico é calculado exclusivamente pelo backend.
+   * A Carteira apenas apresenta a regra central do motor financeiro,
+   * evitando manter uma segunda implementação da fórmula no React.
    */
   const resultadoCarteira =
-    valorizacaoAtivos +
-    totalProventos +
-    resultadoOpcoes
+    dashboardTotal?.resultadoRealizado ??
+    carteirasSelecionadas.reduce(
+      (total, item) =>
+        total +
+        (item.dashboard.resultadoRealizado ?? 0),
+      0,
+    )
 
   const crescimentoCarteira = useMemo(() => {
     const normalizarNome = (valor: string) =>
