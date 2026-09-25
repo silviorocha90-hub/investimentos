@@ -34,5 +34,24 @@ namespace Investimentos.Domain.Entities
             Valor = valor;
             Descricao = string.IsNullOrWhiteSpace(descricao) ? null : descricao.Trim();
         }
+
+        public void Atualizar(
+            DateTime data,
+            string tipo,
+            decimal valor,
+            string? descricao = null)
+        {
+            var tipoNormalizado = tipo.Trim().ToUpperInvariant();
+
+            if (tipoNormalizado != "APORTE" && tipoNormalizado != "RETIRADA")
+                throw new ArgumentException("O tipo deve ser APORTE ou RETIRADA.");
+            if (valor <= 0)
+                throw new ArgumentException("O valor deve ser maior que zero.");
+
+            Data = data.Date;
+            Tipo = tipoNormalizado;
+            Valor = valor;
+            Descricao = string.IsNullOrWhiteSpace(descricao) ? null : descricao.Trim();
+        }
     }
 }
