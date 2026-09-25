@@ -177,12 +177,20 @@ export function CarteiraView({
     )
 
   const crescimentoCarteira = useMemo(() => {
+    const normalizarNome = (valor: string) =>
+      valor
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .trim()
+        .toLocaleUpperCase('pt-BR')
+
     const series =
       filtroInvestidor === 'TOTAL'
         ? evolucao
         : evolucao.filter(
             (item) =>
-              item.investidor === filtroInvestidor,
+              normalizarNome(item.investidor) ===
+              normalizarNome(filtroInvestidor),
           )
 
     const pontos =
