@@ -16,6 +16,25 @@ namespace Investimentos.Infrastructure.Persistence.Repositories
             _context = context;
         }
 
+        public async Task<IReadOnlyList<HistoricoPatrimonio>> ListarAsync(
+            Guid? investidorId = null,
+            CancellationToken cancellationToken = default)
+        {
+            var query = _context.HistoricosPatrimonio
+                .AsNoTracking()
+                .Include(x => x.Investidor)
+                .AsQueryable();
+
+            if (investidorId.HasValue)
+            {
+                query = query.Where(x => x.InvestidorId == investidorId.Value);
+            }
+
+            return await query
+                .OrderBy(x => x.DataReferencia)
+                .ToListAsync(cancellationToken);
+        }
+
         public async Task<decimal> ObterTotalAtualAsync(
             CancellationToken cancellationToken = default)
         {
