@@ -353,6 +353,14 @@ export function ProventosView({
       ],
     )
 
+  const totalProventos =
+    proventos.reduce(
+      (total, item) =>
+        total +
+        item.valorRecebido,
+      0,
+    )
+
   const totalAno =
     proventosAno.reduce(
       (total, item) =>
@@ -779,8 +787,8 @@ export function ProventosView({
           {!modoAdministracao ? (
             <>
               <ProventosResumo
-                totalAno={
-                  totalAno
+                totalProventos={
+                  totalProventos
                 }
                 totalMes={
                   totalMes
