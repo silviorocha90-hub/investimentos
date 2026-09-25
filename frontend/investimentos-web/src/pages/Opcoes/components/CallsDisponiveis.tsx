@@ -66,8 +66,16 @@ export function CallsDisponiveis({
         lotes,
       }
     })
-    .filter((posicao) => posicao.lotes > 0)
-    .sort((a, b) => b.livre - a.livre)
+    .sort((a, b) => {
+      if (a.livre !== b.livre) {
+        return b.livre - a.livre
+      }
+
+      return a.ticker.localeCompare(
+        b.ticker,
+        'pt-BR',
+      )
+    })
 
   const totalAcoes = disponiveis.reduce(
     (total, item) => total + item.livre,
@@ -91,7 +99,7 @@ export function CallsDisponiveis({
         <div className="options-call-totals">
           <span>
             <b>{disponiveis.length}</b>
-            ativos
+            ativos em carteira
           </span>
           <span>
             <b>{quantidade.format(totalAcoes)}</b>
@@ -113,7 +121,11 @@ export function CallsDisponiveis({
             >
               <div className="options-call-card-head">
                 <strong>{item.ticker}</strong>
-                <span>{item.lotes} lote{item.lotes !== 1 ? 's' : ''}</span>
+                <span>
+                  {item.lotes > 0
+                    ? `${item.lotes} lote${item.lotes !== 1 ? 's' : ''}`
+                    : 'sem lote livre'}
+                </span>
               </div>
 
               <div className="options-call-card-value">
