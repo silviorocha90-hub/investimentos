@@ -59,22 +59,34 @@ namespace Investimentos.Infrastructure.Persistence.Repositories
                 darfs = darfs.Where(x => x.DataPagamento.Year == ano.Value).ToList();
 
             var chaves = itens
-                .Select(x => (x.Year, x.Month, Id = (Guid?)x.InvestidorId, x.Investidor))
-                .Concat(darfs.Select(x => (x.DataPagamento.Year, x.DataPagamento.Month, x.InvestidorId, x.Investidor?.Nome ?? "Não atribuído")))
+                .Select(x => new
+                {
+                    Ano = x.Year,
+                    Mes = x.Month,
+                    InvestidorId = (Guid?)x.InvestidorId,
+                    Investidor = x.Investidor
+                })
+                .Concat(darfs.Select(x => new
+                {
+                    Ano = x.DataPagamento.Year,
+                    Mes = x.DataPagamento.Month,
+                    InvestidorId = x.InvestidorId,
+                    Investidor = x.Investidor?.Nome ?? "Não atribuído"
+                }))
                 .Distinct()
-                .OrderByDescending(x => x.Year)
-                .ThenByDescending(x => x.Month)
+                .OrderByDescending(x => x.Ano)
+                .ThenByDescending(x => x.Mes)
                 .ThenBy(x => x.Investidor)
                 .ToList();
 
             var meses = chaves.Select(chave =>
             {
-                var grupo = itens.Where(x => x.Year == chave.Year && x.Month == chave.Month && (Guid?)x.InvestidorId == chave.Id).ToList();
-                var pago = darfs.Where(x => x.DataPagamento.Year == chave.Year && x.DataPagamento.Month == chave.Month && x.InvestidorId == chave.Id).Sum(x => x.Valor);
+                var grupo = itens.Where(x => x.Ano == chave.Ano && x.Month == chave.Mes && (Guid?)x.InvestidorId == chave.InvestidorId).ToList();
+                var pago = darfs.Where(x => x.DataPagamento.Year == chave.Ano && x.DataPagamento.Month == chave.Mes && x.InvestidorId == chave.InvestidorId).Sum(x => x.Valor);
                 var estimado = grupo.Sum(x => x.Estimado);
 
                 return new FiscalMesDto(
-                    chave.Year, chave.Month, chave.Id, chave.Investidor,
+                    chave.Ano, chave.Mes, chave.InvestidorId, chave.Investidor,
                     grupo.Sum(x => x.Comum), grupo.Sum(x => x.DayTrade),
                     estimado, pago, estimado - pago, grupo.Count, 0);
             }).ToList();
