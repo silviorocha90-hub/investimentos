@@ -1386,6 +1386,9 @@ function App() {
             carteiras={
               carteirasPorInvestidor
             }
+            dashboardConsolidado={
+              dashboard
+            }
           />
         ) : null}
 
