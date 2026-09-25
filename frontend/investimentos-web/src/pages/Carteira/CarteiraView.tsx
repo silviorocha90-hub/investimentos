@@ -173,7 +173,11 @@ export function CarteiraView({
   const valorizacaoAtivos =
     posicoes.reduce(
       (total, posicao) =>
-        total + (posicao.valorizacao ?? 0),
+        total +
+        (
+          (posicao.valorAtual ?? 0) -
+          (posicao.custoTotal ?? 0)
+        ),
       0,
     )
 
