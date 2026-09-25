@@ -1138,3 +1138,48 @@
       22px 72px minmax(55px, 1fr) 105px;
   }
 }
+
+
+/* CALL disponível — versão compacta */
+.options-call-ranking-card {
+  min-height: auto;
+  padding-top: 12px;
+  padding-bottom: 12px;
+}
+
+.options-call-ranking {
+  margin-top: 10px;
+}
+
+.options-call-ranking .options-ranking-row {
+  min-height: 34px;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  grid-template-columns:
+    22px 82px minmax(100px, 1fr) 260px;
+}
+
+.options-call-ranking-numbers {
+  gap: 1px;
+  line-height: 1.1;
+}
+
+.options-call-ranking-numbers b {
+  font-size: .66rem;
+}
+
+.options-call-ranking-numbers small {
+  white-space: nowrap;
+  font-size: .53rem;
+}
+
+@media (max-width: 900px) {
+  .options-call-ranking .options-ranking-row {
+    grid-template-columns:
+      22px 72px minmax(55px, 1fr) 190px;
+  }
+
+  .options-call-ranking-numbers small {
+    white-space: normal;
+  }
+}
