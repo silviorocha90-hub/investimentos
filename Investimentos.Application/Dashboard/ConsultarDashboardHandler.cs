@@ -234,6 +234,54 @@ namespace Investimentos.Application.Dashboard
 
             const decimal descontosFiscais = 0;
 
+            /*
+             * INDICADORES DO ANO ATUAL
+             *
+             * Entradas = compras realizadas no ano + taxas.
+             * Saídas = vendas realizadas no ano - taxas.
+             * A rentabilidade usa o resultado econômico atual
+             * sobre o capital líquido movimentado no ano.
+             */
+            var anoAtual = DateTime.Today.Year;
+
+            var operacoesAno =
+                (await _carteiraHandler.ObterOperacoesAsync(
+                    investidorId,
+                    cancellationToken))
+                .Where(x => x.Data.Year == anoAtual)
+                .ToList();
+
+            var entradasAno =
+                operacoesAno
+                    .Where(x =>
+                        x.TipoOperacao.Equals(
+                            "COMPRA",
+                            StringComparison.OrdinalIgnoreCase))
+                    .Sum(x =>
+                        x.Quantidade * x.PrecoUnitario +
+                        x.Taxas);
+
+            var saidasAno =
+                operacoesAno
+                    .Where(x =>
+                        x.TipoOperacao.Equals(
+                            "VENDA",
+                            StringComparison.OrdinalIgnoreCase))
+                    .Sum(x =>
+                        Math.Max(
+                            x.Quantidade * x.PrecoUnitario -
+                            x.Taxas,
+                            0));
+
+            var capitalLiquidoAno =
+                entradasAno - saidasAno;
+
+            var rentabilidadeAno =
+                capitalLiquidoAno > 0
+                    ? resultadoCarteira /
+                      capitalLiquidoAno * 100
+                    : 0;
+
             var quantidadeAtivos =
                 posicoes.Count(x =>
                     x.Quantidade > 0 &&
@@ -264,7 +312,10 @@ namespace Investimentos.Application.Dashboard
                 irProventos,
                 opcoesBrutas,
                 irEstimadoOpcoes,
-                resultadoRealizadoAcoes);
+                resultadoRealizadoAcoes,
+                rentabilidadeAno,
+                entradasAno,
+                saidasAno);
         }
 
         private sealed class ValorPatrimonialAtivoRepositoryVazio
