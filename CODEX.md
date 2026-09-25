@@ -1956,6 +1956,7 @@ Abas administrativas relevantes:
 - Integridade
 - Parâmetros
 - Usuários
+- Metas
 
 Padrões visuais já adotados:
 
@@ -2120,11 +2121,37 @@ previsão de exercício.
 As métricas por operação ficam em `OperacaoOpcaoDto`; o React agrega e
 apresenta os valores, sem reconstruir a regra de classificação da exposição.
 
+## Metas por ativo — concluído
+
+As metas são configuráveis por investidor e ativo e ficam persistidas em `MetaAtivo`.
+
+A combinação `InvestidorId + AtivoId` é única e cada meta armazena `QuantidadeDesejada`.
+A quantidade atual não é persistida na meta: ela é calculada pelo backend a partir da carteira,
+utilizando `CalcularCarteiraService` como fonte da posição.
+
+A API expõe:
+
+- `GET /api/metas-ativos`, com filtro opcional por investidor;
+- `PUT /api/metas-ativos`, para inclusão/atualização;
+- `DELETE /api/metas-ativos/{id}`.
+
+O DTO de consulta fornece:
+
+- quantidade atual;
+- quantidade desejada;
+- quantidade faltante;
+- percentual atingido.
+
+A manutenção visual fica em `Administração -> Metas`, com inclusão, edição, exclusão e barra de progresso.
+A meta não é fixa em 1.000 unidades: a quantidade desejada é configurável por ativo/investidor.
+
+Persistência adicionada pela migration `20260925205931_AdicionarMetasAtivos`, com FKs para
+Investidor e Ativo e índice único para impedir metas duplicadas da mesma combinação.
+
 ## Próximos itens
 
-1. Metas por ativo.
-2. Histórico/auditoria da carteira e metodologia adequada de performance.
-3. Evolução fiscal/DARF.
+1. Histórico/auditoria da carteira e metodologia adequada de performance.
+2. Evolução fiscal/DARF.
 
 A ordem pode ser revista por decisão explícita de produto.
 
@@ -2147,6 +2174,13 @@ Refresh frontend:
 Administração:
 
 - `frontend/investimentos-web/src/pages/Administracao/AdministracaoView.tsx`
+
+Metas por ativo:
+
+- `Investimentos.Application/Metas/MetaAtivoDto.cs`
+- `Investimentos.Application/Metas/IMetaAtivoRepository.cs`
+- `src/Investimentos.Infrastructure/Persistence/Repositories/MetaAtivoRepository.cs`
+- `frontend/investimentos-web/src/pages/Administracao/components/MetasAtivosTab.tsx`
 
 Integridade:
 
