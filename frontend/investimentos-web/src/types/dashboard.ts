@@ -97,6 +97,10 @@ export interface Dashboard {
   opcoesBrutas?: number
   irEstimadoOpcoes?: number
 
+  rentabilidadeAno?: number
+  entradasAno?: number
+  saidasAno?: number
+
   saldosDisponiveis?: SaldoInvestidor[]
   distribuicaoPorTipo: DistribuicaoTipoAtivo[]
 
