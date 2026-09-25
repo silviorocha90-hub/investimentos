@@ -1024,3 +1024,31 @@
   background: rgba(255, 88, 108, 0.08);
   color: var(--negative);
 }
+
+.admin-goal-progress {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 180px;
+}
+
+.admin-goal-progress > div {
+  flex: 1;
+  height: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.18);
+}
+
+.admin-goal-progress i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: #22c55e;
+}
+
+.admin-goal-progress strong {
+  min-width: 58px;
+  text-align: right;
+  color: #22c55e;
+}
