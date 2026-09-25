@@ -93,7 +93,7 @@ namespace Investimentos.Application.Carteira.ConsultarCarteira
                             x.Ativo.Nome,
                             tipoOperacao,
                             x.Quantidade,
-                            x.ValorExecucao!.Value,
+                            x.ValorExecucao!.Value / x.Quantidade,
                             0m,
                             x.DataFinalizacao ?? x.Vencimento,
                             int.MaxValue)
