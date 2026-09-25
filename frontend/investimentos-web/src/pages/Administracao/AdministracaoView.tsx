@@ -66,6 +66,10 @@ import {
 } from './components/UsuariosTab'
 
 import {
+  MovimentacoesFinanceirasTab,
+} from './components/MovimentacoesFinanceirasTab'
+
+import {
   AtivoModal,
 } from './components/AtivoModal'
 
@@ -76,6 +80,7 @@ type AbaAdministracao =
   | 'operacoes'
   | 'opcoes'
   | 'proventos'
+  | 'movimentacoes'
   | 'investidores'
   | 'carteira'
   | 'parametros'
@@ -916,6 +921,23 @@ export function AdministracaoView({
           type="button"
           className={
             aba ===
+            'movimentacoes'
+              ? 'active'
+              : ''
+          }
+          onClick={() =>
+            trocarAba(
+              'movimentacoes',
+            )
+          }
+        >
+          Entradas / Saídas
+        </button>
+
+        <button
+          type="button"
+          className={
+            aba ===
             'investidores'
               ? 'active'
               : ''
@@ -1092,6 +1114,15 @@ export function AdministracaoView({
             setInvestidorAdministracao
           }
           modo="administracao"
+        />
+      ) : null}
+
+      {aba ===
+      'movimentacoes' ? (
+        <MovimentacoesFinanceirasTab
+          investidores={
+            investidores
+          }
         />
       ) : null}
 
