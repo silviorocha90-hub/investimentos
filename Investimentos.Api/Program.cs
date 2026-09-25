@@ -280,6 +280,37 @@ app.MapPost(
         }
     });
 
+app.MapPut(
+    "/api/movimentacoes-financeiras/{id:guid}",
+    async (
+        Guid id,
+        AtualizarMovimentacaoFinanceiraRequest request,
+        InvestimentosDbContext context,
+        CancellationToken cancellationToken) =>
+    {
+        var movimentacao = await context.MovimentacoesFinanceiras
+            .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+
+        if (movimentacao is null)
+            return Results.NotFound(new { detail = "Movimentação não encontrada." });
+
+        try
+        {
+            movimentacao.Atualizar(
+                request.Data,
+                request.Tipo,
+                request.Valor,
+                request.Descricao);
+
+            await context.SaveChangesAsync(cancellationToken);
+            return Results.NoContent();
+        }
+        catch (ArgumentException ex)
+        {
+            return Results.BadRequest(new { detail = ex.Message });
+        }
+    });
+
 app.MapDelete(
     "/api/movimentacoes-financeiras/{id:guid}",
     async (
@@ -1474,6 +1505,12 @@ public record AtualizarTipoAtivoParametroRequest(
 
 public record CriarMovimentacaoFinanceiraRequest(
     Guid InvestidorId,
+    DateTime Data,
+    string Tipo,
+    decimal Valor,
+    string? Descricao);
+
+public record AtualizarMovimentacaoFinanceiraRequest(
     DateTime Data,
     string Tipo,
     decimal Valor,
