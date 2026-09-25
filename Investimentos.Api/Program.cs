@@ -1016,7 +1016,7 @@ app.MapGet(
 
 app.MapGet(
     "/api/fiscal",
-    async (
+    (Delegate)(async (
         Guid? investidorId,
         int? ano,
         IFiscalRepository repository,
@@ -1027,7 +1027,7 @@ app.MapGet(
                 investidorId,
                 ano,
                 cancellationToken));
-    });
+    }));
 
 app.MapGet(
     "/api/descontos-fiscais",
