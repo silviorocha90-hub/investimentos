@@ -236,9 +236,10 @@ namespace Investimentos.Application.Dashboard
              * este indicador.
              */
             var resultadoCarteira =
-                valorizacaoAtivos +
-                totalProventos +
-                premioLiquidoOpcoes;
+                CalculadoraResultadoCarteira.CalcularResultado(
+                    valorizacaoAtivos,
+                    totalProventos,
+                    premioLiquidoOpcoes);
 
             const decimal descontosFiscais = 0;
 
@@ -274,15 +275,10 @@ namespace Investimentos.Application.Dashboard
              * menos o resultado acumulado, sem usar o giro
              * de compras e vendas como base.
              */
-            var capitalInvestido =
-                patrimonioEstimado -
-                resultadoCarteira;
-
             var rentabilidadeAno =
-                capitalInvestido > 0
-                    ? resultadoCarteira /
-                      capitalInvestido * 100
-                    : 0;
+                CalculadoraResultadoCarteira.CalcularRentabilidade(
+                    patrimonioEstimado,
+                    resultadoCarteira);
 
             var quantidadeAtivos =
                 posicoes.Count(x =>
