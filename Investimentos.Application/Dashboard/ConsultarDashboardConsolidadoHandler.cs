@@ -354,9 +354,10 @@ namespace Investimentos.Application.Dashboard
              * + prêmio líquido (ganho) de opções.
              */
             var resultadoCarteira =
-                valorizacaoAtivos +
-                totalProventos +
-                premioLiquidoOpcoes;
+                CalculadoraResultadoCarteira.CalcularResultado(
+                    valorizacaoAtivos,
+                    totalProventos,
+                    premioLiquidoOpcoes);
 
             var entradasAno =
                 dashboards.Sum(x =>
@@ -366,15 +367,10 @@ namespace Investimentos.Application.Dashboard
                 dashboards.Sum(x =>
                     x.SaidasAno);
 
-            var capitalInvestido =
-                patrimonioEstimado -
-                resultadoCarteira;
-
             var rentabilidadeAno =
-                capitalInvestido > 0
-                    ? resultadoCarteira /
-                      capitalInvestido * 100
-                    : 0;
+                CalculadoraResultadoCarteira.CalcularRentabilidade(
+                    patrimonioEstimado,
+                    resultadoCarteira);
 
             return new DashboardDto(
                 valorAplicado,
