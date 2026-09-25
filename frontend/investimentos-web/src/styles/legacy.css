@@ -2951,3 +2951,148 @@ a {
   border-color: rgba(99, 230, 200, 0.24);
   background: rgba(99, 230, 200, 0.08);
 }
+
+
+/* =========================================================
+   PAINEL — RENTABILIDADE / ENTRADAS / SAÍDAS
+   ========================================================= */
+
+.portfolio-return-card {
+  display: grid;
+  gap: 18px;
+  padding-top: 6px;
+}
+
+.portfolio-return-feature {
+  display: grid;
+  gap: 10px;
+}
+
+.portfolio-return-feature > strong {
+  font-size: clamp(1.7rem, 2.4vw, 2.45rem);
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -0.04em;
+}
+
+.portfolio-return-result {
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+}
+
+.portfolio-return-result > span {
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.portfolio-return-result > b {
+  font-size: 0.88rem;
+  font-weight: 800;
+}
+
+.portfolio-return-feature .portfolio-return-track {
+  margin-top: 2px;
+}
+
+.portfolio-flow-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+
+.portfolio-flow-card {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--panel-strong);
+}
+
+.portfolio-flow-card > div {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.portfolio-flow-card > div > span {
+  color: var(--text);
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.portfolio-flow-card strong {
+  overflow: hidden;
+  font-size: 0.86rem;
+  font-weight: 900;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.portfolio-flow-card small {
+  color: var(--muted);
+  font-size: 0.61rem;
+}
+
+.portfolio-flow-icon {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  font-size: 1.15rem;
+  font-weight: 900;
+}
+
+.portfolio-flow-entry {
+  border-color: rgba(99, 230, 200, 0.24);
+  background:
+    linear-gradient(
+      135deg,
+      rgba(99, 230, 200, 0.08),
+      rgba(99, 230, 200, 0.025)
+    );
+}
+
+.portfolio-flow-entry strong,
+.portfolio-flow-entry .portfolio-flow-icon {
+  color: var(--positive);
+}
+
+.portfolio-flow-entry .portfolio-flow-icon {
+  background: rgba(99, 230, 200, 0.12);
+  border: 1px solid rgba(99, 230, 200, 0.16);
+}
+
+.portfolio-flow-exit {
+  border-color: rgba(255, 88, 108, 0.22);
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255, 88, 108, 0.07),
+      rgba(255, 88, 108, 0.02)
+    );
+}
+
+.portfolio-flow-exit strong,
+.portfolio-flow-exit .portfolio-flow-icon {
+  color: var(--negative);
+}
+
+.portfolio-flow-exit .portfolio-flow-icon {
+  background: rgba(255, 88, 108, 0.12);
+  border: 1px solid rgba(255, 88, 108, 0.16);
+}
+
+@media (max-width: 760px) {
+  .portfolio-flow-grid {
+    grid-template-columns: 1fr;
+  }
+}
