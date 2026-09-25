@@ -44,6 +44,9 @@ namespace Investimentos.Infrastructure.Persistence
         public DbSet<ValorPatrimonialAtivo> ValoresPatrimoniaisAtivos =>
             Set<ValorPatrimonialAtivo>();
 
+        public DbSet<MetaAtivo> MetasAtivos =>
+            Set<MetaAtivo>();
+
         public DbSet<SaldoDisponivel> SaldosDisponiveis =>
             Set<SaldoDisponivel>();
 
