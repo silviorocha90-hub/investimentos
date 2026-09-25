@@ -42,35 +42,55 @@ namespace Investimentos.Application.Opcoes.AtualizarOperacaoOpcao
                     "Operação de opção não encontrada.");
             }
 
-            opcao.AtualizarDados(
-                command.DataOperacao,
-                command.Vencimento,
-                command.Strike,
-                command.Contratos,
-                command.Quantidade,
-                command.PremioUnitario,
-                command.Taxas);
+            var situacaoAtual =
+                opcao.Situacao
+                    .Trim()
+                    .ToUpperInvariant();
 
-            opcao.AtualizarResultadoInformado(
-                command.ResultadoInformado);
-
-            var situacao =
+            var novaSituacao =
                 command.Situacao
                     .Trim()
                     .ToUpperInvariant();
 
-            if (situacao != "ENCERRADA" &&
-                situacao != "EXECUTADA")
+            if (situacaoAtual == "EXECUTADA")
             {
-                throw new ArgumentException(
-                    "A situação deve ser ENCERRADA ou EXECUTADA.");
-            }
+                if (novaSituacao != "ENCERRADA")
+                {
+                    throw new InvalidOperationException(
+                        "Uma opção executada somente pode ser alterada para ENCERRADA.");
+                }
 
-            opcao.AtualizarFinalizacao(
-                situacao,
-                command.DataFinalizacao,
-                command.PrecoRecompraUnitario,
-                command.ValorExecucao);
+                opcao.AtualizarResultadoInformado(
+                    command.ResultadoInformado);
+
+                opcao.AtualizarFinalizacao(
+                    "ENCERRADA",
+                    command.DataFinalizacao,
+                    command.PrecoRecompraUnitario,
+                    null);
+            }
+            else if (situacaoAtual == "ENCERRADA")
+            {
+                if (novaSituacao != "ENCERRADA")
+                {
+                    throw new InvalidOperationException(
+                        "O status de uma opção encerrada não pode mais ser alterado.");
+                }
+
+                opcao.AtualizarResultadoInformado(
+                    command.ResultadoInformado);
+
+                opcao.AtualizarFinalizacao(
+                    "ENCERRADA",
+                    command.DataFinalizacao,
+                    command.PrecoRecompraUnitario,
+                    null);
+            }
+            else
+            {
+                throw new InvalidOperationException(
+                    "Somente opções EXECUTADAS ou ENCERRADAS podem ser editadas por esta operação.");
+            }
 
             await _repository.SalvarAlteracoesAsync(
                 cancellationToken);
