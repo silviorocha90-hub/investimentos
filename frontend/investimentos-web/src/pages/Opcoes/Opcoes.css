@@ -1072,3 +1072,35 @@
     grid-template-columns: 1fr;
   }
 }
+
+
+/* Opções: Evolução | Disponível para CALL | Ranking */
+.options-charts-grid-three {
+  grid-template-columns:
+    minmax(0, 1.35fr)
+    minmax(260px, .85fr)
+    minmax(260px, .85fr);
+}
+
+.options-call-ranking-card {
+  min-height: 300px;
+}
+
+.options-call-ranking {
+  margin-top: 20px;
+}
+
+.options-call-ranking .options-ranking-row {
+  grid-template-columns:
+    22px 72px minmax(55px, 1fr) 86px;
+}
+
+.options-call-ranking .options-ranking-value {
+  font-size: .66rem;
+}
+
+@media (max-width: 1250px) {
+  .options-charts-grid-three {
+    grid-template-columns: 1fr;
+  }
+}
