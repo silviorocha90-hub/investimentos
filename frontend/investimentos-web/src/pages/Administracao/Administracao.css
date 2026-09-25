@@ -1052,3 +1052,24 @@
   text-align: right;
   color: #22c55e;
 }
+
+.admin-toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.admin-toolbar-actions select,
+.admin-toolbar-actions input {
+  min-height: 38px;
+}
+
+.admin-inline-info {
+  margin: 0.75rem 0;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border-color, #d9dee7);
+  border-radius: 8px;
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
