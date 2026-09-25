@@ -73,10 +73,8 @@ namespace Investimentos.Application.Carteira.ConsultarCarteira
             var exercicios =
                 opcoes
                     .Where(x =>
-                        x.Situacao == "ENCERRADA" &&
                         x.ValorExecucao.HasValue &&
-                        x.ValorExecucao.Value > 0 &&
-                        x.DataFinalizacao.HasValue)
+                        x.ValorExecucao.Value > 0)
                     .Select(x =>
                     {
                         var tipoOperacao =
@@ -97,7 +95,7 @@ namespace Investimentos.Application.Carteira.ConsultarCarteira
                             x.Quantidade,
                             x.ValorExecucao!.Value,
                             0m,
-                            x.DataFinalizacao!.Value,
+                            x.DataFinalizacao ?? x.Vencimento,
                             int.MaxValue)
                         {
                             TipoAtivoCodigo =
