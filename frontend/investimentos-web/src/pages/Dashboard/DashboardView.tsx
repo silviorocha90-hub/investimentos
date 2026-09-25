@@ -786,7 +786,7 @@ export function DashboardView({
     0
 
   const resultadoRealizado =
-    dashboard?.resultadoRealizado ??
+    dashboard?.resultadoCarteira ??
     0
 
   const premioOpcoes =
