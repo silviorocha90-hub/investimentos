@@ -24,7 +24,10 @@ export function CallsDisponiveis({
       (opcao) =>
         opcao.tipoOpcao.trim().toUpperCase() === 'CALL' &&
         opcao.natureza.trim().toUpperCase() === 'VENDA' &&
-        opcao.situacao.trim().toUpperCase() !== 'EXECUTADA',
+        (
+          opcao.situacao.trim().toUpperCase() === 'ABERTA' ||
+          opcao.situacao.trim().toUpperCase() === 'EXECUTADA'
+        ),
     )
     .forEach((opcao) => {
       const tickerAtivo =
@@ -123,7 +126,7 @@ export function CallsDisponiveis({
                   <b>{quantidade.format(item.quantidade)}</b>
                 </span>
                 <span>
-                  Em CALL não executada
+                  Em CALL comprometida
                   <b>{quantidade.format(item.comprometida)}</b>
                 </span>
               </div>
