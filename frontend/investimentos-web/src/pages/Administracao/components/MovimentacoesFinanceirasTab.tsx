@@ -100,6 +100,7 @@ export function MovimentacoesFinanceirasTab({ investidores }: Props) {
       setErro(null)
       if (editando) {
         await atualizarMovimentacaoFinanceira(editando.id, {
+          investidorId: form.investidorId,
           data: form.data,
           tipo: form.tipo,
           valor,
@@ -190,7 +191,7 @@ export function MovimentacoesFinanceirasTab({ investidores }: Props) {
               <button type="button" onClick={() => setModal(false)}>×</button>
             </div>
             <div className="admin-modal-grid">
-              <label><span>Investidor</span><select disabled={!!editando} value={form.investidorId} onChange={(e) => setForm({ ...form, investidorId: e.target.value })}>{investidores.map((x) => <option key={x.id} value={x.id}>{x.nome}</option>)}</select></label>
+              <label><span>Investidor</span><select value={form.investidorId} onChange={(e) => setForm({ ...form, investidorId: e.target.value })}>{investidores.map((x) => <option key={x.id} value={x.id}>{x.nome}</option>)}</select></label>
               <label><span>Data</span><input type="date" value={form.data} onChange={(e) => setForm({ ...form, data: e.target.value })} /></label>
               <label><span>Tipo</span><select value={form.tipo} onChange={(e) => setForm({ ...form, tipo: e.target.value as TipoMovimentacaoFinanceira })}><option value="APORTE">APORTE</option><option value="RETIRADA">RETIRADA</option></select></label>
               <label><span>Valor</span><input inputMode="decimal" value={form.valor} onChange={(e) => setForm({ ...form, valor: e.target.value })} placeholder="0,00" /></label>
