@@ -174,12 +174,33 @@ export function CarteiraView({
       (total, item) => total + (item.dashboard.resultadoRealizado ?? 0), 0,
     )
 
-  const custoTotal = posicoes.reduce((total, item) => total + item.custoTotal, 0)
-  const valorAtualTotal = posicoes.reduce((total, item) => total + item.valorAtual, 0)
   const rentabilidadeTotal =
-    custoTotal > 0
-      ? ((valorAtualTotal - custoTotal + totalProventos) / custoTotal) * 100
-      : 0
+    dashboardTotal?.rentabilidadeAno ??
+    (() => {
+      const dashboards =
+        carteirasSelecionadas.map(
+          (item) => item.dashboard,
+        )
+
+      const capitalBase = dashboards.reduce(
+        (total, dashboard) => {
+          const resultado =
+            dashboard.resultadoRealizado ?? 0
+
+          return total +
+            Math.max(
+              (dashboard.patrimonioEstimado ?? 0) -
+                resultado,
+              0,
+            )
+        },
+        0,
+      )
+
+      return capitalBase > 0
+        ? (resultadoCarteira / capitalBase) * 100
+        : 0
+    })()
 
   const rendaVariavel = posicoes
     .filter((posicao) => !ehOutroInvestimento(posicao.ticker, posicao.tipoAtivoCodigo))
@@ -215,7 +236,7 @@ export function CarteiraView({
         <article className="carteira-kpi kpi-violet"><span>Patrimônio Atual</span><strong>{formatarMoeda(patrimonio)}</strong><i>◆</i></article>
         <article className="carteira-kpi kpi-blue"><span>Valor Aplicado</span><strong>{formatarMoeda(valorAplicado)}</strong><i>▥</i></article>
         <article className="carteira-kpi kpi-green"><span>Disponível</span><strong>{formatarMoeda(valorDisponivel)}</strong><i>●</i></article>
-        <article className="carteira-kpi kpi-gold"><span>Rentabilidade Total</span><strong>{percentual(rentabilidadeTotal)}</strong><i>↗</i></article>
+        <article className="carteira-kpi kpi-gold"><span>Rentabilidade</span><strong>{percentual(rentabilidadeTotal)}</strong><i>↗</i></article>
       </div>
 
       <article className="panel portfolio-positions portfolio-variable-income carteira-panel">
