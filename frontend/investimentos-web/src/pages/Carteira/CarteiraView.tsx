@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { PageHeader } from '../../components/PageHeader'
 import { SectionTitle } from '../../components/SectionTitle'
 
-import type { Dashboard } from '../../types/dashboard'
+import type { Dashboard, EvolucaoInvestidor } from '../../types/dashboard'
 import type { Investidor } from '../../types/investidor'
 
 import {
@@ -23,6 +23,7 @@ interface CarteiraViewProps {
   selectedInvestor: string
   onSelectInvestor: (nome: string) => void
   snapshotSeries: Record<string, { data: string; carteira: number }[]>
+  evolucao: readonly EvolucaoInvestidor[]
   saldosDisponiveis?: ReadonlyArray<{
     investidor: string
     valor: number
@@ -77,6 +78,7 @@ export function CarteiraView({
   investidores,
   dashboardConsolidado,
   carteiras,
+  evolucao,
   onSelectInvestor,
 }: CarteiraViewProps) {
   const [filtroInvestidor, setFiltroInvestidor] = useState('TOTAL')
@@ -174,33 +176,45 @@ export function CarteiraView({
       (total, item) => total + (item.dashboard.resultadoRealizado ?? 0), 0,
     )
 
-  const rentabilidadeTotal =
-    dashboardTotal?.rentabilidadeAno ??
-    (() => {
-      const dashboards =
-        carteirasSelecionadas.map(
-          (item) => item.dashboard,
+  const crescimentoCarteira = useMemo(() => {
+    const series =
+      filtroInvestidor === 'TOTAL'
+        ? evolucao
+        : evolucao.filter(
+            (item) =>
+              item.investidor === filtroInvestidor,
+          )
+
+    const pontosPorData = new Map<string, number>()
+
+    series.forEach((serie) => {
+      serie.pontos.forEach((ponto) => {
+        const data = ponto.data.slice(0, 10)
+
+        pontosPorData.set(
+          data,
+          (pontosPorData.get(data) ?? 0) +
+            ponto.carteira,
         )
+      })
+    })
 
-      const capitalBase = dashboards.reduce(
-        (total, dashboard) => {
-          const resultado =
-            dashboard.resultadoRealizado ?? 0
-
-          return total +
-            Math.max(
-              (dashboard.patrimonioEstimado ?? 0) -
-                resultado,
-              0,
-            )
-        },
-        0,
+    const pontos = [...pontosPorData.entries()]
+      .sort(([dataA], [dataB]) =>
+        dataA.localeCompare(dataB),
       )
 
-      return capitalBase > 0
-        ? (resultadoCarteira / capitalBase) * 100
-        : 0
-    })()
+    if (pontos.length < 2) {
+      return 0
+    }
+
+    const inicial = pontos[0][1]
+    const atual = pontos[pontos.length - 1][1]
+
+    return inicial > 0
+      ? ((atual - inicial) / inicial) * 100
+      : 0
+  }, [evolucao, filtroInvestidor])
 
   const rendaVariavel = posicoes
     .filter((posicao) => !ehOutroInvestimento(posicao.ticker, posicao.tipoAtivoCodigo))
@@ -236,7 +250,7 @@ export function CarteiraView({
         <article className="carteira-kpi kpi-violet"><span>Patrimônio Atual</span><strong>{formatarMoeda(patrimonio)}</strong><i>◆</i></article>
         <article className="carteira-kpi kpi-blue"><span>Valor Aplicado</span><strong>{formatarMoeda(valorAplicado)}</strong><i>▥</i></article>
         <article className="carteira-kpi kpi-green"><span>Disponível</span><strong>{formatarMoeda(valorDisponivel)}</strong><i>●</i></article>
-        <article className="carteira-kpi kpi-gold"><span>Rentabilidade</span><strong>{percentual(rentabilidadeTotal)}</strong><i>↗</i></article>
+        <article className="carteira-kpi kpi-gold"><span>Crescimento da Carteira</span><strong>{percentual(crescimentoCarteira)}</strong><i>↗</i></article>
       </div>
 
       <article className="panel portfolio-positions portfolio-variable-income carteira-panel">
