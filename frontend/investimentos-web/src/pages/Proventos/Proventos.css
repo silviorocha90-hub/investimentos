@@ -621,3 +621,18 @@
 .proventos-chart-card:first-child{display:flex;flex-direction:column}
 .proventos-chart-card:first-child .proventos-month-chart{flex:1;height:auto;min-height:260px;margin-top:12px;margin-bottom:0}
 .proventos-chart-card:first-child .proventos-month-column{min-height:0}
+
+
+/* Selects nativos: contraste consistente no popup do Windows/Chrome */
+.proventos-filters select option,
+.provento-form-grid select option {
+  background: #ffffff;
+  color: #17212b;
+  font-weight: 600;
+}
+
+.proventos-filters select option:checked,
+.provento-form-grid select option:checked {
+  background: #dfe7ee;
+  color: #17212b;
+}
