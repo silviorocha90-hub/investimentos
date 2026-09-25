@@ -1820,7 +1820,7 @@ a {
   font-size: 0.58rem;
   font-weight: 500;
   text-align: right;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
 }
 
 .dashboard-grid .distribution-panel .distribution-legend-value::first-line {
@@ -3112,13 +3112,14 @@ a {
 
 .performance-audit-table-wrap {
   width: 100%;
-  overflow-x: auto;
+  overflow: hidden;
 }
 
 .performance-audit-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.82rem;
+  table-layout: fixed;
+  font-size: 0.78rem;
 }
 
 .performance-audit-table th,
