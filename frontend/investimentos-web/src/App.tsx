@@ -347,6 +347,145 @@ function App() {
     )
   }
 
+  async function carregarDadosAtuais() {
+    const dadosInvestidores =
+      await listarInvestidores()
+
+    const idsPermitidos =
+      new Set(
+        usuario?.investidoresIds ?? [],
+      )
+
+    const investidoresPermitidos =
+      !usuario ||
+      usuario.perfil === 'Admin'
+        ? dadosInvestidores
+        : dadosInvestidores.filter(
+            (investidor) =>
+              idsPermitidos.has(
+                investidor.id,
+              ),
+          )
+
+    const podeDashboard =
+      possuiPermissao(
+        'Dashboard',
+      )
+
+    const podeConsultarCarteiras =
+      possuiPermissao(
+        'Carteira',
+      ) ||
+      possuiPermissao(
+        'Ativos',
+      ) ||
+      possuiPermissao(
+        'Opcoes',
+      ) ||
+      possuiPermissao(
+        'Administracao',
+      )
+
+    const [
+      dadosDashboard,
+      dadosEvolucao,
+      resultadosCarteiras,
+    ] = await Promise.all([
+      podeDashboard
+        ? obterDashboardConsolidado()
+        : Promise.resolve(null),
+
+      podeDashboard
+        ? obterEvolucaoConsolidada()
+        : Promise.resolve([]),
+
+      podeDashboard ||
+      podeConsultarCarteiras
+        ? Promise.allSettled(
+            investidoresPermitidos.map(
+              async (investidor) => ({
+                nome:
+                  investidor.nome,
+
+                dashboard:
+                  await obterDashboardPorInvestidor(
+                    investidor.id,
+                  ),
+              }),
+            ),
+          )
+        : Promise.resolve([]),
+    ])
+
+    const carteirasAtualizadas =
+      resultadosCarteiras.flatMap(
+        (resultado) => {
+          if (
+            resultado.status ===
+            'fulfilled'
+          ) {
+            return [
+              resultado.value,
+            ]
+          }
+
+          console.error(
+            resultado.reason,
+          )
+
+          return []
+        },
+      )
+
+    setTodosInvestidores(
+      dadosInvestidores,
+    )
+
+    setDashboard(
+      dadosDashboard,
+    )
+
+    setEvolucao(
+      dadosEvolucao,
+    )
+
+    setCarteirasPainel(
+      podeDashboard
+        ? carteirasAtualizadas
+        : [],
+    )
+
+    setCarteirasPorInvestidor(
+      podeConsultarCarteiras
+        ? carteirasAtualizadas
+        : [],
+    )
+
+    const investidorAtual =
+      investidoresPermitidos.find(
+        (item) =>
+          item.nome ===
+          investidorSelecionado,
+      )
+
+    if (
+      investidorAtual &&
+      possuiPermissao(
+        'Operacoes',
+      )
+    ) {
+      setOperacoes(
+        await obterOperacoes(
+          investidorAtual.id,
+        ),
+      )
+    } else {
+      setOperacoes([])
+    }
+
+    setApiDisponivel(true)
+  }
+
   async function atualizarTudo() {
     if (atualizandoDados) {
       return
@@ -356,97 +495,21 @@ function App() {
       setAtualizandoDados(true)
       setErro(null)
 
-      const dadosInvestidores =
-        await listarInvestidores()
+      await carregarDadosAtuais()
 
-      const investidoresPermitidos =
-        !usuario ||
-        usuario.perfil === 'Admin'
-          ? dadosInvestidores
-          : dadosInvestidores.filter(
-              (investidor) =>
-                new Set(
-                  usuario.investidoresIds,
-                ).has(investidor.id),
-            )
-
-      const [
-        dadosDashboard,
-        dadosEvolucao,
-        resultadosCarteiras,
-      ] = await Promise.all([
-        possuiPermissao('Dashboard')
-          ? obterDashboardConsolidado()
-          : Promise.resolve(null),
-        possuiPermissao('Dashboard')
-          ? obterEvolucaoConsolidada()
-          : Promise.resolve([]),
-        Promise.allSettled(
-          investidoresPermitidos.map(
-            async (investidor) => ({
-              nome: investidor.nome,
-              dashboard:
-                await obterDashboardPorInvestidor(
-                  investidor.id,
-                ),
-            }),
-          ),
-        ),
-      ])
-
-      const carteirasAtualizadas =
-        resultadosCarteiras.flatMap(
-          (resultado) =>
-            resultado.status === 'fulfilled'
-              ? [resultado.value]
-              : [],
-        )
-
-      setTodosInvestidores(
-        dadosInvestidores,
-      )
-
-      if (dadosDashboard) {
-        setDashboard(
-          dadosDashboard,
-        )
-        setCarteirasPainel(
-          carteirasAtualizadas,
-        )
-      }
-
-      setEvolucao(
-        dadosEvolucao,
-      )
-
-      setCarteirasPorInvestidor(
-        carteirasAtualizadas,
-      )
-
-      const investidorAtual =
-        investidoresPermitidos.find(
-          (item) =>
-            item.nome ===
-            investidorSelecionado,
-        )
-
-      if (
-        investidorAtual &&
-        possuiPermissao('Operacoes')
-      ) {
-        setOperacoes(
-          await obterOperacoes(
-            investidorAtual.id,
-          ),
-        )
-      }
-
-      setApiDisponivel(true)
+      /*
+       * A versão existe apenas para componentes administrativos
+       * que mantêm estado local próprio. Os dados financeiros
+       * principais já foram substituídos acima pela resposta
+       * fresca da API.
+       */
       setVersaoDados(
-        (atual) => atual + 1,
+        (atual) =>
+          atual + 1,
       )
     } catch (error) {
       console.error(error)
+
       setErro(
         'Não foi possível atualizar os dados.',
       )
