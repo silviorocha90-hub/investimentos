@@ -172,7 +172,7 @@ export function ProventosView({
     )
 
   async function carregar() {
-    if (!investidor && (investidorAtivo !== 'TOTAL' || modoAdministracao)) {
+    if (!investidor && investidorAtivo !== 'TOTAL') {
       setProventos([])
       setCarregando(false)
       return
@@ -183,7 +183,7 @@ export function ProventosView({
       setErro(null)
 
       const dados =
-        investidorAtivo === 'TOTAL' && !modoAdministracao
+        investidorAtivo === 'TOTAL'
           ? (
               await Promise.all(
                 investidoresComProventos.map((item) =>
@@ -676,9 +676,7 @@ export function ProventosView({
             }
           }
         }}
-        incluirTodos={
-          !modoAdministracao
-        }
+        incluirTodos
         rotuloTodos="Todos"
       />
 
