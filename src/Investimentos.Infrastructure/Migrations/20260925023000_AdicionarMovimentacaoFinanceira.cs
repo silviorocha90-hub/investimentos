@@ -26,7 +26,7 @@ namespace Investimentos.Infrastructure.Migrations
                     table.ForeignKey(
                         name: "FK_MovimentacaoFinanceira_Investidores_InvestidorId",
                         column: x => x.InvestidorId,
-                        principalTable: "Investidores",
+                        principalTable: "Investidor",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 });
