@@ -31,6 +31,7 @@ export function CarteiraTab({ dados, recarregar }: CarteiraTabProps) {
   const [dataPagamento, setDataPagamento] = useState('')
   const [valor, setValor] = useState('')
   const [descricao, setDescricao] = useState('')
+  const [investidorModalId, setInvestidorModalId] = useState('')
   const [salvando, setSalvando] = useState(false)
   const [erro, setErro] = useState<string | null>(null)
   const [fiscal, setFiscal] = useState<FiscalResumo | null>(null)
@@ -63,6 +64,7 @@ export function CarteiraTab({ dados, recarregar }: CarteiraTabProps) {
     setDataPagamento(new Date().toISOString().slice(0, 10))
     setValor('')
     setDescricao('')
+    setInvestidorModalId(investidorId === 'TODOS' ? '' : investidorId)
     setErro(null)
   }
 
@@ -75,6 +77,7 @@ export function CarteiraTab({ dados, recarregar }: CarteiraTabProps) {
       maximumFractionDigits: 2,
     }))
     setDescricao(desconto.descricao ?? '')
+    setInvestidorModalId(desconto.investidorId ?? '')
     setErro(null)
   }
 
@@ -94,8 +97,7 @@ export function CarteiraTab({ dados, recarregar }: CarteiraTabProps) {
   async function salvar() {
     const valorNumerico = paraNumero(valor)
     const investidorSelecionado =
-      editando?.investidorId ??
-      (investidorId === 'TODOS' ? null : investidorId)
+      investidorModalId || null
 
     if (!dataPagamento || !Number.isFinite(valorNumerico) || valorNumerico <= 0 || !investidorSelecionado) {
       setErro('Informe investidor, data e valor válidos.')
@@ -256,11 +258,8 @@ export function CarteiraTab({ dados, recarregar }: CarteiraTabProps) {
             <label>
               <span>Investidor</span>
               <select
-                value={editando?.investidorId ?? (investidorId === 'TODOS' ? '' : investidorId)}
-                onChange={(e) => {
-                  if (!editando) setInvestidorId(e.target.value)
-                }}
-                disabled={Boolean(editando)}
+                value={investidorModalId}
+                onChange={(e) => setInvestidorModalId(e.target.value)}
               >
                 <option value="">Selecione</option>
                 {dados.investidores.map((x) => <option key={x.id} value={x.id}>{x.nome}</option>)}
