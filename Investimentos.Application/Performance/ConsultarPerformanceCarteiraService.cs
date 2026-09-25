@@ -1,4 +1,5 @@
 using Investimentos.Application.Interfaces;
+using Investimentos.Domain.Entities;
 
 namespace Investimentos.Application.Performance;
 
