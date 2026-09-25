@@ -73,6 +73,10 @@ import {
   AtivoModal,
 } from './components/AtivoModal'
 
+import {
+  IntegridadeTab,
+} from './components/IntegridadeTab'
+
 import './Administracao.css'
 
 type AbaAdministracao =
@@ -85,6 +89,7 @@ type AbaAdministracao =
   | 'carteira'
   | 'parametros'
   | 'usuarios'
+  | 'integridade'
 
 type ModoModalAtivo =
   | 'novo'
@@ -977,6 +982,23 @@ export function AdministracaoView({
           type="button"
           className={
             aba ===
+            'integridade'
+              ? 'active'
+              : ''
+          }
+          onClick={() =>
+            trocarAba(
+              'integridade',
+            )
+          }
+        >
+          Integridade
+        </button>
+
+        <button
+          type="button"
+          className={
+            aba ===
             'parametros'
               ? 'active'
               : ''
@@ -1177,6 +1199,11 @@ export function AdministracaoView({
             }
           }
         />
+      ) : null}
+
+      {aba ===
+      'integridade' ? (
+        <IntegridadeTab />
       ) : null}
 
       {aba ===
