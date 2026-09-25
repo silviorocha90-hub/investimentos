@@ -5,6 +5,10 @@ namespace Investimentos.Application.Interfaces
 {
     public interface IHistoricoPatrimonioRepository
     {
+        Task<IReadOnlyList<HistoricoPatrimonio>> ListarAsync(
+            Guid? investidorId = null,
+            CancellationToken cancellationToken = default);
+
         Task<decimal> ObterTotalAtualAsync(
             CancellationToken cancellationToken = default);
 
