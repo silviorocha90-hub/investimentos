@@ -924,7 +924,7 @@ export function ProventosView({
                   </option>
 
                   <option value="JCP">
-                    JCP
+                    Juros
                   </option>
 
                   <option value="RENDIMENTO">
