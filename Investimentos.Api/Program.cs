@@ -294,9 +294,18 @@ app.MapPut(
         if (movimentacao is null)
             return Results.NotFound(new { detail = "Movimentação não encontrada." });
 
+        var investidor = await context.Investidores
+            .FirstOrDefaultAsync(
+                x => x.Id == request.InvestidorId,
+                cancellationToken);
+
+        if (investidor is null)
+            return Results.NotFound(new { detail = "Investidor não encontrado." });
+
         try
         {
             movimentacao.Atualizar(
+                investidor,
                 request.Data,
                 request.Tipo,
                 request.Valor,
@@ -1511,6 +1520,7 @@ public record CriarMovimentacaoFinanceiraRequest(
     string? Descricao);
 
 public record AtualizarMovimentacaoFinanceiraRequest(
+    Guid InvestidorId,
     DateTime Data,
     string Tipo,
     decimal Valor,
