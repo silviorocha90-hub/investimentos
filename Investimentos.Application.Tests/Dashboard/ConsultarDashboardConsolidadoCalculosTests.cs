@@ -230,16 +230,39 @@ namespace Investimentos.Application.Tests.Dashboard
                 resultado.PremioLiquidoOpcoes);
 
             /*
-             * Resultado da carteira:
+             * Resultado econômico da carteira:
              *
              * 100 valorização
-             * + 250 venda realizada
              * + 50 provento
-             * = 400
+             * + 0 opções
+             * = 150
+             *
+             * O lucro realizado de 250 na venda de ações
+             * permanece separado e não compõe este indicador.
              */
             Assert.Equal(
-                400.00m,
+                150.00m,
+                resultado.ResultadoCarteira);
+
+            Assert.Equal(
+                resultado.ResultadoCarteira,
                 resultado.ResultadoRealizado);
+
+            Assert.Equal(
+                100.00m,
+                resultado.Posicoes.Single().Valorizacao);
+
+            Assert.Equal(
+                50.00m,
+                resultado.Posicoes.Single().Proventos);
+
+            Assert.Equal(
+                150.00m,
+                resultado.Posicoes.Single().ResultadoEconomico);
+
+            Assert.Equal(
+                7.50m,
+                resultado.Posicoes.Single().RentabilidadeEconomica);
         }
 
         private static Ativo CriarAtivo()
