@@ -2084,23 +2084,47 @@ silenciosamente.
 
 ---
 
-# 70. PRÓXIMA FASE FUNCIONAL
+# 70. FASE FUNCIONAL
 
-Com a estabilização técnica concluída, a ordem funcional planejada é:
+## Dashboard avançado de Opções — concluído
 
-1. Dashboard avançado de Opções:
-   - capital comprometido em PUT;
-   - ações comprometidas em CALL;
-   - prêmios líquidos;
-   - retorno sobre capital comprometido;
-   - próximos vencimentos;
-   - exposição a exercício.
+A tela de consulta de Opções possui agora indicadores calculados a partir das
+métricas fornecidas pelo backend:
 
-2. Metas por ativo.
+- capital comprometido em PUT de venda ativa;
+- ações comprometidas em CALL de venda ativa;
+- prêmio recebido nas posições ativas, líquido das taxas da operação;
+- retorno dos prêmios ativos sobre o capital comprometido em PUT;
+- próximos vencimentos;
+- exposição a exercício com base na relação entre cotação atual e strike.
 
-3. Histórico/auditoria da carteira e metodologia adequada de performance.
+Uma opção é considerada ativa para esses indicadores quando a situação é
+ABERTA ou EXECUTADA.
 
-4. Evolução fiscal/DARF.
+Para PUT de venda:
+
+`CapitalComprometidoPut = Strike * Quantidade`
+
+Para CALL de venda:
+
+`AcoesComprometidasCall = Quantidade`
+
+A exposição a exercício é sinalizada quando:
+
+- PUT: preço atual do ativo-base <= strike;
+- CALL: preço atual do ativo-base >= strike.
+
+Essa sinalização representa exposição objetiva pelo preço/strike e não uma
+previsão de exercício.
+
+As métricas por operação ficam em `OperacaoOpcaoDto`; o React agrega e
+apresenta os valores, sem reconstruir a regra de classificação da exposição.
+
+## Próximos itens
+
+1. Metas por ativo.
+2. Histórico/auditoria da carteira e metodologia adequada de performance.
+3. Evolução fiscal/DARF.
 
 A ordem pode ser revista por decisão explícita de produto.
 
