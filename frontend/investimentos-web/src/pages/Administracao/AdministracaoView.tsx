@@ -1156,7 +1156,10 @@ export function AdministracaoView({
             setInvestidorSelecionadoId
           }
           recarregar={
-            carregar
+            async () => {
+              await carregar()
+              await onDataChanged?.()
+            }
           }
         />
       ) : null}
@@ -1168,7 +1171,10 @@ export function AdministracaoView({
             dados
           }
           recarregar={
-            carregar
+            async () => {
+              await carregar()
+              await onDataChanged?.()
+            }
           }
         />
       ) : null}
