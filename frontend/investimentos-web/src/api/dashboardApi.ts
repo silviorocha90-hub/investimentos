@@ -1,4 +1,4 @@
-import type { Dashboard, EvolucaoInvestidor, OperacaoCarteira } from '../types/dashboard'
+import type { Dashboard, EvolucaoInvestidor, OperacaoCarteira, PerformanceCarteira } from '../types/dashboard'
 
 const API_URL = import.meta.env.VITE_API_URL ?? 'https://localhost:7237'
 
@@ -180,4 +180,24 @@ export async function excluirOperacao(id: string): Promise<void> {
             `Erro ao excluir a operação. ${await obterMensagemErro(response)}`,
         )
     }
+}
+export async function obterPerformance(
+    investidorId?: string,
+): Promise<PerformanceCarteira> {
+    const query = investidorId
+        ? `?investidorId=${encodeURIComponent(investidorId)}`
+        : ''
+
+    const response = await fetch(
+        `${API_URL}/api/performance${query}`,
+        { cache: 'no-store' },
+    )
+
+    if (!response.ok) {
+        throw new Error(
+            `Erro ao consultar a performance temporal. ${await obterMensagemErro(response)}`,
+        )
+    }
+
+    return response.json()
 }
