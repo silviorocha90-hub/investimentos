@@ -130,9 +130,7 @@ namespace Investimentos.Application.Dashboard
             var valorAplicado =
                 posicoes
                     .Where(x =>
-                        x.Quantidade > 0 &&
-                        x.TipoAtivoCodigo !=
-                            "PREVIDENCIA")
+                        x.Quantidade > 0)
                     .Sum(x =>
                         x.ValorAtual);
 
@@ -156,7 +154,6 @@ namespace Investimentos.Application.Dashboard
 
             var patrimonioEstimado =
                 valorAplicado +
-                valorPrevidencia +
                 caixaDisponivel;
 
             /*
