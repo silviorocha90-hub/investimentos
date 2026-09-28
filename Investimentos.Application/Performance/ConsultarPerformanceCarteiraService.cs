@@ -58,12 +58,21 @@ public class ConsultarPerformanceCarteiraService
                 grupo.Min(x => x.DataReferencia.Date))
             : DateTime.MaxValue;
 
-        var datas = historicos
-            .Select(x => x.DataReferencia.Date)
-            .Where(x => x >= inicioComum)
-            .Distinct()
-            .OrderBy(x => x)
-            .ToList();
+        // No consolidado, um ponto patrimonial só é comparável quando
+        // todos os investidores possuem snapshot exatamente na mesma data.
+        // Usar o último valor anterior de cada investidor mistura competências
+        // diferentes e pode transformar atualização de cadastro em rentabilidade.
+        var datas = porInvestidor.Count > 0
+            ? porInvestidor
+                .Select(grupo => grupo
+                    .Select(x => x.DataReferencia.Date)
+                    .Where(x => x >= inicioComum)
+                    .Distinct())
+                .Aggregate((comuns, proximas) =>
+                    comuns.Intersect(proximas))
+                .OrderBy(x => x)
+                .ToList()
+            : new List<DateTime>();
 
         var historicoConsolidado = new List<HistoricoPatrimonio>();
 
@@ -71,7 +80,7 @@ public class ConsultarPerformanceCarteiraService
         {
             var valoresDisponiveis = porInvestidor
                 .Select(grupo => grupo
-                    .Where(x => x.DataReferencia.Date <= data)
+                    .Where(x => x.DataReferencia.Date == data)
                     .OrderByDescending(x => x.DataReferencia)
                     .FirstOrDefault())
                 .Where(x => x is not null)
