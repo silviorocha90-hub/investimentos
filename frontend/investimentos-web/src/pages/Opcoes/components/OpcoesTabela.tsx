@@ -1,3 +1,5 @@
+import { useEffect, useMemo, useState } from 'react'
+
 import type {
   OperacaoOpcao,
 } from '../../../types/dashboard'
@@ -44,6 +46,21 @@ export function OpcoesTabela({
   onEditar,
   onExcluir,
 }: OpcoesTabelaProps) {
+  const [pagina, setPagina] = useState(1)
+  const itensPorPagina = 10
+  const totalPaginas = Math.max(1, Math.ceil(opcoes.length / itensPorPagina))
+
+  useEffect(() => {
+    setPagina(1)
+  }, [opcoes])
+
+  const itensExibidos = useMemo(
+    () => modoAdministracao
+      ? opcoes.slice((pagina - 1) * itensPorPagina, pagina * itensPorPagina)
+      : opcoes,
+    [modoAdministracao, opcoes, pagina],
+  )
+
   return (
     <article className="panel options-table-panel">
       <div className="options-list-heading">
@@ -99,7 +116,7 @@ export function OpcoesTabela({
             </thead>
 
             <tbody>
-              {opcoes.map(
+              {itensExibidos.map(
                 (opcao) => {
                   const resultadoBruto =
                     opcao.resultadoBruto
@@ -261,6 +278,17 @@ export function OpcoesTabela({
           )}
         </div>
       )}
+
+      {modoAdministracao && totalPaginas > 1 ? (
+        <div className="proventos-pagination admin-table-pagination">
+          <span>{opcoes.length} registros</span>
+          <div>
+            <button type="button" disabled={pagina <= 1} onClick={() => setPagina((x) => Math.max(1, x - 1))}>‹</button>
+            <strong>{pagina} / {totalPaginas}</strong>
+            <button type="button" disabled={pagina >= totalPaginas} onClick={() => setPagina((x) => Math.min(totalPaginas, x + 1))}>›</button>
+          </div>
+        </div>
+      ) : null}
     </article>
   )
 }
