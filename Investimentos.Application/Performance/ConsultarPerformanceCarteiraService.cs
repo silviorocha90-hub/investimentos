@@ -1,3 +1,4 @@
+using Investimentos.Application.Dashboard;
 using Investimentos.Application.Interfaces;
 using Investimentos.Domain.Entities;
 
