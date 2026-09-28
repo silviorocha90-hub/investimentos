@@ -1199,57 +1199,6 @@ export function DashboardView({
           )}
         </article>
 
-        <article className="panel panel-wide">
-          <SectionTitle
-            title="Auditoria da Performance"
-            badge={performance?.metodologia ?? 'Histórico'}
-          />
-
-          {performance && performance.periodos.length > 0 ? (
-            <div className="performance-audit">
-              <div className="performance-audit-summary">
-                <span>Período: {new Date(performance.dataInicio!).toLocaleDateString('pt-BR')} a {new Date(performance.dataFim!).toLocaleDateString('pt-BR')}</span>
-                <span>Ganho líquido: <strong className={performance.ganhoLiquido >= 0 ? 'positive' : 'negative'}>{formatarMoeda(performance.ganhoLiquido)}</strong></span>
-                <span>Retorno acumulado: <strong className={performance.rentabilidadeAcumulada >= 0 ? 'positive' : 'negative'}>{performance.rentabilidadeAcumulada.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%</strong></span>
-              </div>
-
-              <div className="performance-audit-table-wrap">
-                <table className="performance-audit-table">
-                  <thead>
-                    <tr>
-                      <th>Período</th>
-                      <th>Inicial</th>
-                      <th>Aportes</th>
-                      <th>Retiradas</th>
-                      <th>Final</th>
-                      <th>Ganho</th>
-                      <th>Retorno</th>
-                      <th>Acumulado</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {performance.periodos.map((periodo) => (
-                      <tr key={`${periodo.dataInicio}-${periodo.dataFim}`}>
-                        <td>{new Date(periodo.dataInicio).toLocaleDateString('pt-BR')} – {new Date(periodo.dataFim).toLocaleDateString('pt-BR')}</td>
-                        <td>{formatarMoeda(periodo.patrimonioInicial)}</td>
-                        <td>{formatarMoeda(periodo.aportes)}</td>
-                        <td>{formatarMoeda(periodo.retiradas)}</td>
-                        <td>{formatarMoeda(periodo.patrimonioFinal)}</td>
-                        <td className={periodo.ganhoLiquido >= 0 ? 'positive' : 'negative'}>{formatarMoeda(periodo.ganhoLiquido)}</td>
-                        <td className={periodo.rentabilidadePeriodo >= 0 ? 'positive' : 'negative'}>{periodo.rentabilidadePeriodo.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%</td>
-                        <td className={periodo.rentabilidadeAcumulada >= 0 ? 'positive' : 'negative'}>{periodo.rentabilidadeAcumulada.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          ) : (
-            <div className="empty-state">
-              <strong>Performance temporal requer ao menos dois snapshots patrimoniais.</strong>
-            </div>
-          )}
-        </article>
 
         <article className="panel panel-wide">
           <SectionTitle
