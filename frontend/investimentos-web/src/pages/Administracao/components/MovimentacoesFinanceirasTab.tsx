@@ -29,6 +29,8 @@ export function MovimentacoesFinanceirasTab({
   const hoje = new Date().toISOString().slice(0, 10)
   const ano = new Date().getFullYear()
   const [itens, setItens] = useState<MovimentacaoFinanceira[]>([])
+  const [pagina, setPagina] = useState(1)
+  const itensPorPagina = 10
   const [filtro, setFiltro] = useState('TODOS')
   const [editando, setEditando] = useState<MovimentacaoFinanceira | null>(null)
   const [modal, setModal] = useState(false)
@@ -58,6 +60,13 @@ export function MovimentacoesFinanceirasTab({
       ? itens
       : itens.filter((x) => x.investidorId === filtro),
     [itens, filtro],
+  )
+
+  const totalPaginas = Math.max(1, Math.ceil(exibidos.length / itensPorPagina))
+  const paginaSegura = Math.min(pagina, totalPaginas)
+  const itensExibidos = exibidos.slice(
+    (paginaSegura - 1) * itensPorPagina,
+    paginaSegura * itensPorPagina,
   )
 
   const totais = useMemo(() => ({
@@ -171,7 +180,7 @@ export function MovimentacoesFinanceirasTab({
         <table className="admin-table admin-movement-table">
           <thead><tr><th>Data</th><th>Investidor</th><th>Tipo</th><th>Valor</th><th>Descrição</th><th>Ações</th></tr></thead>
           <tbody>
-            {exibidos.map((item) => (
+            {itensExibidos.map((item) => (
               <tr key={item.id}>
                 <td>{new Date(`${item.data.slice(0, 10)}T12:00:00`).toLocaleDateString('pt-BR')}</td>
                 <td>{item.investidor}</td>
@@ -186,10 +195,21 @@ export function MovimentacoesFinanceirasTab({
                 </td>
               </tr>
             ))}
-            {exibidos.length === 0 ? <tr><td colSpan={6} className="admin-user-empty">Nenhuma movimentação em {ano}.</td></tr> : null}
+            {itensExibidos.length === 0 ? <tr><td colSpan={6} className="admin-user-empty">Nenhuma movimentação em {ano}.</td></tr> : null}
           </tbody>
         </table>
       </div>
+
+      {totalPaginas > 1 ? (
+        <div className="proventos-pagination admin-table-pagination">
+          <span>{exibidos.length} registros</span>
+          <div>
+            <button type="button" disabled={paginaSegura <= 1} onClick={() => setPagina((x) => Math.max(1, x - 1))}>‹</button>
+            <strong>{paginaSegura} / {totalPaginas}</strong>
+            <button type="button" disabled={paginaSegura >= totalPaginas} onClick={() => setPagina((x) => Math.min(totalPaginas, x + 1))}>›</button>
+          </div>
+        </div>
+      ) : null}
 
       {modal ? (
         <div className="admin-modal-backdrop">
