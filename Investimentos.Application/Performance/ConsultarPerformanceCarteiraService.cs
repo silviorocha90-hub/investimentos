@@ -7,13 +7,19 @@ public class ConsultarPerformanceCarteiraService
 {
     private readonly IHistoricoPatrimonioRepository _historicoRepository;
     private readonly IMovimentacaoFinanceiraRepository _movimentacaoRepository;
+    private readonly ConsultarDashboardHandler _dashboardHandler;
+    private readonly ConsultarDashboardConsolidadoHandler _dashboardConsolidadoHandler;
 
     public ConsultarPerformanceCarteiraService(
         IHistoricoPatrimonioRepository historicoRepository,
-        IMovimentacaoFinanceiraRepository movimentacaoRepository)
+        IMovimentacaoFinanceiraRepository movimentacaoRepository,
+        ConsultarDashboardHandler dashboardHandler,
+        ConsultarDashboardConsolidadoHandler dashboardConsolidadoHandler)
     {
         _historicoRepository = historicoRepository;
         _movimentacaoRepository = movimentacaoRepository;
+        _dashboardHandler = dashboardHandler;
+        _dashboardConsolidadoHandler = dashboardConsolidadoHandler;
     }
 
     public async Task<PerformanceCarteiraDto> ConsultarAsync(
@@ -28,8 +34,17 @@ public class ConsultarPerformanceCarteiraService
 
         if (investidorId.HasValue)
         {
+            var dashboardAtual = await _dashboardHandler.HandleAsync(
+                investidorId.Value,
+                cancellationToken);
+
+            var historicosComAtual =
+                IncluirPatrimonioAtual(
+                    historicos,
+                    dashboardAtual.PatrimonioEstimado);
+
             return CalculadoraPerformanceCarteira.Calcular(
-                historicos,
+                historicosComAtual,
                 movimentacoes);
         }
 
@@ -74,8 +89,56 @@ public class ConsultarPerformanceCarteiraService
                     valoresDisponiveis.Sum(x => x!.ValorCarteira)));
         }
 
+        var dashboardConsolidado =
+            await _dashboardConsolidadoHandler.HandleAsync(
+                cancellationToken);
+
+        var consolidadoComAtual =
+            IncluirPatrimonioAtual(
+                historicoConsolidado,
+                dashboardConsolidado.PatrimonioEstimado);
+
         return CalculadoraPerformanceCarteira.Calcular(
-            historicoConsolidado,
+            consolidadoComAtual,
             movimentacoes);
+    }
+
+    private static IReadOnlyList<HistoricoPatrimonio>
+        IncluirPatrimonioAtual(
+            IEnumerable<HistoricoPatrimonio> historicos,
+            decimal patrimonioAtual)
+    {
+        var pontos = historicos
+            .OrderBy(x => x.DataReferencia)
+            .ToList();
+
+        if (pontos.Count == 0)
+        {
+            return pontos;
+        }
+
+        var hoje = DateTime.Today;
+        var ultimo = pontos[^1];
+
+        if (ultimo.DataReferencia.Date == hoje)
+        {
+            pontos[^1] = new HistoricoPatrimonio(
+                ultimo.Investidor,
+                hoje,
+                patrimonioAtual);
+
+            return pontos;
+        }
+
+        if (ultimo.DataReferencia.Date < hoje)
+        {
+            pontos.Add(
+                new HistoricoPatrimonio(
+                    ultimo.Investidor,
+                    hoje,
+                    patrimonioAtual));
+        }
+
+        return pontos;
     }
 }
