@@ -1099,6 +1099,7 @@ export function AdministracaoView({
 
       {aba ===
       'operacoes' ? (
+        <div className="admin-standard-history">
         <OperacoesView
           investidores={
             investidores
@@ -1129,10 +1130,12 @@ export function AdministracaoView({
             onDataChanged
           }
         />
+        </div>
       ) : null}
 
       {aba ===
       'opcoes' ? (
+        <div className="admin-standard-history">
         <OpcoesView
           investidores={
             investidores
@@ -1151,6 +1154,7 @@ export function AdministracaoView({
             onDataChanged
           }
         />
+        </div>
       ) : null}
 
       {aba ===
