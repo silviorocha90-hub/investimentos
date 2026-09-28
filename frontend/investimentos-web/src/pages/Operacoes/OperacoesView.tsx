@@ -82,6 +82,9 @@ export function OperacoesView({
   onOperationCreated,
   onDataChanged,
 }: OperacoesViewProps) {
+  const [pagina, setPagina] = useState(1)
+  const itensPorPagina = 10
+
   const [
     operacaoEmEdicao,
     setOperacaoEmEdicao,
@@ -445,6 +448,13 @@ export function OperacoesView({
       }
     }
 
+  const totalPaginas = Math.max(1, Math.ceil(operacoesOrdenadas.length / itensPorPagina))
+  const paginaSegura = Math.min(pagina, totalPaginas)
+  const operacoesExibidas = operacoesOrdenadas.slice(
+    (paginaSegura - 1) * itensPorPagina,
+    paginaSegura * itensPorPagina,
+  )
+
   return (
     <section className="portfolio-view operacoes-view">
       <PageHeader
@@ -576,7 +586,7 @@ export function OperacoesView({
               </thead>
 
               <tbody>
-                {operacoesOrdenadas.map(
+                {operacoesExibidas.map(
                   (operacao) => {
                     const editando =
                       operacaoEmEdicao ===
@@ -847,6 +857,17 @@ export function OperacoesView({
             </strong>
           </div>
         )}
+
+        {totalPaginas > 1 ? (
+          <div className="proventos-pagination admin-table-pagination operations-pagination">
+            <span>{operacoesOrdenadas.length} registros</span>
+            <div>
+              <button type="button" disabled={paginaSegura <= 1} onClick={() => setPagina((x) => Math.max(1, x - 1))}>‹</button>
+              <strong>{paginaSegura} / {totalPaginas}</strong>
+              <button type="button" disabled={paginaSegura >= totalPaginas} onClick={() => setPagina((x) => Math.min(totalPaginas, x + 1))}>›</button>
+            </div>
+          </div>
+        ) : null}
       </article>
 
       {adicionandoOperacao ? (
