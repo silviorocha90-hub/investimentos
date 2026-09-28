@@ -20,14 +20,6 @@ const percentual =
     maximumFractionDigits: 2,
   })
 
-function dataLocal(
-  valor: string,
-) {
-  return new Date(
-    `${valor.slice(0, 10)}T12:00:00`,
-  )
-}
-
 export function OpcoesDashboard({
   opcoes,
 }: Props) {
