@@ -1167,3 +1167,106 @@
 
 .admin-page .admin-movement-table th:nth-child(6),
 .admin-page .admin-movement-table td:nth-child(6) { width: 18%; }
+
+
+/* Administração: tabelas com a mesma escala visual de Proventos.
+   Regras finais e mais específicas para não serem sobrescritas
+   pelos estilos próprios de Operações e Opções. */
+.admin-page .admin-standard-history .portfolio-view {
+  gap: 14px;
+}
+
+.admin-page .admin-standard-history .portfolio-operations {
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  padding: 18px !important;
+  position: static !important;
+  overflow: hidden !important;
+}
+
+.admin-page .admin-standard-history .operations-table-header {
+  position: static !important;
+  height: auto !important;
+  min-height: 0 !important;
+  padding: 0 0 14px !important;
+}
+
+.admin-page .admin-standard-history .operations-table-wrap {
+  position: static !important;
+  inset: auto !important;
+  width: 100% !important;
+  max-height: 420px !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+}
+
+.admin-page .admin-standard-history .operations-table,
+.admin-page .admin-standard-history .options-table,
+.admin-page .admin-movement-table {
+  width: 100% !important;
+  min-width: 0 !important;
+  table-layout: fixed !important;
+  border-collapse: collapse !important;
+  font-size: 0.7rem !important;
+}
+
+.admin-page .admin-standard-history .operations-table thead tr,
+.admin-page .admin-standard-history .operations-table tbody tr {
+  height: auto !important;
+}
+
+.admin-page .admin-standard-history .operations-table th,
+.admin-page .admin-standard-history .operations-table td,
+.admin-page .admin-standard-history .options-table th,
+.admin-page .admin-standard-history .options-table td,
+.admin-page .admin-movement-table th,
+.admin-page .admin-movement-table td {
+  height: auto !important;
+  padding: 10px 8px !important;
+}
+
+.admin-page .admin-standard-history .operations-table th,
+.admin-page .admin-standard-history .options-table th,
+.admin-page .admin-movement-table th {
+  font-size: 0.59rem !important;
+  text-transform: uppercase;
+}
+
+.admin-page .admin-standard-history .operations-table td,
+.admin-page .admin-standard-history .options-table td,
+.admin-page .admin-movement-table td {
+  font-size: 0.7rem !important;
+}
+
+.admin-page .admin-standard-history .options-table-panel {
+  min-height: 0 !important;
+  padding: 18px !important;
+}
+
+.admin-page .admin-standard-history .options-list-heading {
+  padding: 0 0 14px !important;
+}
+
+.admin-page .admin-standard-history .options-table-wrap {
+  max-height: 420px !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+}
+
+.admin-page .admin-panel .admin-table-wrap {
+  max-height: 420px;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.admin-page .admin-movement-table {
+  font-size: 0.7rem !important;
+}
+
+.admin-page .admin-movement-table thead {
+  position: sticky;
+  top: 0;
+  z-index: 4;
+  background: var(--panel);
+}
