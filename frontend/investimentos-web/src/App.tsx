@@ -730,18 +730,33 @@ function App() {
       try {
         setErro(null)
 
+        // Performance é independente do carregamento principal.
+        // Ela pode ser mais custosa porque reconcilia histórico, fluxos e
+        // patrimônio atual; não deve segurar todos os demais cards do Painel.
+        const performancePromise =
+          obterPerformance()
+            .then((dadosPerformance) => {
+              if (!controller.signal.aborted) {
+                setPerformance(dadosPerformance)
+              }
+            })
+            .catch((error) => {
+              console.error(error)
+
+              if (!controller.signal.aborted) {
+                setPerformance(null)
+              }
+            })
+
         const [
           dadosDashboard,
           dadosEvolucao,
-          dadosPerformance,
           resultadosCarteiras,
         ] =
           await Promise.all([
             obterDashboardConsolidado(),
 
             obterEvolucaoConsolidada(),
-
-            obterPerformance(),
 
             Promise.allSettled(
               todosInvestidores.map(
@@ -795,13 +810,12 @@ function App() {
           dadosEvolucao,
         )
 
-        setPerformance(
-          dadosPerformance,
-        )
-
         setCarteirasPainel(
           carteirasComSucesso,
         )
+
+        // Evita warning de Promise intencionalmente disparada em paralelo.
+        void performancePromise
       } catch (error) {
         console.error(error)
 
