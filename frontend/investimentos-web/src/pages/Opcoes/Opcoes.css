@@ -1443,3 +1443,42 @@
   padding: 0 11px !important;
   font-size: 0.72rem !important;
 }
+
+
+/* Administração: tabela completa de opções com scroll vertical, sem paginação. */
+.options-page-admin .options-table-wrap {
+  max-height: 680px !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+}
+
+.options-page-admin .options-table {
+  font-size: 0.94rem !important;
+}
+
+.options-page-admin .options-table thead {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+.options-page-admin .options-table thead tr,
+.options-page-admin .options-table tbody tr {
+  height: 60px !important;
+}
+
+.options-page-admin .options-table th {
+  height: 60px !important;
+  padding: 15px 8px !important;
+  font-size: 0.75rem !important;
+}
+
+.options-page-admin .options-table td {
+  height: 60px !important;
+  padding: 15px 8px !important;
+  font-size: 0.94rem !important;
+}
+
+.options-page-admin .options-table .ticker {
+  font-size: 0.92rem !important;
+}
