@@ -1566,3 +1566,42 @@
   border-color: rgba(255,133,133,.85) !important;
   background: rgba(255,133,133,.08) !important;
 }
+
+
+/* Administração > Opções — escala ampliada */
+.admin-page .admin-standard-history .options-table {
+  font-size: 0.84rem !important;
+}
+
+.admin-page .admin-standard-history .options-table th {
+  height: 50px !important;
+  padding: 13px 10px !important;
+  font-size: 0.70rem !important;
+  line-height: 1.25 !important;
+}
+
+.admin-page .admin-standard-history .options-table td {
+  height: 50px !important;
+  padding: 13px 10px !important;
+  font-size: 0.84rem !important;
+  line-height: 1.25 !important;
+}
+
+.admin-page .admin-standard-history .options-table .ticker {
+  font-size: 0.82rem !important;
+}
+
+.admin-page .admin-standard-history .options-table .option-type-chip,
+.admin-page .admin-standard-history .options-table .option-status-chip {
+  min-height: 30px !important;
+  padding: 0 10px !important;
+  font-size: 0.70rem !important;
+  line-height: 30px !important;
+}
+
+.admin-page .admin-standard-history .options-table .options-edit-button,
+.admin-page .admin-standard-history .options-table .options-delete-button {
+  min-height: 31px !important;
+  padding: 0 11px !important;
+  font-size: 0.70rem !important;
+}
