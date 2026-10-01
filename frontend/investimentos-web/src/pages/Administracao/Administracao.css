@@ -1270,3 +1270,81 @@
   z-index: 4;
   background: var(--panel);
 }
+
+
+/* =========================================================
+   ADMINISTRAÇÃO — PADRÃO ÚNICO DE TABELAS
+   Todas as tabelas administrativas seguem a densidade visual
+   do histórico de Proventos: largura total, fonte compacta,
+   linhas de 10px/8px e sem rolagem horizontal.
+   ========================================================= */
+
+.admin-page table {
+  width: 100% !important;
+  min-width: 0 !important;
+  table-layout: fixed !important;
+  border-collapse: collapse !important;
+  font-size: 0.7rem !important;
+}
+
+.admin-page table th {
+  padding: 10px 8px !important;
+  border-bottom: 1px solid var(--line) !important;
+  color: var(--muted);
+  font-size: 0.59rem !important;
+  text-align: left;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.admin-page table td {
+  height: auto !important;
+  padding: 10px 8px !important;
+  border-bottom: 1px solid var(--line) !important;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.7rem !important;
+  vertical-align: middle;
+}
+
+.admin-page table tbody tr:hover {
+  background: rgba(99, 230, 200, 0.035);
+}
+
+.admin-page .admin-table-wrap,
+.admin-page .operations-table-wrap,
+.admin-page .options-table-wrap,
+.admin-page .proventos-table-wrap {
+  width: 100%;
+  min-width: 0;
+  max-height: 420px;
+  overflow-x: hidden !important;
+  overflow-y: auto;
+}
+
+.admin-page table thead {
+  position: sticky;
+  top: 0;
+  z-index: 4;
+  background: var(--panel);
+}
+
+.admin-page table .admin-row-actions {
+  justify-content: flex-end;
+}
+
+.admin-page table th:last-child:has(+ *),
+.admin-page table td:last-child:has(.admin-row-actions) {
+  text-align: right;
+}
+
+@media (max-width: 760px) {
+  .admin-page table {
+    font-size: 0.62rem !important;
+  }
+
+  .admin-page table td {
+    font-size: 0.62rem !important;
+  }
+}
