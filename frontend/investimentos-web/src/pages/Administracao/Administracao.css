@@ -1503,3 +1503,66 @@
   border-color: rgba(64, 157, 255, 0.85) !important;
   background: rgba(64, 157, 255, 0.09) !important;
 }
+
+
+/* Entradas/Saídas — mesma paleta visual do Histórico de Proventos */
+.admin-page .admin-panel:has(.admin-movement-table) {
+  background: linear-gradient(145deg, rgba(255,255,255,.035), rgba(255,255,255,.012)) !important;
+  border-color: rgba(70, 211, 178, 0.28) !important;
+}
+
+.admin-page .admin-table-wrap:has(.admin-movement-table) {
+  background: transparent !important;
+}
+
+.admin-page .admin-movement-table thead {
+  background: var(--panel-strong) !important;
+}
+
+.admin-page .admin-movement-table th {
+  color: var(--muted) !important;
+  border-bottom-color: var(--line) !important;
+}
+
+.admin-page .admin-movement-table td {
+  color: var(--text) !important;
+  border-bottom-color: var(--line) !important;
+}
+
+.admin-page .admin-movement-table tbody tr:hover {
+  background: rgba(99,230,200,.035) !important;
+}
+
+.admin-page .admin-movement-table .movement-entry {
+  color: var(--accent) !important;
+  background: rgba(99,230,200,.12) !important;
+}
+
+.admin-page .admin-movement-table .movement-exit {
+  color: #ff8585 !important;
+  background: rgba(255,133,133,.10) !important;
+}
+
+.admin-page .admin-movement-table .admin-movement-edit {
+  color: #67b7ff !important;
+  border-color: rgba(103,183,255,.5) !important;
+  background: transparent !important;
+}
+
+.admin-page .admin-movement-table .admin-movement-edit:hover:not(:disabled) {
+  color: #67b7ff !important;
+  border-color: rgba(103,183,255,.85) !important;
+  background: rgba(103,183,255,.08) !important;
+}
+
+.admin-page .admin-movement-table .admin-movement-delete {
+  color: #ff8585 !important;
+  border-color: rgba(255,133,133,.5) !important;
+  background: transparent !important;
+}
+
+.admin-page .admin-movement-table .admin-movement-delete:hover:not(:disabled) {
+  color: #ff8585 !important;
+  border-color: rgba(255,133,133,.85) !important;
+  background: rgba(255,133,133,.08) !important;
+}
