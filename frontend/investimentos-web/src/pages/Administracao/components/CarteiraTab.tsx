@@ -58,41 +58,18 @@ export function CarteiraTab({ dados, recarregar }: CarteiraTabProps) {
     [dados.descontosFiscais, investidorId],
   )
 
-  const competenciasMensais = useMemo(() => {
-    const grupos = new Map<string, {
-      ano: number
-      mes: number
-      irEstimado: number
-      darfPago: number
-      diferenca: number
-      investidores: NonNullable<FiscalResumo['meses']>
-    }>()
+  const simulacaoCompetenciaAtual = useMemo(() => {
+    const hoje = new Date()
+    const anoAtual = hoje.getFullYear()
+    const mesAtual = hoje.getMonth() + 1
 
-    for (const item of fiscal?.meses ?? []) {
-      const chave = `${item.ano}-${String(item.mes).padStart(2, '0')}`
-      const grupo = grupos.get(chave) ?? {
-        ano: item.ano,
-        mes: item.mes,
-        irEstimado: 0,
-        darfPago: 0,
-        diferenca: 0,
-        investidores: [],
-      }
-
-      grupo.irEstimado += item.irEstimadoOpcoes
-      grupo.darfPago += item.darfPago
-      grupo.diferenca += item.irEstimadoOpcoes - item.darfPago
-      grupo.investidores.push(item)
-      grupos.set(chave, grupo)
-    }
-
-    return [...grupos.values()]
-      .sort((a, b) => b.ano - a.ano || b.mes - a.mes)
-      .map((grupo) => ({
-        ...grupo,
-        investidores: [...grupo.investidores]
-          .sort((a, b) => b.irEstimadoOpcoes - a.irEstimadoOpcoes),
-      }))
+    return (fiscal?.meses ?? []).filter(
+      (x) =>
+        x.ano === anoAtual &&
+        x.mes === mesAtual &&
+        x.darfPago <= 0 &&
+        x.irEstimadoOpcoes > 0,
+    )
   }, [fiscal?.meses])
 
   function abrirNovo() {
@@ -210,112 +187,60 @@ export function CarteiraTab({ dados, recarregar }: CarteiraTabProps) {
 
         {erro ? <div className="admin-inline-error">{erro}</div> : null}
 
-        <div className="admin-summary-grid">
-          <div><span>DARF devido</span><strong>{formatarMoeda(fiscal?.irEstimadoOpcoes ?? 0)}</strong></div>
-          <div><span>DARF pago</span><strong className="positive">{formatarMoeda(fiscal?.darfPago ?? 0)}</strong></div>
-          <div><span>Saldo DARF</span><strong className={(fiscal?.irEstimadoOpcoes ?? 0) - (fiscal?.darfPago ?? 0) > 0 ? 'negative' : 'positive'}>{formatarMoeda(Math.max(0, (fiscal?.irEstimadoOpcoes ?? 0) - (fiscal?.darfPago ?? 0)))}</strong></div>
-          <div><span>Pendências</span><strong>{fiscal?.pendencias ?? 0}</strong></div>
+        <div className="admin-toolbar fiscal-simulation-title">
+          <strong>Simulação da competência atual em aberto</strong>
         </div>
 
-        {fiscal?.avisos.map((aviso) => (
-          <div className="admin-inline-info" key={aviso}>{aviso}</div>
-        ))}
+        <div className="admin-table-wrap">
+          <table className="data-table admin-table">
+            <thead>
+              <tr>
+                <th>Competência</th><th>Investidor</th><th>Valor estimado da DARF</th><th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {simulacaoCompetenciaAtual.map((x) => (
+                <tr key={`${x.ano}-${x.mes}-${x.investidorId ?? 'sem'}`}>
+                  <td>{String(x.mes).padStart(2, '0')}/{x.ano}</td>
+                  <td>{x.investidor}</td>
+                  <td>{formatarMoeda(x.irEstimadoOpcoes)}</td>
+                  <td><span className="fiscal-pending">Em aberto</span></td>
+                </tr>
+              ))}
+              {simulacaoCompetenciaAtual.length === 0 ? (
+                <tr><td colSpan={4}>Não há DARF em aberto para a competência atual.</td></tr>
+              ) : null}
+            </tbody>
+          </table>
+        </div>
+      </article>
 
-        <div className="fiscal-months">
-          {competenciasMensais.map((grupo) => (
-            <section className="fiscal-month-card" key={`${grupo.ano}-${grupo.mes}`}>
-              <div className="fiscal-month-header">
-                <strong>{String(grupo.mes).padStart(2, '0')}/{grupo.ano}</strong>
-                <div className="fiscal-month-totals">
-                  <span>DARF devido <b>{formatarMoeda(grupo.irEstimado)}</b></span>
-                  <span>DARF pago <b>{formatarMoeda(grupo.darfPago)}</b></span>
-                  <span>Saldo <b className={grupo.diferenca > 0 ? 'negative' : 'positive'}>{formatarMoeda(Math.max(0, grupo.diferenca))}</b></span>
-                </div>
-              </div>
-
-              <div className="admin-table-wrap fiscal-participation-wrap">
-                <table className="data-table admin-table fiscal-participation-table">
-                  <thead>
-                    <tr>
-                      <th>Investidor</th><th>Participação</th><th>Valor devido</th><th>Valor pago</th><th>Pagamento</th><th>Saldo DARF</th><th>Ações</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {grupo.investidores.map((x) => {
-                      const participacao = grupo.irEstimado > 0
-                        ? (x.irEstimadoOpcoes / grupo.irEstimado) * 100
-                        : 0
-                      const pagamentos = descontosFiltrados.filter((desconto) => {
-                        if (desconto.investidorId !== x.investidorId) return false
-                        const pagamento = new Date(`${desconto.dataPagamento.slice(0, 10)}T12:00:00`)
-                        pagamento.setMonth(pagamento.getMonth() - 1)
-                        return pagamento.getFullYear() === grupo.ano &&
-                          pagamento.getMonth() + 1 === grupo.mes
-                      })
-                      return (
-                        <tr key={`${x.ano}-${x.mes}-${x.investidorId ?? 'sem'}`}>
-                          <td><strong>{x.investidor}</strong></td>
-                          <td>
-                            <div className="fiscal-share">
-                              <strong>{participacao.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%</strong>
-                              <span><i style={{ width: `${Math.min(100, participacao)}%` }} /></span>
-                            </div>
-                          </td>
-                          <td className="fiscal-tax-value">{formatarMoeda(x.irEstimadoOpcoes)}</td>
-                          <td className={x.darfPago > 0 ? 'positive' : ''}>{formatarMoeda(x.darfPago)}</td>
-                          <td>{pagamentos.length > 0 ? pagamentos.map((p) => formatarDataCurta(p.dataPagamento)).join(', ') : '—'}</td>
-                          <td>
-                            {(() => {
-                              const saldoDarf = Math.max(0, x.irEstimadoOpcoes - x.darfPago)
-                              const pagoIntegral = x.irEstimadoOpcoes > 0 && saldoDarf <= 0.009
-                              return (
-                                <div className="fiscal-darf-due">
-                                  <strong className={saldoDarf > 0 ? 'negative' : 'positive'}>
-                                    {formatarMoeda(saldoDarf)}
-                                  </strong>
-                                  <span className={pagoIntegral ? 'fiscal-paid' : saldoDarf > 0 ? 'fiscal-pending' : 'fiscal-neutral'}>
-                                    {pagoIntegral ? 'Pago' : saldoDarf > 0 ? 'A pagar' : 'Sem DARF'}
-                                  </span>
-                                </div>
-                              )
-                            })()}
-                          </td>
-                          <td>
-                            <div className="admin-row-actions">
-                              {pagamentos.map((pagamento) => (
-                                <span className="fiscal-payment-actions" key={pagamento.id}>
-                                  <button type="button" className="admin-action" onClick={() => abrirEdicao(pagamento)}>Editar</button>
-                                  <button type="button" className="admin-action admin-action-danger" onClick={() => excluir(pagamento)}>Excluir</button>
-                                </span>
-                              ))}
-                              {pagamentos.length === 0 ? (
-                                <button
-                                  type="button"
-                                  className="admin-action"
-                                  onClick={() => {
-                                    setNovo(true)
-                                    setEditando(null)
-                                    setDataPagamento('')
-                                    setValor('')
-                                    setDescricao(`DARF competência ${String(grupo.mes).padStart(2, '0')}/${grupo.ano}`)
-                                    setInvestidorModalId(x.investidorId ?? '')
-                                    setErro(null)
-                                  }}
-                                >
-                                  Registrar pagamento
-                                </button>
-                              ) : null}
-                            </div>
-                          </td>
-                        </tr>
-                      )
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            </section>
-          ))}
-          {competenciasMensais.length === 0 ? <div className="admin-empty-state">Sem apuração fiscal para o período.</div> : null}
+      <article className="panel admin-panel">
+        <div className="admin-toolbar"><strong>DARFs registrados</strong></div>
+        <div className="admin-table-wrap">
+          <table className="data-table admin-table">
+            <thead>
+              <tr><th>Pagamento</th><th>Investidor</th><th>Descrição</th><th>Valor</th><th>Status</th><th>Ações</th></tr>
+            </thead>
+            <tbody>
+              {descontosFiltrados.map((desconto) => (
+                <tr key={desconto.id}>
+                  <td>{formatarDataCurta(desconto.dataPagamento)}</td>
+                  <td>{desconto.investidorNome ?? 'Não atribuído'}</td>
+                  <td>{desconto.descricao ?? '—'}</td>
+                  <td>{formatarMoeda(desconto.valor)}</td>
+                  <td><span className="admin-status-paid">✓ Pago</span></td>
+                  <td>
+                    <div className="admin-row-actions">
+                      <button type="button" className="admin-action" onClick={() => abrirEdicao(desconto)}>Editar</button>
+                      <button type="button" className="admin-action admin-action-danger" onClick={() => excluir(desconto)}>Excluir</button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+              {descontosFiltrados.length === 0 ? <tr><td colSpan={6}>Nenhum DARF cadastrado.</td></tr> : null}
+            </tbody>
+          </table>
         </div>
       </article>
 
