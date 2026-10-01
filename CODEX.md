@@ -2182,9 +2182,61 @@ Validação da unidade concluída em 25/09/2026:
 
 ## Próximos itens
 
-1. Evolução fiscal/DARF.
+1. Corrigir e validar a apuração fiscal/DARF com ações + opções e consolidação mensal.
+2. Concluir o ajuste visual/ordenação da tabela de Opções.
 
 A ordem pode ser revista por decisão explícita de produto.
+
+
+## Fiscal / DARF — estado em 01/10/2026
+
+A evolução Fiscal/DARF está em andamento.
+
+Estado funcional atual:
+
+- a tela mantém a tabela **DARFs registrados** como histórico real dos pagamentos cadastrados;
+- a tabela de DARFs registrados exibe **Competência** e **Pagamento** separadamente;
+- no modelo atual, enquanto não existir competência persistida no domínio, a competência do DARF é inferida como o mês anterior à `DataPagamento`;
+- exemplo: pagamento em 30/09/2026 é apresentado como competência 08/2026;
+- acima do histórico existe uma **simulação da próxima competência**, definida como a competência imediatamente posterior à última competência já paga;
+- exemplo: se 08/2026 está paga, a simulação deve apresentar 09/2026, que será paga posteriormente em outubro;
+- a simulação é separada por investidor.
+
+Arquivos centrais:
+
+- `Investimentos.Application/Fiscal/FiscalDto.cs`
+- `src/Investimentos.Infrastructure/Persistence/Repositories/FiscalRepository.cs`
+- `frontend/investimentos-web/src/pages/Administracao/components/CarteiraTab.tsx`
+
+Limitações conhecidas da apuração fiscal atual:
+
+- `FiscalRepository` considera opções somente quando `DataFinalizacao` e `ResultadoFinal` estão preenchidos;
+- operações `EXECUTADA` sem `DataFinalizacao` ficam fora da estimativa e são tratadas como pendência;
+- a estimativa atual calcula imposto por resultado positivo individual (15% comum / 20% day trade), portanto ainda não faz corretamente a consolidação mensal de ganhos e perdas antes da aplicação da alíquota;
+- prejuízos acumulados, compensações, IRRF e demais regras fiscais ainda não são tratados automaticamente;
+- o filtro anual dos DARFs ainda merece revisão na virada do ano porque a competência é inferida a partir do mês anterior ao pagamento.
+
+Referência de validação informada em 01/10/2026:
+
+- no MyProfit, para a competência 09/2026, foi observada base de cálculo de R$ 6.509,34 e DARF estimada de R$ 976,40;
+- o MyProfit ainda estava recebendo atualizações da B3, portanto esses valores são referência de comparação, não valor definitivo;
+- foi identificado que a estimativa do projeto precisa considerar **ações e opções**, aproximando a metodologia do MyProfit;
+- a próxima evolução do motor fiscal deve auditar todas as operações realizadas/finalizadas dentro da competência, somar ações e opções e separar corretamente operações comuns e day trade antes de calcular a estimativa;
+- não ajustar números artificialmente para coincidir com o MyProfit: a diferença deve ser explicável operação por operação.
+
+## Opções — ajuste visual solicitado em 01/10/2026
+
+A tela Administração -> Opções ainda precisa receber o seguinte ajuste solicitado:
+
+- retirar a paginação;
+- manter somente scroll vertical;
+- aumentar significativamente a altura/área visível da tabela;
+- incluir/exibir a **Data de finalização**;
+- ordenar prioritariamente pela Data de finalização;
+- para operações com status **EXECUTADA** sem data de finalização, usar a **Data de inclusão/operação** para ordenação;
+- a solicitação de aumento da tabela foi reforçada após a última captura de tela: a área atual ainda está pequena e deixa grande espaço vazio abaixo.
+
+Esse ajuste ainda não deve ser considerado concluído até validação visual do usuário.
 
 ---
 
