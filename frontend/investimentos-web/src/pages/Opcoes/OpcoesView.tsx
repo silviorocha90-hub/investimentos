@@ -954,7 +954,7 @@ export function OpcoesView({
     }
 
   return (
-    <section className="portfolio-view options-page">
+    <section className={`portfolio-view options-page${modoAdministracao ? ' options-page-admin' : ''}`}>
       <article className="panel options-header-panel">
         <div className="options-page-heading">
           <h1 className="options-page-title">
