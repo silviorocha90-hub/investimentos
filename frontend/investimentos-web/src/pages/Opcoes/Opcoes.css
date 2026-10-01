@@ -1394,3 +1394,52 @@
     grid-template-columns: 1fr 1fr;
   }
 }
+
+
+/* Administração: escala própria da tabela de opções.
+   Mantida neste arquivo para vir depois dos breakpoints/resets do módulo. */
+.options-page-admin .options-table-panel {
+  min-height: 0 !important;
+}
+
+.options-page-admin .options-table {
+  font-size: 0.88rem !important;
+}
+
+.options-page-admin .options-table thead tr,
+.options-page-admin .options-table tbody tr {
+  height: 54px !important;
+}
+
+.options-page-admin .options-table th {
+  height: 54px !important;
+  padding: 14px 10px !important;
+  font-size: 0.72rem !important;
+  line-height: 1.25 !important;
+}
+
+.options-page-admin .options-table td {
+  height: 54px !important;
+  padding: 14px 10px !important;
+  font-size: 0.88rem !important;
+  line-height: 1.25 !important;
+}
+
+.options-page-admin .options-table .ticker {
+  font-size: 0.86rem !important;
+}
+
+.options-page-admin .options-table .option-type-chip,
+.options-page-admin .options-table .option-status-chip {
+  min-height: 31px !important;
+  padding: 0 10px !important;
+  font-size: 0.72rem !important;
+  line-height: 31px !important;
+}
+
+.options-page-admin .options-table .options-edit-button,
+.options-page-admin .options-table .options-delete-button {
+  min-height: 32px !important;
+  padding: 0 11px !important;
+  font-size: 0.72rem !important;
+}
