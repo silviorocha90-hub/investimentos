@@ -81,7 +81,7 @@ export function CarteiraTab({ dados, recarregar }: CarteiraTabProps) {
 
       grupo.irEstimado += item.irEstimadoOpcoes
       grupo.darfPago += item.darfPago
-      grupo.diferenca += item.diferencaEstimadoPago
+      grupo.diferenca += item.irEstimadoOpcoes - item.darfPago
       grupo.investidores.push(item)
       grupos.set(chave, grupo)
     }
@@ -240,7 +240,7 @@ export function CarteiraTab({ dados, recarregar }: CarteiraTabProps) {
                   <thead>
                     <tr>
                       <th>Investidor</th><th>Participação</th><th>Comum</th><th>Day trade</th>
-                      <th>IR estimado</th><th>DARF pago</th><th>Diferença</th><th>Operações</th>
+                      <th>IR devido</th><th>Já pago</th><th>Saldo DARF</th><th>Operações</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -260,8 +260,23 @@ export function CarteiraTab({ dados, recarregar }: CarteiraTabProps) {
                           <td>{formatarMoeda(x.resultadoComumOpcoes)}</td>
                           <td>{formatarMoeda(x.resultadoDayTradeOpcoes)}</td>
                           <td className="fiscal-tax-value">{formatarMoeda(x.irEstimadoOpcoes)}</td>
-                          <td className="positive">{formatarMoeda(x.darfPago)}</td>
-                          <td className={x.diferencaEstimadoPago > 0 ? 'negative' : 'positive'}>{formatarMoeda(x.diferencaEstimadoPago)}</td>
+                          <td className={x.darfPago > 0 ? 'positive' : ''}>{formatarMoeda(x.darfPago)}</td>
+                          <td>
+                            {(() => {
+                              const saldoDarf = Math.max(0, x.irEstimadoOpcoes - x.darfPago)
+                              const pagoIntegral = x.irEstimadoOpcoes > 0 && saldoDarf <= 0.009
+                              return (
+                                <div className="fiscal-darf-due">
+                                  <strong className={saldoDarf > 0 ? 'negative' : 'positive'}>
+                                    {formatarMoeda(saldoDarf)}
+                                  </strong>
+                                  <span className={pagoIntegral ? 'fiscal-paid' : saldoDarf > 0 ? 'fiscal-pending' : 'fiscal-neutral'}>
+                                    {pagoIntegral ? 'Pago' : saldoDarf > 0 ? 'A pagar' : 'Sem DARF'}
+                                  </span>
+                                </div>
+                              )
+                            })()}
+                          </td>
                           <td>{x.operacoesConsideradas}</td>
                         </tr>
                       )
