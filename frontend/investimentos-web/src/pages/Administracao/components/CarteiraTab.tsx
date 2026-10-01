@@ -289,11 +289,16 @@ export function CarteiraTab({ dados, recarregar }: CarteiraTabProps) {
         <div className="admin-table-wrap">
           <table className="data-table admin-table">
             <thead>
-              <tr><th>Pagamento</th><th>Investidor</th><th>Descrição</th><th>Valor</th><th>Status</th><th>Ações</th></tr>
+              <tr><th>Competência</th><th>Pagamento</th><th>Investidor</th><th>Descrição</th><th>Valor</th><th>Status</th><th>Ações</th></tr>
             </thead>
             <tbody>
               {descontosFiltrados.map((desconto) => (
                 <tr key={desconto.id}>
+                  <td>{(() => {
+                    const pagamento = new Date(`${desconto.dataPagamento.slice(0, 10)}T12:00:00`)
+                    pagamento.setMonth(pagamento.getMonth() - 1)
+                    return `${String(pagamento.getMonth() + 1).padStart(2, '0')}/${pagamento.getFullYear()}`
+                  })()}</td>
                   <td>{formatarDataCurta(desconto.dataPagamento)}</td>
                   <td>{desconto.investidorNome ?? 'Não atribuído'}</td>
                   <td>{desconto.descricao ?? '—'}</td>
@@ -307,7 +312,7 @@ export function CarteiraTab({ dados, recarregar }: CarteiraTabProps) {
                   </td>
                 </tr>
               ))}
-              {descontosFiltrados.length === 0 ? <tr><td colSpan={6}>Nenhum DARF cadastrado.</td></tr> : null}
+              {descontosFiltrados.length === 0 ? <tr><td colSpan={7}>Nenhum DARF cadastrado.</td></tr> : null}
             </tbody>
           </table>
         </div>
