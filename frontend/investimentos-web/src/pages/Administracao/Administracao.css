@@ -1392,3 +1392,114 @@
   overflow-x: hidden !important;
   overflow-y: visible !important;
 }
+
+
+/* =========================================================
+   ADMINISTRAÇÃO — OPÇÕES / ENTRADAS E SAÍDAS
+   Ajustes finais sobre os estilos específicos dos módulos.
+   ========================================================= */
+
+/* Opções: aumenta de fato texto, chips e ações; Opcoes.css define
+   tamanhos próprios nesses elementos e por isso só a célula não bastava. */
+.admin-page .admin-standard-history .options-table {
+  font-size: 0.76rem !important;
+}
+
+.admin-page .admin-standard-history .options-table th {
+  height: 44px !important;
+  padding: 11px 8px !important;
+  font-size: 0.64rem !important;
+}
+
+.admin-page .admin-standard-history .options-table td {
+  height: 44px !important;
+  padding: 11px 8px !important;
+  font-size: 0.76rem !important;
+}
+
+.admin-page .admin-standard-history .options-table .ticker {
+  font-size: 0.74rem !important;
+}
+
+.admin-page .admin-standard-history .options-table .option-type-chip,
+.admin-page .admin-standard-history .options-table .option-status-chip {
+  min-height: 27px !important;
+  padding: 0 8px !important;
+  font-size: 0.65rem !important;
+  line-height: 27px !important;
+}
+
+.admin-page .admin-standard-history .options-table .options-edit-button,
+.admin-page .admin-standard-history .options-table .options-delete-button {
+  min-height: 28px !important;
+  padding: 0 9px !important;
+  font-size: 0.65rem !important;
+}
+
+/* Entradas/Saídas: mesmo layout, tipografia, hover e linguagem de cores
+   adotados nas demais tabelas administrativas. */
+.admin-page .admin-movement-table th {
+  color: var(--muted) !important;
+  text-align: left !important;
+}
+
+.admin-page .admin-movement-table td {
+  color: var(--text);
+  text-align: left !important;
+}
+
+.admin-page .admin-movement-table th:nth-child(4),
+.admin-page .admin-movement-table td:nth-child(4) {
+  text-align: right !important;
+}
+
+.admin-page .admin-movement-table th:last-child,
+.admin-page .admin-movement-table td:last-child {
+  text-align: right !important;
+}
+
+.admin-page .admin-movement-table tbody tr:hover {
+  background: rgba(99, 230, 200, 0.035) !important;
+}
+
+.admin-page .admin-movement-table .movement-entry {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: rgba(99, 230, 200, 0.12);
+  color: var(--accent) !important;
+  font-weight: 700;
+}
+
+.admin-page .admin-movement-table .movement-exit {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: rgba(255, 88, 108, 0.10);
+  color: var(--negative) !important;
+  font-weight: 700;
+}
+
+.admin-page .admin-movement-table td:nth-child(4) strong {
+  font-weight: 700;
+}
+
+.admin-page .admin-movement-table td:nth-child(4) .movement-entry {
+  background: transparent;
+  padding: 0;
+}
+
+.admin-page .admin-movement-table .admin-movement-edit {
+  border-color: rgba(64, 157, 255, 0.5) !important;
+  background: transparent !important;
+  color: #62adff !important;
+}
+
+.admin-page .admin-movement-table .admin-movement-edit:hover:not(:disabled) {
+  border-color: rgba(64, 157, 255, 0.85) !important;
+  background: rgba(64, 157, 255, 0.09) !important;
+}
