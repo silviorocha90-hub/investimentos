@@ -1605,3 +1605,109 @@
   padding: 0 11px !important;
   font-size: 0.70rem !important;
 }
+
+
+/* Fiscal / DARF — apuração mensal e participação por investidor */
+.fiscal-months {
+  display: grid;
+  gap: 14px;
+  margin-top: 14px;
+}
+
+.fiscal-month-card {
+  overflow: hidden;
+  border: 1px solid rgba(99,230,200,.18);
+  border-radius: 12px;
+  background: linear-gradient(145deg, rgba(255,255,255,.028), rgba(255,255,255,.01));
+}
+
+.fiscal-month-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--line);
+  background: rgba(99,230,200,.035);
+}
+
+.fiscal-month-header > strong {
+  color: var(--accent);
+  font-size: .88rem;
+}
+
+.fiscal-month-totals {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 18px;
+}
+
+.fiscal-month-totals span {
+  color: var(--muted);
+  font-size: .68rem;
+}
+
+.fiscal-month-totals b {
+  margin-left: 5px;
+  color: var(--text);
+  font-size: .72rem;
+}
+
+.fiscal-month-totals b.positive { color: var(--accent); }
+.fiscal-month-totals b.negative { color: var(--negative); }
+
+.admin-page .fiscal-participation-wrap {
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.admin-page .fiscal-participation-table td,
+.admin-page .fiscal-participation-table th {
+  padding: 10px 12px !important;
+}
+
+.fiscal-share {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.fiscal-share > strong {
+  min-width: 42px;
+  color: var(--accent);
+}
+
+.fiscal-share > span {
+  display: block;
+  width: 58px;
+  height: 5px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255,255,255,.07);
+}
+
+.fiscal-share i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--accent);
+}
+
+.fiscal-tax-value {
+  color: #f3c969 !important;
+  font-weight: 700;
+}
+
+@media (max-width: 900px) {
+  .fiscal-month-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .fiscal-month-totals {
+    justify-content: flex-start;
+  }
+}
