@@ -23,6 +23,58 @@ namespace Investimentos.Infrastructure.Persistence.Repositories
                 .Where(x => !investidorId.HasValue || x.InvestidorId == investidorId.Value)
                 .ToListAsync(cancellationToken);
 
+            var operacoesAcoes = await _context.Operacoes
+                .AsNoTracking()
+                .Include(x => x.Investidor)
+                .Include(x => x.TipoOperacao)
+                .Include(x => x.Ativo)
+                    .ThenInclude(x => x.TipoAtivo)
+                .Where(x => x.Ativo.TipoAtivo.Codigo == "ACAO")
+                .Where(x => !investidorId.HasValue || x.InvestidorId == investidorId.Value)
+                .OrderBy(x => x.Data)
+                .ThenBy(x => x.Sequencia)
+                .ToListAsync(cancellationToken);
+
+            var resultadosAcoes = new List<(int Ano, int Mes, Guid InvestidorId, string Investidor, decimal Resultado, decimal Vendas)>();
+
+            foreach (var grupoAtivo in operacoesAcoes.GroupBy(x => new { x.InvestidorId, x.AtivoId }))
+            {
+                decimal quantidade = 0m;
+                decimal custoTotal = 0m;
+
+                foreach (var operacao in grupoAtivo)
+                {
+                    var tipo = operacao.TipoOperacao.Codigo.Trim().ToUpperInvariant();
+
+                    if (tipo == "COMPRA")
+                    {
+                        quantidade += operacao.Quantidade;
+                        custoTotal += operacao.Quantidade * operacao.PrecoUnitario + operacao.Taxas;
+                        continue;
+                    }
+
+                    if (tipo != "VENDA" || quantidade <= 0 || operacao.Quantidade > quantidade)
+                        continue;
+
+                    var precoMedio = custoTotal / quantidade;
+                    var custoVendido = operacao.Quantidade * precoMedio;
+                    var valorVenda = operacao.Quantidade * operacao.PrecoUnitario;
+                    var resultado = valorVenda - custoVendido - operacao.Taxas;
+
+                    resultadosAcoes.Add((
+                        operacao.Data.Year,
+                        operacao.Data.Month,
+                        operacao.InvestidorId,
+                        operacao.Investidor.Nome,
+                        resultado,
+                        valorVenda));
+
+                    custoTotal -= custoVendido;
+                    quantidade -= operacao.Quantidade;
+                    if (quantidade == 0) custoTotal = 0m;
+                }
+            }
+
             var darfs = await _context.DescontosFiscais
                 .AsNoTracking()
                 .Include(x => x.Investidor)
@@ -38,9 +90,6 @@ namespace Investimentos.Infrastructure.Persistence.Repositories
                     var data = x.DataFinalizacao!.Value;
                     var dayTrade = data.Date == x.DataOperacao.Date;
                     var resultado = x.ResultadoFinal!.Value;
-                    var estimado = resultado > 0
-                        ? decimal.Round(resultado * (dayTrade ? 20m : 15m) / 100m, 2, MidpointRounding.AwayFromZero)
-                        : 0m;
 
                     return new
                     {
@@ -49,14 +98,16 @@ namespace Investimentos.Infrastructure.Persistence.Repositories
                         x.InvestidorId,
                         Investidor = x.Investidor.Nome,
                         Comum = dayTrade ? 0m : resultado,
-                        DayTrade = dayTrade ? resultado : 0m,
-                        Estimado = estimado
+                        DayTrade = dayTrade ? resultado : 0m
                     };
                 })
                 .ToList();
 
             if (ano.HasValue)
-                darfs = darfs.Where(x => x.DataPagamento.Year == ano.Value).ToList();
+            {
+                darfs = darfs.Where(x => x.DataPagamento.AddMonths(-1).Year == ano.Value).ToList();
+                resultadosAcoes = resultadosAcoes.Where(x => x.Ano == ano.Value).ToList();
+            }
 
             var chaves = itens
                 .Select(x => new
@@ -66,6 +117,13 @@ namespace Investimentos.Infrastructure.Persistence.Repositories
                     InvestidorId = (Guid?)x.InvestidorId,
                     Investidor = x.Investidor
                 })
+                .Concat(resultadosAcoes.Select(x => new
+                {
+                    x.Ano,
+                    x.Mes,
+                    InvestidorId = (Guid?)x.InvestidorId,
+                    x.Investidor
+                }))
                 .Concat(darfs.Select(x => new
                 {
                     Ano = x.DataPagamento.AddMonths(-1).Year,
@@ -86,12 +144,29 @@ namespace Investimentos.Infrastructure.Persistence.Repositories
                     x.DataPagamento.AddMonths(-1).Year == chave.Ano &&
                     x.DataPagamento.AddMonths(-1).Month == chave.Mes &&
                     x.InvestidorId == chave.InvestidorId).Sum(x => x.Valor);
-                var estimado = grupo.Sum(x => x.Estimado);
+                var acoesMes = resultadosAcoes
+                    .Where(x => x.Ano == chave.Ano && x.Mes == chave.Mes && (Guid?)x.InvestidorId == chave.InvestidorId)
+                    .ToList();
+
+                var resultadoOpcoesComum = grupo.Sum(x => x.Comum);
+                var resultadoDayTrade = grupo.Sum(x => x.DayTrade);
+                var resultadoAcoes = acoesMes.Sum(x => x.Resultado);
+                var vendasAcoes = acoesMes.Sum(x => x.Vendas);
+
+                // Aproxima a apuração do MyProfit: ações e opções comuns compõem
+                // a mesma base mensal; day trade permanece separado.
+                // Vendas de ações até R$ 20 mil no mês não entram na base tributável.
+                var resultadoAcoesTributavel = vendasAcoes > 20_000m ? resultadoAcoes : 0m;
+                var baseComum = Math.Max(0m, resultadoOpcoesComum + resultadoAcoesTributavel);
+                var baseDayTrade = Math.Max(0m, resultadoDayTrade);
+                var estimado =
+                    decimal.Round(baseComum * 15m / 100m, 2, MidpointRounding.AwayFromZero) +
+                    decimal.Round(baseDayTrade * 20m / 100m, 2, MidpointRounding.AwayFromZero);
 
                 return new FiscalMesDto(
                     chave.Ano, chave.Mes, chave.InvestidorId, chave.Investidor,
-                    grupo.Sum(x => x.Comum), grupo.Sum(x => x.DayTrade),
-                    estimado, pago, estimado - pago, grupo.Count, 0);
+                    resultadoOpcoesComum + resultadoAcoesTributavel, resultadoDayTrade,
+                    estimado, pago, estimado - pago, grupo.Count + acoesMes.Count, 0);
             }).ToList();
 
             var pendencias = opcoes.Count(x =>
