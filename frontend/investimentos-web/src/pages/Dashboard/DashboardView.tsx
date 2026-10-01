@@ -803,15 +803,14 @@ export function DashboardView({
   const possuiPerformanceTemporal =
     (performance?.periodos.length ?? 0) > 0
 
+  // Entradas e saídas do card representam os fluxos do ano atual.
+  // A performance temporal pode começar depois do início do ano, portanto
+  // seus aportes/retiradas servem à fórmula Modified Dietz, não ao resumo anual.
   const entradas =
-    possuiPerformanceTemporal
-      ? performance?.aportes ?? 0
-      : dashboard?.entradasAno ?? 0
+    dashboard?.entradasAno ?? 0
 
   const saidas =
-    possuiPerformanceTemporal
-      ? performance?.retiradas ?? 0
-      : dashboard?.saidasAno ?? 0
+    dashboard?.saidasAno ?? 0
 
   const rentabilidade =
     possuiPerformanceTemporal
