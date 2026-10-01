@@ -432,21 +432,18 @@ export function OpcoesView({
           .slice()
           .sort(
             (a, b) => {
-              const porVencimento =
-                b.vencimento.localeCompare(
-                  a.vencimento,
-                )
+              const dataOrdenacao = (opcao: OperacaoOpcao) =>
+                opcao.dataFinalizacao ??
+                (opcao.situacao === 'EXECUTADA' ? opcao.dataOperacao : '') ??
+                ''
 
-              if (
-                porVencimento !==
-                0
-              ) {
-                return porVencimento
+              const porFinalizacao = dataOrdenacao(b).localeCompare(dataOrdenacao(a))
+
+              if (porFinalizacao !== 0) {
+                return porFinalizacao
               }
 
-              return b.dataOperacao.localeCompare(
-                a.dataOperacao,
-              )
+              return b.dataOperacao.localeCompare(a.dataOperacao)
             },
           ),
       [
