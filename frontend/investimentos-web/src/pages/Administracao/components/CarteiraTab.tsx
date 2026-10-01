@@ -58,19 +58,39 @@ export function CarteiraTab({ dados, recarregar }: CarteiraTabProps) {
     [dados.descontosFiscais, investidorId],
   )
 
-  const simulacaoCompetenciaAtual = useMemo(() => {
-    const hoje = new Date()
-    const anoAtual = hoje.getFullYear()
-    const mesAtual = hoje.getMonth() + 1
+  const simulacaoProximaCompetencia = useMemo(() => {
+    const competenciasPagas = dados.descontosFiscais.map((desconto) => {
+      const pagamento = new Date(`${desconto.dataPagamento.slice(0, 10)}T12:00:00`)
+      pagamento.setMonth(pagamento.getMonth() - 1)
+      return pagamento.getFullYear() * 12 + pagamento.getMonth()
+    })
 
-    return (fiscal?.meses ?? []).filter(
-      (x) =>
-        x.ano === anoAtual &&
-        x.mes === mesAtual &&
-        x.darfPago <= 0 &&
-        x.irEstimadoOpcoes > 0,
-    )
-  }, [fiscal?.meses])
+    const ultimaCompetenciaPaga = competenciasPagas.length > 0
+      ? Math.max(...competenciasPagas)
+      : null
+
+    const competenciaAlvo = ultimaCompetenciaPaga !== null
+      ? ultimaCompetenciaPaga + 1
+      : (() => {
+          const hoje = new Date()
+          return hoje.getFullYear() * 12 + hoje.getMonth()
+        })()
+
+    const anoAlvo = Math.floor(competenciaAlvo / 12)
+    const mesAlvo = (competenciaAlvo % 12) + 1
+
+    return {
+      ano: anoAlvo,
+      mes: mesAlvo,
+      itens: (fiscal?.meses ?? []).filter(
+        (x) =>
+          x.ano === anoAlvo &&
+          x.mes === mesAlvo &&
+          x.darfPago <= 0 &&
+          x.irEstimadoOpcoes > 0,
+      ),
+    }
+  }, [dados.descontosFiscais, fiscal?.meses])
 
   function abrirNovo() {
     setNovo(true)
@@ -188,7 +208,7 @@ export function CarteiraTab({ dados, recarregar }: CarteiraTabProps) {
         {erro ? <div className="admin-inline-error">{erro}</div> : null}
 
         <div className="admin-toolbar fiscal-simulation-title">
-          <strong>Simulação da competência atual em aberto</strong>
+          <strong>Simulação da próxima competência</strong>
         </div>
 
         <div className="admin-table-wrap">
@@ -199,7 +219,7 @@ export function CarteiraTab({ dados, recarregar }: CarteiraTabProps) {
               </tr>
             </thead>
             <tbody>
-              {simulacaoCompetenciaAtual.map((x) => (
+              {simulacaoProximaCompetencia.itens.map((x) => (
                 <tr key={`${x.ano}-${x.mes}-${x.investidorId ?? 'sem'}`}>
                   <td>{String(x.mes).padStart(2, '0')}/{x.ano}</td>
                   <td>{x.investidor}</td>
@@ -207,8 +227,12 @@ export function CarteiraTab({ dados, recarregar }: CarteiraTabProps) {
                   <td><span className="fiscal-pending">Em aberto</span></td>
                 </tr>
               ))}
-              {simulacaoCompetenciaAtual.length === 0 ? (
-                <tr><td colSpan={4}>Não há DARF em aberto para a competência atual.</td></tr>
+              {simulacaoProximaCompetencia.itens.length === 0 ? (
+                <tr>
+                  <td colSpan={4}>
+                    Sem valor estimado para {String(simulacaoProximaCompetencia.mes).padStart(2, '0')}/{simulacaoProximaCompetencia.ano}.
+                  </td>
+                </tr>
               ) : null}
             </tbody>
           </table>
