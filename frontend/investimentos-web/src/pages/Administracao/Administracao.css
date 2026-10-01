@@ -1711,3 +1711,40 @@
     justify-content: flex-start;
   }
 }
+
+
+.fiscal-darf-due {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.fiscal-darf-due > strong {
+  min-width: 72px;
+}
+
+.fiscal-darf-due > span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 22px;
+  padding: 0 7px;
+  border-radius: 999px;
+  font-size: .58rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.fiscal-paid {
+  color: var(--accent);
+  background: rgba(99,230,200,.12);
+}
+
+.fiscal-pending {
+  color: #ff8585;
+  background: rgba(255,133,133,.10);
+}
+
+.fiscal-neutral {
+  color: var(--muted);
+  background: rgba(148,163,184,.10);
+}
