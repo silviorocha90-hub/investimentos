@@ -237,7 +237,7 @@ export function CarteiraTab({ dados, recarregar }: CarteiraTabProps) {
                 <table className="data-table admin-table fiscal-participation-table">
                   <thead>
                     <tr>
-                      <th>Investidor</th><th>Participação</th><th>Valor devido</th><th>Valor pago</th><th>Saldo DARF</th>
+                      <th>Investidor</th><th>Participação</th><th>Valor devido</th><th>Valor pago</th><th>Pagamento</th><th>Saldo DARF</th><th>Ações</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -245,6 +245,13 @@ export function CarteiraTab({ dados, recarregar }: CarteiraTabProps) {
                       const participacao = grupo.irEstimado > 0
                         ? (x.irEstimadoOpcoes / grupo.irEstimado) * 100
                         : 0
+                      const pagamentos = descontosFiltrados.filter((desconto) => {
+                        if (desconto.investidorId !== x.investidorId) return false
+                        const pagamento = new Date(`${desconto.dataPagamento.slice(0, 10)}T12:00:00`)
+                        pagamento.setMonth(pagamento.getMonth() - 1)
+                        return pagamento.getFullYear() === grupo.ano &&
+                          pagamento.getMonth() + 1 === grupo.mes
+                      })
                       return (
                         <tr key={`${x.ano}-${x.mes}-${x.investidorId ?? 'sem'}`}>
                           <td><strong>{x.investidor}</strong></td>
@@ -256,6 +263,7 @@ export function CarteiraTab({ dados, recarregar }: CarteiraTabProps) {
                           </td>
                           <td className="fiscal-tax-value">{formatarMoeda(x.irEstimadoOpcoes)}</td>
                           <td className={x.darfPago > 0 ? 'positive' : ''}>{formatarMoeda(x.darfPago)}</td>
+                          <td>{pagamentos.length > 0 ? pagamentos.map((p) => formatarDataCurta(p.dataPagamento)).join(', ') : '—'}</td>
                           <td>
                             {(() => {
                               const saldoDarf = Math.max(0, x.irEstimadoOpcoes - x.darfPago)
@@ -272,6 +280,33 @@ export function CarteiraTab({ dados, recarregar }: CarteiraTabProps) {
                               )
                             })()}
                           </td>
+                          <td>
+                            <div className="admin-row-actions">
+                              {pagamentos.map((pagamento) => (
+                                <span className="fiscal-payment-actions" key={pagamento.id}>
+                                  <button type="button" className="admin-action" onClick={() => abrirEdicao(pagamento)}>Editar</button>
+                                  <button type="button" className="admin-action admin-action-danger" onClick={() => excluir(pagamento)}>Excluir</button>
+                                </span>
+                              ))}
+                              {pagamentos.length === 0 ? (
+                                <button
+                                  type="button"
+                                  className="admin-action"
+                                  onClick={() => {
+                                    setNovo(true)
+                                    setEditando(null)
+                                    setDataPagamento('')
+                                    setValor('')
+                                    setDescricao(`DARF competência ${String(grupo.mes).padStart(2, '0')}/${grupo.ano}`)
+                                    setInvestidorModalId(x.investidorId ?? '')
+                                    setErro(null)
+                                  }}
+                                >
+                                  Registrar pagamento
+                                </button>
+                              ) : null}
+                            </div>
+                          </td>
                         </tr>
                       )
                     })}
@@ -281,40 +316,6 @@ export function CarteiraTab({ dados, recarregar }: CarteiraTabProps) {
             </section>
           ))}
           {competenciasMensais.length === 0 ? <div className="admin-empty-state">Sem apuração fiscal para o período.</div> : null}
-        </div>
-      </article>
-
-      <article className="panel admin-panel">
-        <div className="admin-toolbar"><strong>DARFs registrados</strong></div>
-        <div className="admin-table-wrap">
-          <table className="data-table admin-table">
-            <thead>
-              <tr><th>Competência</th><th>Pagamento</th><th>Investidor</th><th>Descrição</th><th>Valor</th><th>Status</th><th>Ações</th></tr>
-            </thead>
-            <tbody>
-              {descontosFiltrados.map((desconto) => (
-                <tr key={desconto.id}>
-                  <td>{(() => {
-                    const pagamento = new Date(`${desconto.dataPagamento.slice(0, 10)}T12:00:00`)
-                    pagamento.setMonth(pagamento.getMonth() - 1)
-                    return `${String(pagamento.getMonth() + 1).padStart(2, '0')}/${pagamento.getFullYear()}`
-                  })()}</td>
-                  <td>{formatarDataCurta(desconto.dataPagamento)}</td>
-                  <td>{desconto.investidorNome ?? 'Não atribuído'}</td>
-                  <td>{desconto.descricao ?? '—'}</td>
-                  <td>{formatarMoeda(desconto.valor)}</td>
-                  <td><span className="admin-status-paid">✓ Pago</span></td>
-                  <td>
-                    <div className="admin-row-actions">
-                      <button type="button" className="admin-action" onClick={() => abrirEdicao(desconto)}>Editar</button>
-                      <button type="button" className="admin-action admin-action-danger" onClick={() => excluir(desconto)}>Excluir</button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-              {descontosFiltrados.length === 0 ? <tr><td colSpan={7}>Nenhum DARF cadastrado.</td></tr> : null}
-            </tbody>
-          </table>
         </div>
       </article>
 
