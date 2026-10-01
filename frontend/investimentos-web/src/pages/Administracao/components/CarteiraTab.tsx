@@ -58,14 +58,41 @@ export function CarteiraTab({ dados, recarregar }: CarteiraTabProps) {
     [dados.descontosFiscais, investidorId],
   )
 
-  const competenciasAtuaisEFuturas = useMemo(() => {
-    const hoje = new Date()
-    const anoAtual = hoje.getFullYear()
-    const mesAtual = hoje.getMonth() + 1
+  const competenciasMensais = useMemo(() => {
+    const grupos = new Map<string, {
+      ano: number
+      mes: number
+      irEstimado: number
+      darfPago: number
+      diferenca: number
+      investidores: NonNullable<FiscalResumo['meses']>
+    }>()
 
-    return (fiscal?.meses ?? []).filter(
-      (x) => x.ano > anoAtual || (x.ano === anoAtual && x.mes >= mesAtual),
-    )
+    for (const item of fiscal?.meses ?? []) {
+      const chave = `${item.ano}-${String(item.mes).padStart(2, '0')}`
+      const grupo = grupos.get(chave) ?? {
+        ano: item.ano,
+        mes: item.mes,
+        irEstimado: 0,
+        darfPago: 0,
+        diferenca: 0,
+        investidores: [],
+      }
+
+      grupo.irEstimado += item.irEstimadoOpcoes
+      grupo.darfPago += item.darfPago
+      grupo.diferenca += item.diferencaEstimadoPago
+      grupo.investidores.push(item)
+      grupos.set(chave, grupo)
+    }
+
+    return [...grupos.values()]
+      .sort((a, b) => b.ano - a.ano || b.mes - a.mes)
+      .map((grupo) => ({
+        ...grupo,
+        investidores: [...grupo.investidores]
+          .sort((a, b) => b.irEstimadoOpcoes - a.irEstimadoOpcoes),
+      }))
   }, [fiscal?.meses])
 
   function abrirNovo() {
@@ -196,29 +223,55 @@ export function CarteiraTab({ dados, recarregar }: CarteiraTabProps) {
           <div className="admin-inline-info" key={aviso}>{aviso}</div>
         ))}
 
-        <div className="admin-table-wrap">
-          <table className="data-table admin-table">
-            <thead>
-              <tr>
-                <th>Competência</th><th>Investidor</th><th>Comum</th><th>Day trade</th>
-                <th>IR estimado</th><th>Diferença</th><th>Operações</th>
-              </tr>
-            </thead>
-            <tbody>
-              {competenciasAtuaisEFuturas.map((x) => (
-                <tr key={`${x.ano}-${x.mes}-${x.investidorId ?? 'sem'}`}>
-                  <td>{String(x.mes).padStart(2, '0')}/{x.ano}</td>
-                  <td>{x.investidor}</td>
-                  <td>{formatarMoeda(x.resultadoComumOpcoes)}</td>
-                  <td>{formatarMoeda(x.resultadoDayTradeOpcoes)}</td>
-                  <td>{formatarMoeda(x.irEstimadoOpcoes)}</td>
-                  <td>{formatarMoeda(x.diferencaEstimadoPago)}</td>
-                  <td>{x.operacoesConsideradas}</td>
-                </tr>
-              ))}
-              {competenciasAtuaisEFuturas.length === 0 ? <tr><td colSpan={7}>Sem competências atuais ou futuras.</td></tr> : null}
-            </tbody>
-          </table>
+        <div className="fiscal-months">
+          {competenciasMensais.map((grupo) => (
+            <section className="fiscal-month-card" key={`${grupo.ano}-${grupo.mes}`}>
+              <div className="fiscal-month-header">
+                <strong>{String(grupo.mes).padStart(2, '0')}/{grupo.ano}</strong>
+                <div className="fiscal-month-totals">
+                  <span>IR estimado <b>{formatarMoeda(grupo.irEstimado)}</b></span>
+                  <span>DARF pago <b>{formatarMoeda(grupo.darfPago)}</b></span>
+                  <span>Diferença <b className={grupo.diferenca > 0 ? 'negative' : 'positive'}>{formatarMoeda(grupo.diferenca)}</b></span>
+                </div>
+              </div>
+
+              <div className="admin-table-wrap fiscal-participation-wrap">
+                <table className="data-table admin-table fiscal-participation-table">
+                  <thead>
+                    <tr>
+                      <th>Investidor</th><th>Participação</th><th>Comum</th><th>Day trade</th>
+                      <th>IR estimado</th><th>DARF pago</th><th>Diferença</th><th>Operações</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {grupo.investidores.map((x) => {
+                      const participacao = grupo.irEstimado > 0
+                        ? (x.irEstimadoOpcoes / grupo.irEstimado) * 100
+                        : 0
+                      return (
+                        <tr key={`${x.ano}-${x.mes}-${x.investidorId ?? 'sem'}`}>
+                          <td><strong>{x.investidor}</strong></td>
+                          <td>
+                            <div className="fiscal-share">
+                              <strong>{participacao.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%</strong>
+                              <span><i style={{ width: `${Math.min(100, participacao)}%` }} /></span>
+                            </div>
+                          </td>
+                          <td>{formatarMoeda(x.resultadoComumOpcoes)}</td>
+                          <td>{formatarMoeda(x.resultadoDayTradeOpcoes)}</td>
+                          <td className="fiscal-tax-value">{formatarMoeda(x.irEstimadoOpcoes)}</td>
+                          <td className="positive">{formatarMoeda(x.darfPago)}</td>
+                          <td className={x.diferencaEstimadoPago > 0 ? 'negative' : 'positive'}>{formatarMoeda(x.diferencaEstimadoPago)}</td>
+                          <td>{x.operacoesConsideradas}</td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          ))}
+          {competenciasMensais.length === 0 ? <div className="admin-empty-state">Sem apuração fiscal para o período.</div> : null}
         </div>
       </article>
 
