@@ -1348,3 +1348,47 @@
     font-size: 0.62rem !important;
   }
 }
+
+
+/* Operações, Opções e Entradas/Saídas: replica explicitamente a escala
+   da tabela de Proventos, inclusive conteúdos internos que tinham fontes
+   próprias menores nos CSS de cada módulo. */
+.admin-page .admin-standard-history .operations-table th,
+.admin-page .admin-standard-history .options-table th,
+.admin-page .admin-movement-table th {
+  height: 40px !important;
+  padding: 10px 8px !important;
+  font-size: 0.59rem !important;
+  line-height: 1.2 !important;
+}
+
+.admin-page .admin-standard-history .operations-table td,
+.admin-page .admin-standard-history .options-table td,
+.admin-page .admin-movement-table td {
+  height: 40px !important;
+  padding: 10px 8px !important;
+  font-size: 0.7rem !important;
+  line-height: 1.2 !important;
+}
+
+.admin-page .admin-standard-history .operations-table td *,
+.admin-page .admin-standard-history .options-table td *,
+.admin-page .admin-movement-table td * {
+  font-size: inherit !important;
+}
+
+.admin-page .admin-standard-history .portfolio-operations,
+.admin-page .admin-standard-history .options-table-panel,
+.admin-page .admin-panel:has(.admin-movement-table) {
+  width: 100% !important;
+  min-width: 0 !important;
+}
+
+.admin-page .admin-standard-history .operations-table-wrap,
+.admin-page .admin-standard-history .options-table-wrap,
+.admin-page .admin-table-wrap:has(.admin-movement-table) {
+  width: 100% !important;
+  max-height: none !important;
+  overflow-x: hidden !important;
+  overflow-y: visible !important;
+}
