@@ -68,8 +68,8 @@ namespace Investimentos.Infrastructure.Persistence.Repositories
                 })
                 .Concat(darfs.Select(x => new
                 {
-                    Ano = x.DataPagamento.Year,
-                    Mes = x.DataPagamento.Month,
+                    Ano = x.DataPagamento.AddMonths(-1).Year,
+                    Mes = x.DataPagamento.AddMonths(-1).Month,
                     InvestidorId = x.InvestidorId,
                     Investidor = x.Investidor?.Nome ?? "Não atribuído"
                 }))
@@ -82,7 +82,10 @@ namespace Investimentos.Infrastructure.Persistence.Repositories
             var meses = chaves.Select(chave =>
             {
                 var grupo = itens.Where(x => x.Year == chave.Ano && x.Month == chave.Mes && (Guid?)x.InvestidorId == chave.InvestidorId).ToList();
-                var pago = darfs.Where(x => x.DataPagamento.Year == chave.Ano && x.DataPagamento.Month == chave.Mes && x.InvestidorId == chave.InvestidorId).Sum(x => x.Valor);
+                var pago = darfs.Where(x =>
+                    x.DataPagamento.AddMonths(-1).Year == chave.Ano &&
+                    x.DataPagamento.AddMonths(-1).Month == chave.Mes &&
+                    x.InvestidorId == chave.InvestidorId).Sum(x => x.Valor);
                 var estimado = grupo.Sum(x => x.Estimado);
 
                 return new FiscalMesDto(
