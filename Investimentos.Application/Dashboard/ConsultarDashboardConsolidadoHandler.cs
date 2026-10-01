@@ -174,9 +174,12 @@ namespace Investimentos.Application.Dashboard
                                 proventosAtivo,
                                 resultadoOpcoesAtivo);
 
+                        // Na tabela de posições, rentabilidade mede a posição
+                        // atual: (valor atual - custo) / custo. Proventos e
+                        // opções permanecem no Resultado Econômico da carteira.
                         var rentabilidadeEconomica =
                             posicao.CustoTotal > 0
-                                ? resultadoEconomicoAtivo /
+                                ? posicao.Valorizacao /
                                   posicao.CustoTotal * 100
                                 : 0;
 
