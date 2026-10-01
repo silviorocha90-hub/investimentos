@@ -211,12 +211,10 @@ export function CarteiraTab({ dados, recarregar }: CarteiraTabProps) {
         {erro ? <div className="admin-inline-error">{erro}</div> : null}
 
         <div className="admin-summary-grid">
-          <div><span>Resultado comum - opções</span><strong>{formatarMoeda(fiscal?.resultadoComumOpcoes ?? 0)}</strong></div>
-          <div><span>Resultado day trade - opções</span><strong>{formatarMoeda(fiscal?.resultadoDayTradeOpcoes ?? 0)}</strong></div>
-          <div><span>IR estimado - opções</span><strong>{formatarMoeda(fiscal?.irEstimadoOpcoes ?? 0)}</strong></div>
-          <div><span>DARF pago</span><strong>{formatarMoeda(fiscal?.darfPago ?? 0)}</strong></div>
-          <div><span>Diferença estimado x pago</span><strong>{formatarMoeda(fiscal?.diferencaEstimadoPago ?? 0)}</strong></div>
-          <div><span>Pendências fiscais</span><strong>{fiscal?.pendencias ?? 0}</strong></div>
+          <div><span>DARF devido</span><strong>{formatarMoeda(fiscal?.irEstimadoOpcoes ?? 0)}</strong></div>
+          <div><span>DARF pago</span><strong className="positive">{formatarMoeda(fiscal?.darfPago ?? 0)}</strong></div>
+          <div><span>Saldo DARF</span><strong className={(fiscal?.irEstimadoOpcoes ?? 0) - (fiscal?.darfPago ?? 0) > 0 ? 'negative' : 'positive'}>{formatarMoeda(Math.max(0, (fiscal?.irEstimadoOpcoes ?? 0) - (fiscal?.darfPago ?? 0)))}</strong></div>
+          <div><span>Pendências</span><strong>{fiscal?.pendencias ?? 0}</strong></div>
         </div>
 
         {fiscal?.avisos.map((aviso) => (
@@ -229,9 +227,9 @@ export function CarteiraTab({ dados, recarregar }: CarteiraTabProps) {
               <div className="fiscal-month-header">
                 <strong>{String(grupo.mes).padStart(2, '0')}/{grupo.ano}</strong>
                 <div className="fiscal-month-totals">
-                  <span>IR estimado <b>{formatarMoeda(grupo.irEstimado)}</b></span>
+                  <span>DARF devido <b>{formatarMoeda(grupo.irEstimado)}</b></span>
                   <span>DARF pago <b>{formatarMoeda(grupo.darfPago)}</b></span>
-                  <span>Diferença <b className={grupo.diferenca > 0 ? 'negative' : 'positive'}>{formatarMoeda(grupo.diferenca)}</b></span>
+                  <span>Saldo <b className={grupo.diferenca > 0 ? 'negative' : 'positive'}>{formatarMoeda(Math.max(0, grupo.diferenca))}</b></span>
                 </div>
               </div>
 
@@ -239,8 +237,7 @@ export function CarteiraTab({ dados, recarregar }: CarteiraTabProps) {
                 <table className="data-table admin-table fiscal-participation-table">
                   <thead>
                     <tr>
-                      <th>Investidor</th><th>Participação</th><th>Comum</th><th>Day trade</th>
-                      <th>IR devido</th><th>Já pago</th><th>Saldo DARF</th><th>Operações</th>
+                      <th>Investidor</th><th>Participação</th><th>Valor devido</th><th>Valor pago</th><th>Saldo DARF</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -257,8 +254,6 @@ export function CarteiraTab({ dados, recarregar }: CarteiraTabProps) {
                               <span><i style={{ width: `${Math.min(100, participacao)}%` }} /></span>
                             </div>
                           </td>
-                          <td>{formatarMoeda(x.resultadoComumOpcoes)}</td>
-                          <td>{formatarMoeda(x.resultadoDayTradeOpcoes)}</td>
                           <td className="fiscal-tax-value">{formatarMoeda(x.irEstimadoOpcoes)}</td>
                           <td className={x.darfPago > 0 ? 'positive' : ''}>{formatarMoeda(x.darfPago)}</td>
                           <td>
@@ -277,7 +272,6 @@ export function CarteiraTab({ dados, recarregar }: CarteiraTabProps) {
                               )
                             })()}
                           </td>
-                          <td>{x.operacoesConsideradas}</td>
                         </tr>
                       )
                     })}
