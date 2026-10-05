@@ -1,10 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
 
-import { obterPerformance } from '../../api/dashboardApi'
 import { PageHeader } from '../../components/PageHeader'
 import { SectionTitle } from '../../components/SectionTitle'
 
-import type { Dashboard, PerformanceCarteira } from '../../types/dashboard'
+import type { Dashboard } from '../../types/dashboard'
 import type { Investidor } from '../../types/investidor'
 
 import {
@@ -81,42 +80,11 @@ export function CarteiraView({
    onSelectInvestor,
 }: CarteiraViewProps) {
   const [filtroInvestidor, setFiltroInvestidor] = useState('TOTAL')
-  const [performance, setPerformance] = useState<PerformanceCarteira | null>(null)
 
   useEffect(() => {
     setFiltroInvestidor('TOTAL')
   }, [])
 
-  useEffect(() => {
-    let ativo = true
-
-    const investidorId =
-      filtroInvestidor === 'TOTAL'
-        ? undefined
-        : investidores.find((item) => item.nome === filtroInvestidor)?.id
-
-    if (filtroInvestidor !== 'TOTAL' && !investidorId) {
-      setPerformance(null)
-      return () => {
-        ativo = false
-      }
-    }
-
-    setPerformance(null)
-
-    obterPerformance(investidorId)
-      .then((dados) => {
-        if (ativo) setPerformance(dados)
-      })
-      .catch((error) => {
-        console.error(error)
-        if (ativo) setPerformance(null)
-      })
-
-    return () => {
-      ativo = false
-    }
-  }, [filtroInvestidor, investidores])
 
   const investidoresComCarteira = useMemo(() => {
     const nomes = new Set(
@@ -200,16 +168,12 @@ export function CarteiraView({
     )
 
   /*
-   * Crescimento da Carteira é a rentabilidade temporal acumulada desde
-   * o primeiro snapshot patrimonial disponível. Aportes e retiradas são
-   * tratados como fluxos de capital pelo motor de performance (Modified
-   * Dietz), portanto não viram ganho/perda e a métrica não reinicia na
-   * virada do mês ou do ano.
+   * RentabilidadeAno é um nome legado do contrato.
+   * Conforme o CODEX, representa a rentabilidade econômica acumulada
+   * da carteira e não uma rentabilidade limitada ao ano corrente.
    */
   const crescimentoCarteira =
-    (performance?.periodos.length ?? 0) > 0
-      ? performance?.rentabilidadeAcumulada ?? null
-      : null
+    dashboardSelecionado?.rentabilidadeAno ?? null
 
   const rendaVariavel = posicoes
     .filter((posicao) => !ehOutroInvestimento(posicao.ticker, posicao.tipoAtivoCodigo))
