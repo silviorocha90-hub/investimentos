@@ -800,22 +800,21 @@ export function DashboardView({
    * Indicadores sempre referentes ao ano atual.
    * O backend filtra as operações pelo ano corrente.
    */
-  const possuiPerformanceTemporal =
-    (performance?.periodos.length ?? 0) > 0
-
   // Entradas e saídas do card representam os fluxos do ano atual.
-  // A performance temporal pode começar depois do início do ano, portanto
-  // seus aportes/retiradas servem à fórmula Modified Dietz, não ao resumo anual.
   const entradas =
     dashboard?.entradasAno ?? 0
 
   const saidas =
     dashboard?.saidasAno ?? 0
 
+  /*
+   * RentabilidadeAno é um nome legado do contrato.
+   * Conforme a regra econômica do projeto, representa o crescimento
+   * acumulado da carteira e não deve ser substituído pela performance
+   * temporal Modified Dietz dos snapshots.
+   */
   const rentabilidade =
-    possuiPerformanceTemporal
-      ? performance?.rentabilidadeAcumulada ?? 0
-      : dashboard?.rentabilidadeAno ?? 0
+    dashboard?.rentabilidadeAno ?? 0
 
   /*
    * DISTRIBUIÇÃO POR INVESTIDOR
@@ -1130,11 +1129,7 @@ export function DashboardView({
         <article className="panel compact-metrics">
           <SectionTitle
             title="Rentabilidade"
-            badge={
-              possuiPerformanceTemporal
-                ? performance?.metodologia ?? 'Carteira'
-                : 'Carteira'
-            }
+            badge="Carteira"
           />
 
           <PortfolioReturnBars
