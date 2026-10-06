@@ -31,6 +31,14 @@
 
         public DateTime? UltimoLogin { get; private set; }
 
+        public string? WhatsApp { get; private set; }
+
+        public bool ReceberRelatorioIa { get; private set; }
+
+        public string FrequenciaRelatorioIa { get; private set; } = "DIARIO";
+
+        public DateTime? UltimoEnvioRelatorioIa { get; private set; }
+
         public IReadOnlyCollection<UsuarioPermissao>
             Permissoes => _permissoes;
 
@@ -69,6 +77,9 @@
             Status = StatusUsuario.Pendente;
 
             DataCadastro = DateTime.UtcNow;
+
+            ReceberRelatorioIa = false;
+            FrequenciaRelatorioIa = "DIARIO";
         }
 
         public static Usuario CriarAdmin(
@@ -145,6 +156,54 @@
         public void RegistrarLogin()
         {
             UltimoLogin = DateTime.UtcNow;
+        }
+
+        public void ConfigurarRelatorioIa(
+            string? whatsApp,
+            bool receberRelatorioIa,
+            string? frequencia)
+        {
+            var numero = new string(
+                (whatsApp ?? string.Empty)
+                    .Where(char.IsDigit)
+                    .ToArray());
+
+            if (receberRelatorioIa &&
+                string.IsNullOrWhiteSpace(numero))
+            {
+                throw new ArgumentException(
+                    "O WhatsApp é obrigatório para receber o relatório IA.");
+            }
+
+            if (!string.IsNullOrWhiteSpace(numero) &&
+                (numero.Length < 10 || numero.Length > 15))
+            {
+                throw new ArgumentException(
+                    "O WhatsApp deve possuir entre 10 e 15 dígitos, incluindo DDI e DDD.");
+            }
+
+            var frequenciaNormalizada =
+                (frequencia ?? "DIARIO")
+                    .Trim()
+                    .ToUpperInvariant();
+
+            if (frequenciaNormalizada is not
+                ("DIARIO" or "SEMANAL" or "QUINZENAL" or "MENSAL"))
+            {
+                throw new ArgumentException(
+                    "Frequência de relatório IA inválida.");
+            }
+
+            WhatsApp = string.IsNullOrWhiteSpace(numero)
+                ? null
+                : numero;
+            ReceberRelatorioIa = receberRelatorioIa;
+            FrequenciaRelatorioIa = frequenciaNormalizada;
+        }
+
+        public void RegistrarEnvioRelatorioIa(DateTime data)
+        {
+            UltimoEnvioRelatorioIa = data;
         }
 
         public void AlterarNome(string nome)
