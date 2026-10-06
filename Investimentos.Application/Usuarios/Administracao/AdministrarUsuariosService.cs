@@ -125,7 +125,7 @@ namespace Investimentos.Application.Usuarios.Administracao
                 investidoresIds,
             IReadOnlyCollection<AcessoInvestidorDto>?
                 acessosInvestidores,
-            string? whatsApp,
+            string? telegramChatId,
             bool receberRelatorioIa,
             string? frequenciaRelatorioIa,
             CancellationToken cancellationToken = default)
@@ -155,7 +155,7 @@ namespace Investimentos.Application.Usuarios.Administracao
                 perfil);
 
             usuario.ConfigurarRelatorioIa(
-                whatsApp,
+                telegramChatId,
                 receberRelatorioIa,
                 frequenciaRelatorioIa);
 
@@ -280,7 +280,7 @@ namespace Investimentos.Application.Usuarios.Administracao
                 usuario.Email,
                 usuario.Perfil.ToString(),
                 usuario.Status.ToString(),
-                usuario.WhatsApp,
+                usuario.TelegramChatId,
                 usuario.ReceberRelatorioIa,
                 usuario.FrequenciaRelatorioIa,
                 ComoUtc(usuario.UltimoEnvioRelatorioIa),
@@ -370,7 +370,7 @@ namespace Investimentos.Application.Usuarios.Administracao
         string Email,
         string Perfil,
         string Status,
-        string? WhatsApp,
+        string? TelegramChatId,
         bool ReceberRelatorioIa,
         string FrequenciaRelatorioIa,
         DateTime? UltimoEnvioRelatorioIa,
