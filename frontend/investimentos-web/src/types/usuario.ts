@@ -23,7 +23,7 @@ export interface UsuarioAdministracao {
   email: string
   perfil: PerfilUsuario
   status: StatusUsuario
-  whatsApp?: string | null
+  telegramChatId?: string | null
   receberRelatorioIa: boolean
   frequenciaRelatorioIa: 'DIARIO' | 'SEMANAL' | 'QUINZENAL' | 'MENSAL'
   ultimoEnvioRelatorioIa?: string | null
@@ -46,7 +46,7 @@ export interface AlterarAcessosUsuario {
   permissoes: PermissaoSistema[]
   investidoresIds: string[]
   acessosInvestidores: AcessoInvestidor[]
-  whatsApp?: string | null
+  telegramChatId?: string | null
   receberRelatorioIa: boolean
   frequenciaRelatorioIa: 'DIARIO' | 'SEMANAL' | 'QUINZENAL' | 'MENSAL'
 }
