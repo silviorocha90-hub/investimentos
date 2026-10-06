@@ -3,6 +3,7 @@ using System.Text;
 using System.Text.Json;
 using Investimentos.Application.Dashboard;
 using Investimentos.Domain.Entities;
+using Investimentos.Domain.Usuarios;
 using Investimentos.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
@@ -67,7 +68,7 @@ public sealed class AssistenteIaService
             substituir,
             null,
             "TODOS",
-            _configuration["WHATSAPP_ADMIN_TO"],
+            null,
             cancellationToken);
     }
 
@@ -75,9 +76,42 @@ public sealed class AssistenteIaService
         DateTime dataLocal,
         CancellationToken cancellationToken)
     {
-        if (await ObterHojeAsync(dataLocal, cancellationToken) is null)
+        var relatorioAdmin = await ObterHojeAsync(dataLocal, cancellationToken)
+            ?? await GerarAsync(dataLocal, false, cancellationToken);
+
+        var administradores = await _context.Usuarios
+            .Where(x =>
+                x.Perfil == PerfilUsuario.Admin &&
+                x.Status == StatusUsuario.Ativo &&
+                x.ReceberRelatorioIa &&
+                x.WhatsApp != null)
+            .ToListAsync(cancellationToken);
+
+        foreach (var administrador in administradores)
         {
-            await GerarAsync(dataLocal, false, cancellationToken);
+            if (!DeveEnviar(
+                    dataLocal.Date,
+                    administrador.UltimoEnvioRelatorioIa,
+                    administrador.FrequenciaRelatorioIa))
+                continue;
+
+            try
+            {
+                await EnviarWhatsAppAsync(
+                    relatorioAdmin,
+                    administrador.WhatsApp!,
+                    cancellationToken);
+
+                administrador.RegistrarEnvioRelatorioIa(dataLocal);
+                await _context.SaveChangesAsync(cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "Falha ao enviar relatório IA consolidado ao administrador {AdministradorId}.",
+                    administrador.Id);
+            }
         }
 
         var investidores = await _context.Investidores
