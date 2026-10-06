@@ -1,5 +1,6 @@
 using Investimentos.Api.Endpoints;
 using Investimentos.Api.ExceptionHandling;
+using Investimentos.Api.AssistenteIa;
 using Investimentos.Api.Startup;
 using Investimentos.Application.Administracao;
 using Investimentos.Application.Administracao.Integridade;
@@ -85,6 +86,9 @@ builder.Services
         });
 
 builder.Services.AddAuthorization();
+builder.Services.AddHttpClient();
+builder.Services.AddScoped<AssistenteIaService>();
+builder.Services.AddHostedService<AssistenteIaWorker>();
 
 builder.Services.AddScoped<CadastrarInvestidorHandler>();
 builder.Services.AddScoped<ListarInvestidoresHandler>();
@@ -185,6 +189,51 @@ app.UseHttpsRedirection();
 app.UseCors("Frontend");
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.MapGet(
+    "/api/assistente-ia/relatorios",
+    async (
+        AssistenteIaService service,
+        CancellationToken cancellationToken) =>
+    {
+        var relatorios =
+            await service.ListarAsync(
+                cancellationToken);
+
+        return Results.Ok(
+            relatorios.Select(x => new
+            {
+                x.Id,
+                x.DataReferencia,
+                x.DataGeracao,
+                x.Conteudo,
+                x.Modelo
+            }));
+    })
+    .RequireAuthorization();
+
+app.MapPost(
+    "/api/assistente-ia/gerar",
+    async (
+        AssistenteIaService service,
+        CancellationToken cancellationToken) =>
+    {
+        var relatorio =
+            await service.GerarAsync(
+                AssistenteIaWorker.ObterAgoraSaoPaulo(),
+                true,
+                cancellationToken);
+
+        return Results.Ok(new
+        {
+            relatorio.Id,
+            relatorio.DataReferencia,
+            relatorio.DataGeracao,
+            relatorio.Conteudo,
+            relatorio.Modelo
+        });
+    })
+    .RequireAuthorization();
 
 app.MapPost(
     "/api/investidores",
