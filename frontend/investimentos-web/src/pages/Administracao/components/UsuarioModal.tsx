@@ -333,7 +333,18 @@ export function UsuarioModal({
             </header>
 
             <label className="user-profile-field">
-              <span>Chat ID do Telegram</span>
+              <span>E-mail para relatórios</span>
+              <input
+                type="email"
+                value={usuario.email}
+                readOnly
+                disabled
+              />
+              <small>O relatório será enviado automaticamente para o e-mail cadastrado deste usuário.</small>
+            </label>
+
+            <label className="user-profile-field">
+              <span>Chat ID do Telegram (opcional)</span>
               <input
                 type="text"
                 inputMode="numeric"
@@ -342,7 +353,7 @@ export function UsuarioModal({
                 disabled={salvando}
                 onChange={(event) => setFormulario((atual) => ({ ...atual, telegramChatId: event.target.value }))}
               />
-              <small>O e-mail do usuário já será usado automaticamente. Informe o Chat ID para receber também pelo Telegram.</small>
+              <small>Se informado, o mesmo relatório também será enviado pelo Telegram. O número de telefone não é utilizado.</small>
             </label>
 
             <label className="user-profile-field">
@@ -353,8 +364,13 @@ export function UsuarioModal({
                 onChange={(event) => setFormulario((atual) => ({ ...atual, receberRelatorioIa: event.target.value === 'SIM' }))}
               >
                 <option value="NAO">Não receber</option>
-                <option value="SIM">Receber por e-mail e Telegram</option>
+                <option value="SIM">Receber por e-mail{formulario.telegramChatId.trim() ? ' + Telegram' : ''}</option>
               </select>
+              <small>
+                {formulario.telegramChatId.trim()
+                  ? 'Envio ativo por e-mail e Telegram.'
+                  : 'Envio ativo por e-mail. Cadastre o Chat ID para adicionar o Telegram.'}
+              </small>
             </label>
 
             <label className="user-profile-field">
