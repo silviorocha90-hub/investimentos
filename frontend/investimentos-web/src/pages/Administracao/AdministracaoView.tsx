@@ -77,10 +77,6 @@ import {
   IntegridadeTab,
 } from './components/IntegridadeTab'
 
-import {
-  MetasAtivosTab,
-} from './components/MetasAtivosTab'
-
 import './Administracao.css'
 
 type AbaAdministracao =
@@ -94,7 +90,6 @@ type AbaAdministracao =
   | 'parametros'
   | 'usuarios'
   | 'integridade'
-  | 'metas'
 
 type ModoModalAtivo =
   | 'novo'
@@ -986,20 +981,6 @@ export function AdministracaoView({
         <button
           type="button"
           className={
-            aba === 'metas'
-              ? 'active'
-              : ''
-          }
-          onClick={() =>
-            trocarAba('metas')
-          }
-        >
-          Metas
-        </button>
-
-        <button
-          type="button"
-          className={
             aba ===
             'integridade'
               ? 'active'
@@ -1221,12 +1202,6 @@ export function AdministracaoView({
               await onDataChanged?.()
             }
           }
-        />
-      ) : null}
-
-      {aba === 'metas' ? (
-        <MetasAtivosTab
-          dados={dados}
         />
       ) : null}
 
