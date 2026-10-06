@@ -759,7 +759,6 @@ export function DashboardView({
   dashboard,
   carteiras,
   evolucao,
-  performance,
   erro,
 }: DashboardViewProps) {
   /*
