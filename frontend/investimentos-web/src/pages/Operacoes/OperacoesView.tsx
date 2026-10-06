@@ -60,8 +60,9 @@ interface OperacoesViewProps {
   onDataChanged?: () => Promise<void>
 }
 
-function criarFormularioInicial(): NovaOperacaoForm {
+function criarFormularioInicial(investidorId = ''): NovaOperacaoForm {
   return {
+    investidorId,
     ticker: '',
     tipoOperacaoCodigo: 'COMPRA',
     quantidade: '',
@@ -221,8 +222,17 @@ export function OperacoesView({
         null,
       )
 
+      const investidorSelecionado =
+        investidores.find(
+          (item) =>
+            item.nome ===
+            selectedInvestor,
+        )
+
       setFormNovaOperacao(
-        criarFormularioInicial(),
+        criarFormularioInicial(
+          investidorSelecionado?.id ?? '',
+        ),
       )
 
       setErroOperacao(
@@ -372,23 +382,16 @@ export function OperacoesView({
           true,
         )
 
-        const investidor =
-          investidores.find(
-            (item) =>
-              item.nome ===
-              selectedInvestor,
-          )
-
-        if (!investidor) {
+        if (!formNovaOperacao.investidorId) {
           setErroOperacao(
-            'Investidor não selecionado.',
+            'Selecione o investidor.',
           )
 
           return
         }
 
         await criarOperacao(
-          investidor.id,
+          formNovaOperacao.investidorId,
           {
             data:
               formNovaOperacao.data,
@@ -880,6 +883,9 @@ export function OperacoesView({
           }
           erro={
             erroOperacao
+          }
+          investidores={
+            investidores
           }
           onChange={
             setFormNovaOperacao
