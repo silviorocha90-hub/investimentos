@@ -27,11 +27,15 @@ const MESES = [
 function obterResultado(
   opcao: OperacaoOpcao,
 ) {
-  return (
-    opcao.resultadoInformado ??
-    opcao.resultadoFinal ??
-    0
-  )
+  if (opcao.situacao === 'ENCERRADA') {
+    return opcao.resultadoFinal ?? 0
+  }
+
+  if (opcao.situacao === 'EXECUTADA') {
+    return opcao.premioTotal
+  }
+
+  return 0
 }
 
 function obterDataReferencia(
