@@ -82,8 +82,7 @@ O envio do relatório pelo WhatsApp é opcional. Configure:
 
 - `WHATSAPP_ACCESS_TOKEN`;
 - `WHATSAPP_PHONE_NUMBER_ID`;
-- `WHATSAPP_TO`;
-- `WHATSAPP_TEMPLATE_NAME`;
+- `WHATSAPP_ADMIN_TO` (número do administrador que recebe a visão consolidada `TODOS`)\n- `WHATSAPP_TEMPLATE_NAME`;
 - `WHATSAPP_TEMPLATE_LANGUAGE` (fallback `pt_BR`);
 - `WHATSAPP_GRAPH_VERSION` (fallback `v24.0`).
 
