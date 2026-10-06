@@ -123,6 +123,10 @@ export function InvestidoresTab({
     setSaldoDisponivel,
   ] = useState('')
 
+  const [whatsApp, setWhatsApp] = useState('')
+  const [receberRelatorioIa, setReceberRelatorioIa] = useState(false)
+  const [frequenciaRelatorioIa, setFrequenciaRelatorioIa] = useState<'DIARIO' | 'SEMANAL' | 'QUINZENAL' | 'MENSAL'>('DIARIO')
+
   const [
     salvandoDados,
     setSalvandoDados,
@@ -170,6 +174,9 @@ export function InvestidoresTab({
       !investidorSelecionado
     ) {
       setSaldoDisponivel('')
+      setWhatsApp('')
+      setReceberRelatorioIa(false)
+      setFrequenciaRelatorioIa('DIARIO')
       return
     }
 
@@ -181,6 +188,9 @@ export function InvestidoresTab({
       ),
     )
 
+    setWhatsApp(investidorSelecionado.whatsApp ?? '')
+    setReceberRelatorioIa(investidorSelecionado.receberRelatorioIa)
+    setFrequenciaRelatorioIa(investidorSelecionado.frequenciaRelatorioIa ?? 'DIARIO')
     setErro(null)
   }, [
     investidorSelecionado?.id,
@@ -227,6 +237,9 @@ export function InvestidoresTab({
 
           saldoDisponivel:
             saldo,
+          whatsApp: whatsApp || null,
+          receberRelatorioIa,
+          frequenciaRelatorioIa,
         },
       )
 
@@ -573,6 +586,41 @@ export function InvestidoresTab({
                     }
                   />
                 </div>
+              </label>
+
+              <label>
+                <span>WhatsApp</span>
+                <input
+                  type="tel"
+                  value={whatsApp}
+                  placeholder="5511999999999"
+                  onChange={(event) => setWhatsApp(event.target.value)}
+                />
+              </label>
+
+              <label>
+                <span>Relatório do Assistente IA</span>
+                <select
+                  value={receberRelatorioIa ? 'SIM' : 'NAO'}
+                  onChange={(event) => setReceberRelatorioIa(event.target.value === 'SIM')}
+                >
+                  <option value="NAO">Não receber</option>
+                  <option value="SIM">Receber pelo WhatsApp</option>
+                </select>
+              </label>
+
+              <label>
+                <span>Frequência</span>
+                <select
+                  value={frequenciaRelatorioIa}
+                  disabled={!receberRelatorioIa}
+                  onChange={(event) => setFrequenciaRelatorioIa(event.target.value as 'DIARIO' | 'SEMANAL' | 'QUINZENAL' | 'MENSAL')}
+                >
+                  <option value="DIARIO">Diário</option>
+                  <option value="SEMANAL">Semanal</option>
+                  <option value="QUINZENAL">Quinzenal</option>
+                  <option value="MENSAL">Mensal</option>
+                </select>
               </label>
 
               <div className="admin-modal-actions">
