@@ -21,7 +21,7 @@
                     .Include(x => x.Ativo)
                     .GroupBy(x => x.AtivoId)
                     .Select(grupo => grupo
-                        .OrderByDescending(x => x.DataReferencia)
+                        .OrderByDescending(x => x.DataReferencia)   
                         .Select(x => new
                         {
                             Ticker = x.Ativo.Ticker.Codigo,
