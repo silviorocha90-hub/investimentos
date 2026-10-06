@@ -12,7 +12,7 @@ A aplicação está preparada para executar sem depender do computador local.
 ## Variáveis obrigatórias da API
 
 ```
-ConnectionStrings__DefaultConnection=<connection string SQL Server>
+ConnectionStrings__InvestimentosDb=<connection string SQL Server>
 OPENAI_API_KEY=<chave da OpenAI>
 OPENAI_MODEL=gpt-6-luna
 ASSISTENTE_IA_ATIVO=true
