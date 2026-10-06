@@ -1956,3 +1956,43 @@
 .admin-page .admin-standard-history .options-page-admin .options-table td {
   height: 42px !important;
 }
+
+
+/* Administração > Opções — painel completo para 10 registros.
+   Sobrescreve o overflow:hidden do módulo de Opções e usa a mesma
+   densidade vertical de Operações. */
+.admin-page .admin-standard-history .options-page-admin .options-table-panel {
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+.admin-page .admin-standard-history .options-page-admin .options-table-wrap {
+  display: block !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  overflow-x: hidden !important;
+  overflow-y: visible !important;
+}
+
+.admin-page .admin-standard-history .options-page-admin .options-table thead tr,
+.admin-page .admin-standard-history .options-page-admin .options-table th,
+.admin-page .admin-standard-history .options-page-admin .options-table tbody tr,
+.admin-page .admin-standard-history .options-page-admin .options-table td {
+  height: 38px !important;
+}
+
+.admin-page .admin-standard-history .options-page-admin .options-table th,
+.admin-page .admin-standard-history .options-page-admin .options-table td {
+  padding-top: 7px !important;
+  padding-bottom: 7px !important;
+}
+
+.admin-page .admin-standard-history .options-page-admin .options-pagination {
+  position: static !important;
+  display: flex !important;
+  width: 100% !important;
+  visibility: visible !important;
+}
