@@ -10,6 +10,7 @@ import {
   bloquearUsuario,
   desbloquearUsuario,
   listarUsuarios,
+  reenviarRelatorioIaUsuario,
   rejeitarUsuario,
 } from '../../../api/usuariosApi'
 
@@ -83,6 +84,14 @@ export function UsuariosTab({
   const [
     erro,
     setErro,
+  ] =
+    useState<string | null>(
+      null,
+    )
+
+  const [
+    mensagem,
+    setMensagem,
   ] =
     useState<string | null>(
       null,
@@ -321,6 +330,32 @@ export function UsuariosTab({
         )
       },
     )
+  }
+
+  async function reenviarRelatorio(
+    usuario: UsuarioAdministracao,
+  ) {
+    try {
+      setProcessandoId(usuario.id)
+      setErro(null)
+      setMensagem(null)
+
+      const resultado =
+        await reenviarRelatorioIaUsuario(
+          usuario.id,
+        )
+
+      setMensagem(resultado.mensagem)
+      await carregar()
+    } catch (error) {
+      setErro(
+        error instanceof Error
+          ? error.message
+          : 'Não foi possível reenviar o relatório pelo WhatsApp.',
+      )
+    } finally {
+      setProcessandoId(null)
+    }
   }
 
   async function salvarAcessos() {
@@ -649,6 +684,13 @@ export function UsuariosTab({
           </div>
         ) : null}
 
+        {mensagem &&
+        !usuarioEditando ? (
+          <div className="admin-inline-success">
+            {mensagem}
+          </div>
+        ) : null}
+
         <div className="users-list">
           {usuariosFiltrados.map(
             (usuario) => {
@@ -808,6 +850,18 @@ export function UsuariosTab({
                           >
                             Configurar relatório IA
                           </button>
+                          <button
+                            type="button"
+                            className="user-secondary-action"
+                            disabled={processando}
+                            onClick={() =>
+                              void reenviarRelatorio(usuario)
+                            }
+                          >
+                            {processando
+                              ? 'Enviando...'
+                              : 'Reenviar relatório'}
+                          </button>
                         </div>
                       </>
                     ) : (
@@ -892,6 +946,18 @@ export function UsuariosTab({
                                 onClick={() => abrirAcessos(usuario)}
                               >
                                 Configurar relatório IA
+                              </button>
+                              <button
+                                type="button"
+                                className="user-secondary-action"
+                                disabled={processando}
+                                onClick={() =>
+                                  void reenviarRelatorio(usuario)
+                                }
+                              >
+                                {processando
+                                  ? 'Enviando...'
+                                  : 'Reenviar relatório'}
                               </button>
                             </>
                           ) : null}
