@@ -670,7 +670,7 @@ export function AtivosTab({
           </span>
         </div>
 
-        <div className="admin-table-wrap">
+        <div className="admin-table-wrap admin-variable-assets-table-wrap">
           <table className="data-table admin-table admin-assets-table">
             <thead>
               <tr>
