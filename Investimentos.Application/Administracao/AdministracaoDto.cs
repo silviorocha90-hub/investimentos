@@ -36,6 +36,9 @@
     public record InvestidorAdministracaoDto(
         Guid Id,
         string Nome,
+        string? WhatsApp,
+        bool ReceberRelatorioIa,
+        string FrequenciaRelatorioIa,
         decimal? SaldoDisponivel,
         DateTime? DataSaldo,
         decimal? PatrimonioAtual,
