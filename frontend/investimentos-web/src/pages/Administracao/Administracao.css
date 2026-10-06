@@ -1920,3 +1920,22 @@
   font-size: 0.70rem !important;
   line-height: 1.15 !important;
 }
+
+
+/* Administração > Opções — mesmo tamanho/paginação de Operações e Proventos.
+   Esta regra final substitui a antiga área ampliada de 820px. */
+.admin-page .admin-standard-history .options-page-admin .options-table-panel {
+  min-height: 0 !important;
+}
+
+.admin-page .admin-standard-history .options-page-admin .options-table-wrap {
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  overflow-x: hidden !important;
+  overflow-y: visible !important;
+}
+
+.admin-page .admin-standard-history .options-page-admin .options-pagination {
+  width: 100%;
+}
