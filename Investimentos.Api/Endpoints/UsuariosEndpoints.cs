@@ -211,12 +211,12 @@ namespace Investimentos.Api.Endpoints
                 request.AcessosInvestidores?
                     .Select(x => new AcessoInvestidorDto(
                         x.InvestidorId,
-                        (x.Permissoes ?? Array.Empty<string>())
-                            .Select(p =>
-                                int.TryParse(p, out var codigo)
-                                    ? (PermissaoSistema)codigo
-                                    : Enum.Parse<PermissaoSistema>(p, true))
-                            .Where(p => p != PermissaoSistema.Administracao && p != PermissaoSistema.Operacoes)
+                        (x.Permissoes ?? Array.Empty<int>())
+                            .Select(p => (PermissaoSistema)p)
+                            .Where(p =>
+                                Enum.IsDefined(p) &&
+                                p != PermissaoSistema.Administracao &&
+                                p != PermissaoSistema.Operacoes)
                             .ToArray()))
                     .ToArray(),
                 request.WhatsApp,
@@ -261,5 +261,5 @@ namespace Investimentos.Api.Endpoints
 
     public record AcessoInvestidorRequest(
         Guid InvestidorId,
-        IReadOnlyCollection<string>? Permissoes);
+        IReadOnlyCollection<int>? Permissoes);
 }
