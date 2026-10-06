@@ -114,38 +114,62 @@ public sealed class AssistenteIaService
             }
         }
 
-        var investidores = await _context.Investidores
-            .AsNoTracking()
+        var usuarios = await _context.Usuarios
             .Where(x =>
+                x.Perfil == PerfilUsuario.Usuario &&
+                x.Status == StatusUsuario.Ativo &&
                 x.ReceberRelatorioIa &&
                 x.WhatsApp != null)
+            .Include(x => x.Investidores)
             .OrderBy(x => x.Nome)
             .ToListAsync(cancellationToken);
 
-        foreach (var investidor in investidores)
+        foreach (var usuario in usuarios)
         {
-            var ultimo = await _context.RelatoriosDiariosIa
-                .AsNoTracking()
-                .Where(x =>
-                    x.Escopo == "INVESTIDOR" &&
-                    x.InvestidorId == investidor.Id)
-                .OrderByDescending(x => x.DataReferencia)
-                .Select(x => (DateTime?)x.DataReferencia)
-                .FirstOrDefaultAsync(cancellationToken);
-
             if (!DeveEnviar(
                     dataLocal.Date,
-                    ultimo,
-                    investidor.FrequenciaRelatorioIa))
+                    usuario.UltimoEnvioRelatorioIa,
+                    usuario.FrequenciaRelatorioIa))
                 continue;
 
-            await GerarRelatorioAsync(
-                dataLocal,
-                false,
-                investidor.Id,
-                "INVESTIDOR",
-                investidor.WhatsApp,
-                cancellationToken);
+            var investidoresIds = usuario.Investidores
+                .Select(x => x.InvestidorId)
+                .Distinct()
+                .ToArray();
+
+            if (investidoresIds.Length == 0)
+                continue;
+
+            var todosEnviados = true;
+
+            foreach (var investidorId in investidoresIds)
+            {
+                try
+                {
+                    await GerarRelatorioAsync(
+                        dataLocal,
+                        false,
+                        investidorId,
+                        "INVESTIDOR",
+                        usuario.WhatsApp,
+                        cancellationToken);
+                }
+                catch (Exception ex)
+                {
+                    todosEnviados = false;
+                    _logger.LogError(
+                        ex,
+                        "Falha ao gerar/enviar relatório IA do investidor {InvestidorId} para o usuário {UsuarioId}.",
+                        investidorId,
+                        usuario.Id);
+                }
+            }
+
+            if (todosEnviados)
+            {
+                usuario.RegistrarEnvioRelatorioIa(dataLocal);
+                await _context.SaveChangesAsync(cancellationToken);
+            }
         }
     }
 
