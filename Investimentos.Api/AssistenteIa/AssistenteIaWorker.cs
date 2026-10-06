@@ -69,14 +69,8 @@ public sealed class AssistenteIaWorker : BackgroundService
                 .GetRequiredService<
                     AssistenteIaService>();
 
-        if (await service.ObterHojeAsync(
-                agora,
-                cancellationToken) is not null)
-            return;
-
-        await service.GerarAsync(
+        await service.ProcessarEnviosAsync(
             agora,
-            false,
             cancellationToken);
     }
 
