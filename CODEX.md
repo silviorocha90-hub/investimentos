@@ -2311,3 +2311,27 @@ Atualizar a data e as seções afetadas sempre que houver mudança em:
 
 Não manter instruções de \"próximo passo\" que já tenham sido concluídas.
 O estado atual deve prevalecer sobre registros históricos.
+
+
+---
+
+## Histórico patrimonial mensal automático
+
+Em Administração > Investidores > Histórico Patrimonial, a competência corrente
+é mantida automaticamente a partir do patrimônio estimado calculado pelo
+`ConsultarDashboardHandler` de cada investidor.
+
+Regras:
+
+- a competência é mensal e individual por investidor;
+- enquanto o mês estiver aberto, o registro da competência corrente é atualizado
+  com a data do dia e o patrimônio estimado mais recente;
+- ao iniciar um novo mês, a competência anterior não é mais alterada;
+- na primeira atualização administrativa do novo mês, uma nova competência é
+  criada automaticamente;
+- o valor persistido é a mesma fotografia patrimonial usada pelo Dashboard:
+  valor aplicado atual + caixa disponível;
+- registros de meses anteriores permanecem congelados para auditoria e
+  performance temporal;
+- não criar uma nova linha a cada dia: o mês corrente deve permanecer como uma
+  única competência atualizável.
