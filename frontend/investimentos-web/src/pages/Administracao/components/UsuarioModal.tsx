@@ -32,6 +32,9 @@ export interface FormularioUsuario {
     investidorId: string
     permissoes: PermissaoSistema[]
   }>
+  whatsApp: string
+  receberRelatorioIa: boolean
+  frequenciaRelatorioIa: 'DIARIO' | 'SEMANAL' | 'QUINZENAL' | 'MENSAL'
 }
 
 interface UsuarioModalProps {
@@ -319,6 +322,58 @@ export function UsuarioModal({
             ) : null}
           </label>
         </section>
+
+        {formulario.perfil === 'Admin' ? (
+          <section className="user-modal-section">
+            <header>
+              <div className="user-modal-step">2</div>
+              <div>
+                <strong>Relatório do Assistente IA</strong>
+                <span>Configure o envio da visão consolidada de todas as carteiras.</span>
+              </div>
+            </header>
+
+            <label className="user-profile-field">
+              <span>WhatsApp para relatórios</span>
+              <input
+                type="tel"
+                inputMode="tel"
+                autoComplete="tel"
+                placeholder="5511999999999"
+                value={formulario.whatsApp}
+                disabled={salvando}
+                onChange={(event) => setFormulario((atual) => ({ ...atual, whatsApp: event.target.value }))}
+              />
+              <small>Informe DDI + DDD + número. Ex.: 5511999999999.</small>
+            </label>
+
+            <label className="user-profile-field">
+              <span>Receber relatório IA</span>
+              <select
+                value={formulario.receberRelatorioIa ? 'SIM' : 'NAO'}
+                disabled={salvando}
+                onChange={(event) => setFormulario((atual) => ({ ...atual, receberRelatorioIa: event.target.value === 'SIM' }))}
+              >
+                <option value="NAO">Não receber</option>
+                <option value="SIM">Receber pelo WhatsApp</option>
+              </select>
+            </label>
+
+            <label className="user-profile-field">
+              <span>Frequência do relatório</span>
+              <select
+                value={formulario.frequenciaRelatorioIa}
+                disabled={salvando || !formulario.receberRelatorioIa}
+                onChange={(event) => setFormulario((atual) => ({ ...atual, frequenciaRelatorioIa: event.target.value as FormularioUsuario['frequenciaRelatorioIa'] }))}
+              >
+                <option value="DIARIO">Diário</option>
+                <option value="SEMANAL">Semanal</option>
+                <option value="QUINZENAL">Quinzenal</option>
+                <option value="MENSAL">Mensal</option>
+              </select>
+            </label>
+          </section>
+        ) : null}
 
         {formulario.perfil ===
         'Usuario' ? (
