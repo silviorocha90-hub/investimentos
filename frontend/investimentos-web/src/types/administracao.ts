@@ -44,9 +44,6 @@ export interface DescontoFiscalAdministracao {
 export interface InvestidorAdministracao {
   id: string
   nome: string
-  whatsApp?: string | null
-  receberRelatorioIa: boolean
-  frequenciaRelatorioIa: 'DIARIO' | 'SEMANAL' | 'QUINZENAL' | 'MENSAL'
   saldoDisponivel?: number | null
   dataSaldo?: string | null
   patrimonioAtual?: number | null
@@ -112,9 +109,6 @@ export interface AtualizarAtivoAdministracao {
 export interface AtualizarInvestidorAdministracao {
   nome: string
   saldoDisponivel: number
-  whatsApp?: string | null
-  receberRelatorioIa: boolean
-  frequenciaRelatorioIa: 'DIARIO' | 'SEMANAL' | 'QUINZENAL' | 'MENSAL'
 }
 
 export interface CriarHistoricoPatrimonioAdministracao {
