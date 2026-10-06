@@ -40,10 +40,7 @@ VITE_API_URL=https://<dominio-da-api>
 
 ## Comportamento autônomo
 
-O worker verifica periodicamente se já existe relatório para a data local de
-São Paulo. Depois da hora configurada, gera no máximo um relatório por dia.
-Se o container reiniciar, a existência do relatório no banco impede geração
-duplicada.
+O worker verifica periodicamente os relatórios pela data local de São Paulo. Depois da hora configurada, gera a visão consolidada `TODOS` para o administrador e processa os investidores habilitados conforme a frequência cadastrada: diário, semanal, quinzenal ou mensal. O histórico no banco impede envios duplicados antes do próximo período.
 
 O botão "Gerar análise agora" força nova geração e substitui o relatório do
 dia.
@@ -82,7 +79,8 @@ O envio do relatório pelo WhatsApp é opcional. Configure:
 
 - `WHATSAPP_ACCESS_TOKEN`;
 - `WHATSAPP_PHONE_NUMBER_ID`;
-- `WHATSAPP_ADMIN_TO` (número do administrador que recebe a visão consolidada `TODOS`)\n- `WHATSAPP_TEMPLATE_NAME`;
+- `WHATSAPP_ADMIN_TO` (número do administrador que recebe a visão consolidada `TODOS`);
+- `WHATSAPP_TEMPLATE_NAME`;
 - `WHATSAPP_TEMPLATE_LANGUAGE` (fallback `pt_BR`);
 - `WHATSAPP_GRAPH_VERSION` (fallback `v24.0`).
 
