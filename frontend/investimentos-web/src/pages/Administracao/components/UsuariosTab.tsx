@@ -105,6 +105,9 @@ export function UsuariosTab({
       permissoes: [],
       investidoresIds: [],
       acessosInvestidores: [],
+      whatsApp: '',
+      receberRelatorioIa: false,
+      frequenciaRelatorioIa: 'DIARIO',
     })
 
   async function carregar() {
@@ -179,13 +182,6 @@ export function UsuariosTab({
     usuario:
       UsuarioAdministracao,
   ) {
-    if (
-      usuario.perfil ===
-      'Admin'
-    ) {
-      return
-    }
-
     setUsuarioEditando(
       usuario,
     )
@@ -204,6 +200,10 @@ export function UsuariosTab({
         ...usuario
           .investidoresIds,
       ],
+
+      whatsApp: usuario.whatsApp ?? '',
+      receberRelatorioIa: usuario.receberRelatorioIa ?? false,
+      frequenciaRelatorioIa: usuario.frequenciaRelatorioIa ?? 'DIARIO',
 
       acessosInvestidores:
         usuario.acessosInvestidores?.length
@@ -794,14 +794,22 @@ export function UsuariosTab({
 
                   <footer className="user-card-footer">
                     {admin ? (
-                      <div className="user-admin-protected">
-                        <span>
-                          ✓
-                        </span>
-
-                        Perfil administrativo
-                        protegido
-                      </div>
+                      <>
+                        <div className="user-admin-protected">
+                          <span>✓</span>
+                          Perfil administrativo protegido
+                        </div>
+                        <div className="user-card-actions">
+                          <button
+                            type="button"
+                            className="user-primary-action"
+                            disabled={processando}
+                            onClick={() => abrirAcessos(usuario)}
+                          >
+                            Configurar relatório IA
+                          </button>
+                        </div>
+                      </>
                     ) : (
                       <>
                         <div className="user-card-hint">
