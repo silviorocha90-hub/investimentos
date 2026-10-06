@@ -810,16 +810,6 @@ app.MapPost(
                     StringComparer.OrdinalIgnoreCase)
                 .ToList();
 
-        if (ativosAssociados.Count == 0)
-        {
-            return Results.BadRequest(
-                new
-                {
-                    detail =
-                        $"Não foi possível identificar automaticamente o ativo-base da opção {tickerOpcao}. Não existe associação histórica para a raiz {raizOpcao}."
-                });
-        }
-
         if (ativosAssociados.Count > 1)
         {
             return Results.BadRequest(
@@ -830,8 +820,30 @@ app.MapPost(
                 });
         }
 
+        /*
+         * Quando ainda não existe histórico de opções para
+         * a raiz, usamos os mapeamentos oficiais do projeto.
+         *
+         * Isso permite cadastrar a primeira opção de ativos
+         * como ALOS3 sem exigir uma associação histórica
+         * artificial somente para descobrir o ativo-base.
+         */
         var tickerAtivo =
-            ativosAssociados[0];
+            ativosAssociados.Count == 1
+                ? ativosAssociados[0]
+                : ObterAtivoBaseMapeado(
+                    raizOpcao);
+
+        if (string.IsNullOrWhiteSpace(
+                tickerAtivo))
+        {
+            return Results.BadRequest(
+                new
+                {
+                    detail =
+                        $"Não foi possível identificar automaticamente o ativo-base da opção {tickerOpcao}. Não existe associação histórica nem mapeamento conhecido para a raiz {raizOpcao}."
+                });
+        }
 
         /*
          * Contratos deixa de ser um dado solicitado
@@ -1508,6 +1520,27 @@ app.Run();
  * VALEM631 -> VALEM -> VALE
  * PETRI454 -> PETRI -> PETR
  */
+/*
+ * Mapeamentos oficiais de ativo-base definidos pelo projeto.
+ * Manter alinhado com CODEX.md e com o resolvedor do importador.
+ */
+static string? ObterAtivoBaseMapeado(
+    string raizOpcao)
+{
+    return raizOpcao
+        .Trim()
+        .ToUpperInvariant() switch
+    {
+        "PETR" => "PETR4",
+        "CPLE" => "CPLE3",
+        "SAPR" => "SAPR11",
+        "AXIA" => "AXIA3",
+        "SANB" => "SANB4",
+        "ALOS" => "ALOS3",
+        _ => null
+    };
+}
+
 static string ObterRaizTickerOpcao(
     string tickerOpcao)
 {
