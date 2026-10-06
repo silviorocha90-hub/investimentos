@@ -114,7 +114,7 @@ export function UsuariosTab({
       permissoes: [],
       investidoresIds: [],
       acessosInvestidores: [],
-      whatsApp: '',
+      telegramChatId: '',
       receberRelatorioIa: false,
       frequenciaRelatorioIa: 'DIARIO',
     })
@@ -210,7 +210,7 @@ export function UsuariosTab({
           .investidoresIds,
       ],
 
-      whatsApp: usuario.whatsApp ?? '',
+      telegramChatId: usuario.telegramChatId ?? '',
       receberRelatorioIa: usuario.receberRelatorioIa ?? false,
       frequenciaRelatorioIa: usuario.frequenciaRelatorioIa ?? 'DIARIO',
 
@@ -351,7 +351,7 @@ export function UsuariosTab({
       setErro(
         error instanceof Error
           ? error.message
-          : 'Não foi possível reenviar o relatório pelo WhatsApp.',
+          : 'Não foi possível reenviar o relatório por e-mail e Telegram.',
       )
     } finally {
       setProcessandoId(null)
