@@ -40,10 +40,7 @@ export function OpcoesDashboard({
         total +
         (
           opcao.acoesComprometidasCall *
-          (
-            opcao.valorAcaoAtual ??
-            opcao.strike
-          )
+          opcao.strike
         ),
       0,
     )
