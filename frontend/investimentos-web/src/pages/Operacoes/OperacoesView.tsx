@@ -84,7 +84,7 @@ export function OperacoesView({
   onDataChanged,
 }: OperacoesViewProps) {
   const [pagina, setPagina] = useState(1)
-  const itensPorPagina = 10
+  const itensPorPagina = 15
 
   const [
     operacaoEmEdicao,
