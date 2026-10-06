@@ -2350,3 +2350,48 @@ não abriu previamente a tela Administração.
 A competência anterior permanece congelada; somente o valor da competência do mês
 corrente é atualizado. A data dessa competência permanece sempre fixada no último
 dia do respectivo mês.
+
+
+---
+
+# 74. ASSISTENTE IA AUTÔNOMO
+
+O projeto possui um Assistente IA diário integrado à carteira.
+
+Componentes principais:
+
+- `Investimentos.Api/AssistenteIa/AssistenteIaService.cs`;
+- `Investimentos.Api/AssistenteIa/AssistenteIaWorker.cs`;
+- entidade `RelatorioDiarioIa`;
+- tela `Assistente IA` no menu principal;
+- endpoints `GET /api/assistente-ia/relatorios` e
+  `POST /api/assistente-ia/gerar`.
+
+Regras:
+
+- o backend coleta automaticamente posições e opções dos investidores;
+- somente posições com quantidade positiva entram no contexto;
+- opções ABERTA/EXECUTADA entram com strike, vencimento, prêmio e exposição;
+- a IA usa a Responses API da OpenAI com pesquisa web para informações atuais;
+- fatos devem ser relacionados à posição concreta da carteira;
+- a IA não executa ordens de compra, venda ou opções;
+- um relatório diário é persistido por data;
+- o worker usa o horário de São Paulo e gera no máximo um relatório automático
+  por dia depois da hora configurada;
+- reinícios da API não duplicam o relatório já persistido;
+- o botão Gerar análise agora força nova geração do relatório do dia;
+- envio por Telegram é opcional e ativado somente quando token e chat id
+  estiverem configurados.
+
+Configuração por ambiente:
+
+- `OPENAI_API_KEY`;
+- `OPENAI_MODEL` (fallback `gpt-6-luna`);
+- `ASSISTENTE_IA_ATIVO`;
+- `ASSISTENTE_IA_HORA` (fallback 19);
+- `TELEGRAM_BOT_TOKEN` e `TELEGRAM_CHAT_ID` opcionais;
+- `FRONTEND_ORIGINS` para CORS em produção.
+
+A aplicação possui Dockerfiles para API e frontend e instruções em
+`DEPLOYMENT.md`, permitindo execução em nuvem sem depender do computador
+local.
