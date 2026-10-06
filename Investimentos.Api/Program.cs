@@ -962,9 +962,19 @@ app.MapDelete(
 app.MapGet(
     "/api/dashboard/evolucao",
     async (
+        IAdministracaoRepository administracaoRepository,
         IHistoricoPatrimonioRepository repository,
         CancellationToken cancellationToken) =>
     {
+        /*
+         * A evolução deve refletir sempre a competência
+         * patrimonial corrente. ObterAsync sincroniza a
+         * fotografia mensal de cada investidor antes da
+         * leitura do histórico usado pelo gráfico.
+         */
+        await administracaoRepository.ObterAsync(
+            cancellationToken);
+
         var resultado =
             await repository.ListarEvolucaoAsync(
                 cancellationToken);
