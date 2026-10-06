@@ -2324,8 +2324,10 @@ Em Administração > Investidores > Histórico Patrimonial, a competência corre
 Regras:
 
 - a competência é mensal e individual por investidor;
-- enquanto o mês estiver aberto, o registro da competência corrente é atualizado
-  com a data do dia e o patrimônio estimado mais recente;
+- a data da competência corrente é sempre o último dia do respectivo mês
+  (por exemplo, outubro/2026 = 31/10/2026), mesmo antes do encerramento do mês;
+- enquanto o mês estiver aberto, somente o valor patrimonial da competência
+  corrente é atualizado; sua data permanece fixa no último dia do mês;
 - ao iniciar um novo mês, a competência anterior não é mais alterada;
 - na primeira atualização administrativa do novo mês, uma nova competência é
   criada automaticamente;
@@ -2345,5 +2347,6 @@ mensal corrente deve ser sincronizada para todos os investidores, garantindo que
 o gráfico considere a fotografia patrimonial mais recente mesmo quando o usuário
 não abriu previamente a tela Administração.
 
-A competência anterior permanece congelada; somente a competência do mês corrente
-é atualizada.
+A competência anterior permanece congelada; somente o valor da competência do mês
+corrente é atualizado. A data dessa competência permanece sempre fixada no último
+dia do respectivo mês.
