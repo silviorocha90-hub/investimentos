@@ -37,9 +37,18 @@ public class RelatorioDiarioIaConfiguration
         builder.HasIndex(x => new
             {
                 x.DataReferencia,
+                x.Escopo
+            })
+            .IsUnique()
+            .HasFilter("[InvestidorId] IS NULL AND [Escopo] = 'TODOS'");
+
+        builder.HasIndex(x => new
+            {
+                x.DataReferencia,
                 x.Escopo,
                 x.InvestidorId
             })
-            .IsUnique();
+            .IsUnique()
+            .HasFilter("[InvestidorId] IS NOT NULL");
     }
 }
