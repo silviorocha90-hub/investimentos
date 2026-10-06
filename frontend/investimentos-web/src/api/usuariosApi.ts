@@ -151,3 +151,22 @@ export async function alterarAcessosUsuario(
     },
   )
 }
+
+export interface ResultadoReenvioRelatorioIa {
+  quantidade: number
+  mensagem: string
+}
+
+export async function reenviarRelatorioIaUsuario(
+  id: string,
+): Promise<ResultadoReenvioRelatorioIa> {
+  const response =
+    await executar(
+      `/api/usuarios/${id}/relatorio-ia/reenviar`,
+      {
+        method: 'POST',
+      },
+    )
+
+  return response.json()
+}
