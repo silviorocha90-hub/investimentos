@@ -1,0 +1,37 @@
+name: Assistente IA CI
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Build API
+        run: dotnet build Investimentos.Api/Investimentos.Api.csproj
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: frontend/investimentos-web/package-lock.json
+
+      - name: Install frontend
+        working-directory: frontend/investimentos-web
+        run: npm ci
+
+      - name: Build frontend
+        working-directory: frontend/investimentos-web
+        run: npm run build
+
+      - name: Application tests
+        run: dotnet test Investimentos.Application.Tests/Investimentos.Application.Tests.csproj
