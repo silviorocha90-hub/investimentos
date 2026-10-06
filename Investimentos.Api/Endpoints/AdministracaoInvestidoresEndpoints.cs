@@ -129,10 +129,14 @@ namespace Investimentos.Api.Endpoints
                         });
                 }
 
+                var dataCompetencia =
+                    UltimoDiaDoMes(
+                        request.DataReferencia);
+
                 var historico =
                     new HistoricoPatrimonio(
                         investidor,
-                        request.DataReferencia,
+                        dataCompetencia,
                         request.ValorCarteira);
 
                 await historicoRepository.AdicionarAsync(
@@ -160,6 +164,17 @@ namespace Investimentos.Api.Endpoints
             }
         }
 
+        private static DateTime UltimoDiaDoMes(
+            DateTime dataReferencia)
+        {
+            return new DateTime(
+                dataReferencia.Year,
+                dataReferencia.Month,
+                DateTime.DaysInMonth(
+                    dataReferencia.Year,
+                    dataReferencia.Month));
+        }
+
         private static async Task<IResult>
             AtualizarHistoricoAsync(
                 Guid id,
@@ -185,7 +200,8 @@ namespace Investimentos.Api.Endpoints
                 }
 
                 historico.Atualizar(
-                    request.DataReferencia,
+                    UltimoDiaDoMes(
+                        request.DataReferencia),
                     request.ValorCarteira);
 
                 await repository.SalvarAlteracoesAsync(
