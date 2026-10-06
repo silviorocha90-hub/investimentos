@@ -227,6 +227,18 @@ export function OpcoesView({
         investidorAtivo,
     )?.dashboard
 
+  const totalDisponivel =
+    useMemo(
+      () =>
+        carteiras.reduce(
+          (total, item) =>
+            total +
+            (item.dashboard.caixaDisponivel ?? 0),
+          0,
+        ),
+      [carteiras],
+    )
+
   const posicoesConsulta =
     useMemo(
       () =>
@@ -1012,6 +1024,9 @@ export function OpcoesView({
           <OpcoesDashboard
             opcoes={
               opcoes
+            }
+            totalDisponivel={
+              totalDisponivel
             }
           />
 
