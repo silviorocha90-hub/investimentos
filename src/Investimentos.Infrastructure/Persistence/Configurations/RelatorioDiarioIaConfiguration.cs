@@ -27,7 +27,18 @@ public class RelatorioDiarioIaConfiguration
             .HasMaxLength(100)
             .IsRequired();
 
-        builder.HasIndex(x => x.DataReferencia)
+        builder.Property(x => x.Escopo)
+            .HasMaxLength(20)
+            .IsRequired();
+
+        builder.Property(x => x.InvestidorId);
+
+        builder.HasIndex(x => new
+            {
+                x.DataReferencia,
+                x.Escopo,
+                x.InvestidorId
+            })
             .IsUnique();
     }
 }
