@@ -1748,3 +1748,34 @@
   color: var(--muted);
   background: rgba(148,163,184,.10);
 }
+
+
+/* =========================================================
+   ADMINISTRAÇÃO > OPÇÕES — ÁREA AMPLIADA DA LISTA
+   Regra final e específica para não ser anulada pelo padrão
+   global das tabelas administrativas.
+   ========================================================= */
+
+.admin-page .admin-standard-history .options-page-admin .options-table-panel {
+  width: 100% !important;
+  min-height: 900px !important;
+}
+
+.admin-page .admin-standard-history .options-page-admin .options-table-wrap {
+  width: 100% !important;
+  height: 820px !important;
+  min-height: 820px !important;
+  max-height: 820px !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+}
+
+.admin-page .admin-standard-history .options-page-admin .options-table {
+  width: 100% !important;
+}
+
+.admin-page .admin-standard-history .options-page-admin .options-table thead {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 5 !important;
+}
