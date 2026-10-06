@@ -163,6 +163,8 @@ namespace Investimentos.Infrastructure.Persistence.Repositories
                     1);
             var inicioProximoMes =
                 inicioMes.AddMonths(1);
+            var fimMes =
+                inicioProximoMes.AddDays(-1);
 
             foreach (var investidor in investidoresBanco)
             {
@@ -198,7 +200,7 @@ namespace Investimentos.Infrastructure.Persistence.Repositories
                         .AddAsync(
                             new HistoricoPatrimonio(
                                 investidorPersistido,
-                                hoje,
+                                fimMes,
                                 dashboardInvestidor
                                     .PatrimonioEstimado),
                             cancellationToken);
@@ -206,7 +208,9 @@ namespace Investimentos.Infrastructure.Persistence.Repositories
                 else
                 {
                     historicoMesAtual.Atualizar(
-                        hoje,
+                        historicoMesAtual.DataReferencia == fimMes
+                            ? historicoMesAtual.DataReferencia
+                            : fimMes,
                         dashboardInvestidor
                             .PatrimonioEstimado);
                 }
