@@ -1939,3 +1939,20 @@
 .admin-page .admin-standard-history .options-page-admin .options-pagination {
   width: 100%;
 }
+
+
+/* Administração > Opções — 10 linhas visíveis, igual ao padrão paginado. */
+.admin-page .admin-standard-history .options-page-admin .options-table-wrap {
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+.admin-page .admin-standard-history .options-page-admin .options-table tbody tr {
+  height: 42px !important;
+}
+
+.admin-page .admin-standard-history .options-page-admin .options-table td {
+  height: 42px !important;
+}
