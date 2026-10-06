@@ -235,9 +235,6 @@ export function InvestidoresTab({
 
           saldoDisponivel:
             saldo,
-          whatsApp: investidorSelecionado.whatsApp ?? null,
-          receberRelatorioIa: investidorSelecionado.receberRelatorioIa,
-          frequenciaRelatorioIa: investidorSelecionado.frequenciaRelatorioIa ?? 'DIARIO',
         },
       )
 
