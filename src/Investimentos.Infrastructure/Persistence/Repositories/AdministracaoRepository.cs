@@ -510,6 +510,9 @@ namespace Investimentos.Infrastructure.Persistence.Repositories
                         return new InvestidorAdministracaoDto(
                             investidor.Id,
                             investidor.Nome,
+                            investidor.WhatsApp,
+                            investidor.ReceberRelatorioIa,
+                            investidor.FrequenciaRelatorioIa,
                             saldoAtual?.Valor,
                             saldoAtual?.DataReferencia,
                             patrimonioAtual?.ValorCarteira,
