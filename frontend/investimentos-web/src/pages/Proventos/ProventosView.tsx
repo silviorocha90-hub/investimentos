@@ -59,7 +59,7 @@ interface ProventosViewProps {
 }
 
 const ITENS_POR_PAGINA =
-  10
+  12
 
 export function ProventosView({
   investidores,
