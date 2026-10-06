@@ -212,7 +212,10 @@ namespace Investimentos.Api.Endpoints
                     .Select(x => new AcessoInvestidorDto(
                         x.InvestidorId,
                         (x.Permissoes ?? Array.Empty<string>())
-                            .Select(p => Enum.Parse<PermissaoSistema>(p, true))
+                            .Select(p =>
+                                int.TryParse(p, out var codigo)
+                                    ? (PermissaoSistema)codigo
+                                    : Enum.Parse<PermissaoSistema>(p, true))
                             .Where(p => p != PermissaoSistema.Administracao && p != PermissaoSistema.Operacoes)
                             .ToArray()))
                     .ToArray(),
