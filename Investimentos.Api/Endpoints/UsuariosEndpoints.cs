@@ -216,6 +216,9 @@ namespace Investimentos.Api.Endpoints
                             .Where(p => p != PermissaoSistema.Administracao && p != PermissaoSistema.Operacoes)
                             .ToArray()))
                     .ToArray(),
+                request.WhatsApp,
+                request.ReceberRelatorioIa,
+                request.FrequenciaRelatorioIa,
                 cancellationToken);
 
             return Results.NoContent();
@@ -248,7 +251,10 @@ namespace Investimentos.Api.Endpoints
         IReadOnlyCollection<Guid>?
             InvestidoresIds,
         IReadOnlyCollection<AcessoInvestidorRequest>?
-            AcessosInvestidores);
+            AcessosInvestidores,
+        string? WhatsApp,
+        bool ReceberRelatorioIa,
+        string? FrequenciaRelatorioIa);
 
     public record AcessoInvestidorRequest(
         Guid InvestidorId,
