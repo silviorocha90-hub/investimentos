@@ -26,7 +26,6 @@ export function AuthGate() {
   const {
     usuario,
     carregando,
-    logout,
   } = useAuth()
 
   const [
@@ -58,32 +57,7 @@ export function AuthGate() {
   }
 
   if (usuario) {
-    return (
-      <>
-        <App />
-
-        <div className="auth-user-bar">
-          <div>
-            <strong>
-              {usuario.nome}
-            </strong>
-
-            <span>
-              {usuario.perfil}
-            </span>
-          </div>
-
-          <button
-            type="button"
-            onClick={() => {
-              void logout()
-            }}
-          >
-            Sair
-          </button>
-        </div>
-      </>
-    )
+    return <App />
   }
 
   if (tela === 'cadastro') {
