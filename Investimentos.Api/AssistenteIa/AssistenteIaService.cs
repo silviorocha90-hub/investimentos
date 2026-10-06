@@ -15,19 +15,22 @@ public sealed class AssistenteIaService
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly IConfiguration _configuration;
     private readonly MercadoBrapiService _mercadoBrapiService;
+    private readonly ILogger<AssistenteIaService> _logger;
 
     public AssistenteIaService(
         InvestimentosDbContext context,
         ConsultarDashboardHandler dashboardHandler,
         IHttpClientFactory httpClientFactory,
         IConfiguration configuration,
-        MercadoBrapiService mercadoBrapiService)
+        MercadoBrapiService mercadoBrapiService,
+        ILogger<AssistenteIaService> logger)
     {
         _context = context;
         _dashboardHandler = dashboardHandler;
         _httpClientFactory = httpClientFactory;
         _configuration = configuration;
         _mercadoBrapiService = mercadoBrapiService;
+        _logger = logger;
     }
 
     public async Task<IReadOnlyList<RelatorioDiarioIa>> ListarAsync(
@@ -35,6 +38,7 @@ public sealed class AssistenteIaService
     {
         return await _context.RelatoriosDiariosIa
             .AsNoTracking()
+            .Where(x => x.Escopo == "TODOS")
             .OrderByDescending(x => x.DataReferencia)
             .Take(90)
             .ToListAsync(cancellationToken);
@@ -45,72 +49,150 @@ public sealed class AssistenteIaService
         CancellationToken cancellationToken)
     {
         var data = dataLocal.Date;
-
         return await _context.RelatoriosDiariosIa
             .AsNoTracking()
             .FirstOrDefaultAsync(
-                x => x.DataReferencia == data,
+                x => x.DataReferencia == data &&
+                     x.Escopo == "TODOS",
                 cancellationToken);
     }
 
-    public async Task<RelatorioDiarioIa> GerarAsync(
+    public Task<RelatorioDiarioIa> GerarAsync(
         DateTime dataLocal,
         bool substituir,
         CancellationToken cancellationToken)
     {
+        return GerarRelatorioAsync(
+            dataLocal,
+            substituir,
+            null,
+            "TODOS",
+            _configuration["WHATSAPP_ADMIN_TO"],
+            cancellationToken);
+    }
+
+    public async Task ProcessarEnviosAsync(
+        DateTime dataLocal,
+        CancellationToken cancellationToken)
+    {
+        if (await ObterHojeAsync(dataLocal, cancellationToken) is null)
+        {
+            await GerarAsync(dataLocal, false, cancellationToken);
+        }
+
+        var investidores = await _context.Investidores
+            .AsNoTracking()
+            .Where(x =>
+                x.ReceberRelatorioIa &&
+                x.WhatsApp != null)
+            .OrderBy(x => x.Nome)
+            .ToListAsync(cancellationToken);
+
+        foreach (var investidor in investidores)
+        {
+            var ultimo = await _context.RelatoriosDiariosIa
+                .AsNoTracking()
+                .Where(x =>
+                    x.Escopo == "INVESTIDOR" &&
+                    x.InvestidorId == investidor.Id)
+                .OrderByDescending(x => x.DataReferencia)
+                .Select(x => (DateTime?)x.DataReferencia)
+                .FirstOrDefaultAsync(cancellationToken);
+
+            if (!DeveEnviar(
+                    dataLocal.Date,
+                    ultimo,
+                    investidor.FrequenciaRelatorioIa))
+                continue;
+
+            await GerarRelatorioAsync(
+                dataLocal,
+                false,
+                investidor.Id,
+                "INVESTIDOR",
+                investidor.WhatsApp,
+                cancellationToken);
+        }
+    }
+
+    private static bool DeveEnviar(
+        DateTime hoje,
+        DateTime? ultimoEnvio,
+        string frequencia)
+    {
+        if (!ultimoEnvio.HasValue)
+            return true;
+
+        var ultimo = ultimoEnvio.Value.Date;
+
+        return frequencia switch
+        {
+            "SEMANAL" => hoje >= ultimo.AddDays(7),
+            "QUINZENAL" => hoje >= ultimo.AddDays(15),
+            "MENSAL" => hoje >= ultimo.AddMonths(1),
+            _ => hoje > ultimo
+        };
+    }
+
+    private async Task<RelatorioDiarioIa> GerarRelatorioAsync(
+        DateTime dataLocal,
+        bool substituir,
+        Guid? investidorId,
+        string escopo,
+        string? destinatarioWhatsApp,
+        CancellationToken cancellationToken)
+    {
         var data = dataLocal.Date;
-        var existente =
-            await _context.RelatoriosDiariosIa
-                .FirstOrDefaultAsync(
-                    x => x.DataReferencia == data,
-                    cancellationToken);
+        var existente = await _context.RelatoriosDiariosIa
+            .FirstOrDefaultAsync(
+                x => x.DataReferencia == data &&
+                     x.Escopo == escopo &&
+                     x.InvestidorId == investidorId,
+                cancellationToken);
 
         if (existente is not null && !substituir)
             return existente;
 
-        var apiKey =
-            _configuration["OPENAI_API_KEY"];
-
+        var apiKey = _configuration["OPENAI_API_KEY"];
         if (string.IsNullOrWhiteSpace(apiKey))
             throw new InvalidOperationException(
                 "OPENAI_API_KEY não configurada.");
 
-        var modelo =
-            _configuration["OPENAI_MODEL"]
+        var modelo = _configuration["OPENAI_MODEL"]
             ?? "gpt-6-luna";
 
-        var investidores =
-            await _context.Investidores
-                .AsNoTracking()
-                .OrderBy(x => x.Nome)
-                .Select(x => new { x.Id, x.Nome })
-                .ToListAsync(cancellationToken);
+        var investidoresQuery = _context.Investidores
+            .AsNoTracking()
+            .AsQueryable();
 
-        /*
-         * Primeiro lemos a carteira apenas para descobrir quais ativos e
-         * opções precisam de cotação. Depois da atualização de mercado,
-         * reconstruímos os dashboards para que patrimônio, distância do
-         * strike e exposição usem os preços recém-obtidos.
-         */
+        if (investidorId.HasValue)
+            investidoresQuery = investidoresQuery
+                .Where(x => x.Id == investidorId.Value);
+
+        var investidores = await investidoresQuery
+            .OrderBy(x => x.Nome)
+            .Select(x => new { x.Id, x.Nome })
+            .ToListAsync(cancellationToken);
+
+        if (investidores.Count == 0)
+            throw new InvalidOperationException(
+                "Nenhum investidor encontrado para o relatório.");
+
         var tickersAtivos =
-            new HashSet<string>(
-                StringComparer.OrdinalIgnoreCase);
+            new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         var opcoesMercado =
             new Dictionary<string, OpcaoMercadoConsulta>(
                 StringComparer.OrdinalIgnoreCase);
 
         foreach (var investidor in investidores)
         {
-            var dashboard =
-                await _dashboardHandler.HandleAsync(
-                    investidor.Id,
-                    cancellationToken);
+            var dashboard = await _dashboardHandler.HandleAsync(
+                investidor.Id,
+                cancellationToken);
 
             foreach (var posicao in dashboard.Posicoes
                          .Where(x => x.Quantidade > 0))
-            {
                 tickersAtivos.Add(posicao.Ticker);
-            }
 
             foreach (var opcao in dashboard.Opcoes
                          .Where(x =>
@@ -118,7 +200,6 @@ public sealed class AssistenteIaService
                              x.Situacao == "EXECUTADA"))
             {
                 tickersAtivos.Add(opcao.TickerAtivo);
-
                 opcoesMercado[opcao.TickerOpcao] =
                     new OpcaoMercadoConsulta(
                         opcao.TickerOpcao,
@@ -127,21 +208,19 @@ public sealed class AssistenteIaService
             }
         }
 
-        var mercado =
-            await _mercadoBrapiService.AtualizarAsync(
-                tickersAtivos,
-                opcoesMercado.Values,
-                dataLocal,
-                cancellationToken);
+        var mercado = await _mercadoBrapiService.AtualizarAsync(
+            tickersAtivos,
+            opcoesMercado.Values,
+            dataLocal,
+            cancellationToken);
 
         var carteiras = new List<object>();
 
         foreach (var investidor in investidores)
         {
-            var dashboard =
-                await _dashboardHandler.HandleAsync(
-                    investidor.Id,
-                    cancellationToken);
+            var dashboard = await _dashboardHandler.HandleAsync(
+                investidor.Id,
+                cancellationToken);
 
             carteiras.Add(new
             {
@@ -188,21 +267,16 @@ public sealed class AssistenteIaService
                             x.Natureza == "VENDA")
                         {
                             custoRecompra =
-                                cotacaoOpcao.Preco *
-                                x.Quantidade;
-
+                                cotacaoOpcao.Preco * x.Quantidade;
                             ganhoRecompra =
                                 x.PremioTotal -
                                 custoRecompra.Value -
                                 x.Taxas;
 
                             if (x.PremioTotal > 0)
-                            {
                                 percentualPremioCapturado =
                                     ganhoRecompra.Value /
-                                    x.PremioTotal *
-                                    100m;
-                            }
+                                    x.PremioTotal * 100m;
                         }
 
                         return new
@@ -225,14 +299,11 @@ public sealed class AssistenteIaService
                             x.ValorAcaoAtual,
                             x.DistanciaStrikePercentual,
                             x.EmRiscoExercicio,
-                            CotacaoOpcao =
-                                cotacaoOpcao?.Preco,
+                            CotacaoOpcao = cotacaoOpcao?.Preco,
                             DataCotacaoOpcao =
                                 cotacaoOpcao?.DataReferencia,
-                            CustoRecompraEstimado =
-                                custoRecompra,
-                            GanhoRecompraEstimado =
-                                ganhoRecompra,
+                            CustoRecompraEstimado = custoRecompra,
+                            GanhoRecompraEstimado = ganhoRecompra,
                             PercentualPremioCapturado =
                                 percentualPremioCapturado
                         };
@@ -240,22 +311,102 @@ public sealed class AssistenteIaService
             });
         }
 
-        var dados =
-            JsonSerializer.Serialize(
-                carteiras,
-                new JsonSerializerOptions
-                {
-                    WriteIndented = true
-                });
+        var dados = JsonSerializer.Serialize(
+            carteiras,
+            new JsonSerializerOptions { WriteIndented = true });
 
-        var instructions = """
+        var instructions = escopo == "TODOS"
+            ? InstrucoesBase +
+              "\nEste é o relatório administrativo consolidado. Analise TODAS as carteiras fornecidas e destaque também concentrações e riscos consolidados."
+            : InstrucoesBase +
+              "\nEste relatório pertence a um único investidor. Analise EXCLUSIVAMENTE a carteira fornecida. Não mencione, compare nem revele dados de outros investidores.";
+
+        var input =
+            $"Data de referência: {data:dd/MM/yyyy}.\n" +
+            $"Escopo: {escopo}.\n" +
+            "Dados atuais da carteira:\n" +
+            dados;
+
+        var payload = JsonSerializer.Serialize(new
+        {
+            model = modelo,
+            instructions,
+            input,
+            tools = new[] { new { type = "web_search" } }
+        });
+
+        var client = _httpClientFactory.CreateClient();
+        using var request = new HttpRequestMessage(
+            HttpMethod.Post,
+            "https://api.openai.com/v1/responses");
+
+        request.Headers.Authorization =
+            new AuthenticationHeaderValue("Bearer", apiKey);
+        request.Content = new StringContent(
+            payload,
+            Encoding.UTF8,
+            "application/json");
+
+        using var response = await client.SendAsync(
+            request,
+            cancellationToken);
+        var json = await response.Content.ReadAsStringAsync(
+            cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+            throw new InvalidOperationException(
+                $"OpenAI retornou {(int)response.StatusCode}: {json}");
+
+        var conteudo = ExtrairTexto(json);
+        if (string.IsNullOrWhiteSpace(conteudo))
+            throw new InvalidOperationException(
+                "A IA não retornou conteúdo textual.");
+
+        if (existente is not null)
+            _context.RelatoriosDiariosIa.Remove(existente);
+
+        var relatorio = new RelatorioDiarioIa(
+            data,
+            conteudo,
+            modelo,
+            escopo,
+            investidorId);
+
+        _context.RelatoriosDiariosIa.Add(relatorio);
+        await _context.SaveChangesAsync(cancellationToken);
+
+        if (escopo == "TODOS")
+            await EnviarTelegramAsync(relatorio, cancellationToken);
+
+        if (!string.IsNullOrWhiteSpace(destinatarioWhatsApp))
+        {
+            try
+            {
+                await EnviarWhatsAppAsync(
+                    relatorio,
+                    destinatarioWhatsApp,
+                    cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "Falha ao enviar relatório IA via WhatsApp para o escopo {Escopo}.",
+                    escopo);
+            }
+        }
+
+        return relatorio;
+    }
+
+    private const string InstrucoesBase = """
 Você é o Assistente IA de uma carteira de investimentos brasileira.
 Analise somente ativos e opções presentes nos dados fornecidos.
 Use pesquisa na web para buscar informações atuais e relevantes do dia,
 priorizando fontes oficiais (RI das empresas, CVM, B3) e veículos financeiros
 confiáveis. Não invente preços, fatos relevantes, dividendos ou datas.
 Diferencie fatos confirmados de interpretação. Não dê ordem automática de
-compra ou venda. Destaque: fatos relevantes, resultados, dividendos/JCP,
+compra ou venda. Destaque fatos relevantes, resultados, dividendos/JCP,
 eventos corporativos, movimentos materiais, riscos e proximidade de strikes.
 Quando não houver novidade relevante, diga explicitamente.
 Produza texto em português do Brasil, conciso, organizado em:
@@ -268,149 +419,47 @@ Produza texto em português do Brasil, conciso, organizado em:
 Sempre relacione a notícia à posição concreta informada.
 """;
 
-        var input =
-            $"Data de referência: {data:dd/MM/yyyy}.\n" +
-            "Dados atuais da carteira:\n" +
-            dados;
-
-        var payload =
-            JsonSerializer.Serialize(new
-            {
-                model = modelo,
-                instructions,
-                input,
-                tools = new[]
-                {
-                    new { type = "web_search" }
-                }
-            });
-
-        var client =
-            _httpClientFactory.CreateClient();
-
-        using var request =
-            new HttpRequestMessage(
-                HttpMethod.Post,
-                "https://api.openai.com/v1/responses");
-
-        request.Headers.Authorization =
-            new AuthenticationHeaderValue(
-                "Bearer",
-                apiKey);
-
-        request.Content =
-            new StringContent(
-                payload,
-                Encoding.UTF8,
-                "application/json");
-
-        using var response =
-            await client.SendAsync(
-                request,
-                cancellationToken);
-
-        var json =
-            await response.Content.ReadAsStringAsync(
-                cancellationToken);
-
-        if (!response.IsSuccessStatusCode)
-            throw new InvalidOperationException(
-                $"OpenAI retornou {(int)response.StatusCode}: {json}");
-
-        var conteudo =
-            ExtrairTexto(json);
-
-        if (string.IsNullOrWhiteSpace(conteudo))
-            throw new InvalidOperationException(
-                "A IA não retornou conteúdo textual.");
-
-        if (existente is not null)
-            _context.RelatoriosDiariosIa.Remove(existente);
-
-        var relatorio =
-            new RelatorioDiarioIa(
-                data,
-                conteudo,
-                modelo);
-
-        _context.RelatoriosDiariosIa.Add(relatorio);
-        await _context.SaveChangesAsync(cancellationToken);
-
-        await EnviarTelegramAsync(
-            relatorio,
-            cancellationToken);
-
-        await EnviarWhatsAppAsync(
-            relatorio,
-            cancellationToken);
-
-        return relatorio;
-    }
-
     private static string ExtrairTexto(string json)
     {
-        using var document =
-            JsonDocument.Parse(json);
-
+        using var document = JsonDocument.Parse(json);
         if (!document.RootElement.TryGetProperty(
                 "output",
                 out var output))
             return string.Empty;
 
         var textos = new List<string>();
-
         foreach (var item in output.EnumerateArray())
         {
-            if (!item.TryGetProperty(
-                    "content",
-                    out var content))
+            if (!item.TryGetProperty("content", out var content))
                 continue;
 
             foreach (var parte in content.EnumerateArray())
             {
-                if (parte.TryGetProperty(
-                        "type",
-                        out var type) &&
+                if (parte.TryGetProperty("type", out var type) &&
                     type.GetString() == "output_text" &&
-                    parte.TryGetProperty(
-                        "text",
-                        out var text))
-                {
-                    textos.Add(
-                        text.GetString()
-                        ?? string.Empty);
-                }
+                    parte.TryGetProperty("text", out var text))
+                    textos.Add(text.GetString() ?? string.Empty);
             }
         }
 
-        return string.Join(
-            Environment.NewLine,
-            textos);
+        return string.Join(Environment.NewLine, textos);
     }
-
 
     private async Task EnviarWhatsAppAsync(
         RelatorioDiarioIa relatorio,
+        string destinatario,
         CancellationToken cancellationToken)
     {
-        var token =
-            _configuration["WHATSAPP_ACCESS_TOKEN"];
-        var phoneNumberId =
-            _configuration["WHATSAPP_PHONE_NUMBER_ID"];
-        var destinatario =
-            _configuration["WHATSAPP_TO"];
-        var template =
-            _configuration["WHATSAPP_TEMPLATE_NAME"];
-        var idioma =
-            _configuration["WHATSAPP_TEMPLATE_LANGUAGE"]
+        var token = _configuration["WHATSAPP_ACCESS_TOKEN"];
+        var phoneNumberId = _configuration["WHATSAPP_PHONE_NUMBER_ID"];
+        var template = _configuration["WHATSAPP_TEMPLATE_NAME"];
+        var idioma = _configuration["WHATSAPP_TEMPLATE_LANGUAGE"]
             ?? "pt_BR";
-        var graphVersion =
-            _configuration["WHATSAPP_GRAPH_VERSION"]
+        var graphVersion = _configuration["WHATSAPP_GRAPH_VERSION"]
             ?? "v24.0";
 
         if (string.IsNullOrWhiteSpace(token) ||
             string.IsNullOrWhiteSpace(phoneNumberId) ||
-            string.IsNullOrWhiteSpace(destinatario) ||
             string.IsNullOrWhiteSpace(template))
             return;
 
@@ -418,74 +467,55 @@ Sempre relacione a notícia à posição concreta informada.
         if (resumo.Length > 3000)
             resumo = resumo[..3000];
 
-        var payload =
-            JsonSerializer.Serialize(new
+        var payload = JsonSerializer.Serialize(new
+        {
+            messaging_product = "whatsapp",
+            to = destinatario,
+            type = "template",
+            template = new
             {
-                messaging_product = "whatsapp",
-                to = destinatario,
-                type = "template",
-                template = new
+                name = template,
+                language = new { code = idioma },
+                components = new object[]
                 {
-                    name = template,
-                    language = new
+                    new
                     {
-                        code = idioma
-                    },
-                    components = new object[]
-                    {
-                        new
+                        type = "body",
+                        parameters = new object[]
                         {
-                            type = "body",
-                            parameters = new object[]
+                            new
                             {
-                                new
-                                {
-                                    type = "text",
-                                    text =
-                                        relatorio.DataReferencia
-                                            .ToString("dd/MM/yyyy")
-                                },
-                                new
-                                {
-                                    type = "text",
-                                    text = resumo
-                                }
-                            }
+                                type = "text",
+                                text = relatorio.DataReferencia
+                                    .ToString("dd/MM/yyyy")
+                            },
+                            new { type = "text", text = resumo }
                         }
                     }
                 }
-            });
+            }
+        });
 
-        var client =
-            _httpClientFactory.CreateClient();
-
-        using var request =
-            new HttpRequestMessage(
-                HttpMethod.Post,
-                $"https://graph.facebook.com/{graphVersion}/{phoneNumberId}/messages");
+        var client = _httpClientFactory.CreateClient();
+        using var request = new HttpRequestMessage(
+            HttpMethod.Post,
+            $"https://graph.facebook.com/{graphVersion}/{phoneNumberId}/messages");
 
         request.Headers.Authorization =
-            new AuthenticationHeaderValue(
-                "Bearer",
-                token);
+            new AuthenticationHeaderValue("Bearer", token);
+        request.Content = new StringContent(
+            payload,
+            Encoding.UTF8,
+            "application/json");
 
-        request.Content =
-            new StringContent(
-                payload,
-                Encoding.UTF8,
-                "application/json");
-
-        using var response =
-            await client.SendAsync(
-                request,
-                cancellationToken);
+        using var response = await client.SendAsync(
+            request,
+            cancellationToken);
 
         if (!response.IsSuccessStatusCode)
         {
-            var erro =
-                await response.Content.ReadAsStringAsync(
-                    cancellationToken);
-
+            var erro = await response.Content.ReadAsStringAsync(
+                cancellationToken);
             throw new InvalidOperationException(
                 $"WhatsApp retornou {(int)response.StatusCode}: {erro}");
         }
@@ -495,10 +525,8 @@ Sempre relacione a notícia à posição concreta informada.
         RelatorioDiarioIa relatorio,
         CancellationToken cancellationToken)
     {
-        var token =
-            _configuration["TELEGRAM_BOT_TOKEN"];
-        var chatId =
-            _configuration["TELEGRAM_CHAT_ID"];
+        var token = _configuration["TELEGRAM_BOT_TOKEN"];
+        var chatId = _configuration["TELEGRAM_CHAT_ID"];
 
         if (string.IsNullOrWhiteSpace(token) ||
             string.IsNullOrWhiteSpace(chatId))
@@ -511,19 +539,16 @@ Sempre relacione a notícia à posição concreta informada.
         if (texto.Length > 4000)
             texto = texto[..4000];
 
-        var client =
-            _httpClientFactory.CreateClient();
-
-        using var response =
-            await client.PostAsync(
-                $"https://api.telegram.org/bot{token}/sendMessage",
-                new FormUrlEncodedContent(
-                    new Dictionary<string, string>
-                    {
-                        ["chat_id"] = chatId,
-                        ["text"] = texto
-                    }),
-                cancellationToken);
+        var client = _httpClientFactory.CreateClient();
+        using var response = await client.PostAsync(
+            $"https://api.telegram.org/bot{token}/sendMessage",
+            new FormUrlEncodedContent(
+                new Dictionary<string, string>
+                {
+                    ["chat_id"] = chatId,
+                    ["text"] = texto
+                }),
+            cancellationToken);
 
         response.EnsureSuccessStatusCode();
     }
