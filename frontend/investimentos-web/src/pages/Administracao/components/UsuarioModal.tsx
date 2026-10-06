@@ -323,13 +323,12 @@ export function UsuarioModal({
           </label>
         </section>
 
-        {formulario.perfil === 'Admin' ? (
-          <section className="user-modal-section">
+        <section className="user-modal-section">
             <header>
               <div className="user-modal-step">2</div>
               <div>
                 <strong>Relatório do Assistente IA</strong>
-                <span>Configure o envio da visão consolidada de todas as carteiras.</span>
+                <span>{formulario.perfil === 'Admin' ? 'Configure o envio da visão consolidada de todas as carteiras.' : 'Configure o envio das informações das carteiras vinculadas a este usuário.'}</span>
               </div>
             </header>
 
@@ -373,7 +372,6 @@ export function UsuarioModal({
               </select>
             </label>
           </section>
-        ) : null}
 
         {formulario.perfil ===
         'Usuario' ? (
