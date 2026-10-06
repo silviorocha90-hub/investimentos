@@ -849,19 +849,25 @@ app.MapPost(
         if (string.IsNullOrWhiteSpace(
                 tickerAtivo))
         {
-            var ativosCadastrados =
+            var tickersCadastrados =
                 await context.Ativos
                     .AsNoTracking()
-                    .Where(
-                        x =>
-                            x.Ticker.Codigo.StartsWith(
-                                raizOpcao))
                     .Select(
                         x =>
                             x.Ticker.Codigo)
-                    .Distinct()
                     .ToListAsync(
                         cancellationToken);
+
+            var ativosCadastrados =
+                tickersCadastrados
+                    .Where(
+                        ticker =>
+                            ticker.StartsWith(
+                                raizOpcao,
+                                StringComparison.OrdinalIgnoreCase))
+                    .Distinct(
+                        StringComparer.OrdinalIgnoreCase)
+                    .ToList();
 
             if (ativosCadastrados.Count == 1)
             {
