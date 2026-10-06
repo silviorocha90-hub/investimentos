@@ -2105,3 +2105,14 @@
 .admin-page .admin-asset-section:first-of-type .admin-table-wrap {
   max-height: 520px;
 }
+
+
+/* Administração > Ativos > Renda Variável — seletor explícito.
+   A altura padrão é 440px; 520px acrescenta cerca de duas linhas visíveis. */
+.admin-page .admin-variable-assets-table-wrap {
+  height: 520px !important;
+  min-height: 520px !important;
+  max-height: 520px !important;
+  overflow-x: auto !important;
+  overflow-y: auto !important;
+}
