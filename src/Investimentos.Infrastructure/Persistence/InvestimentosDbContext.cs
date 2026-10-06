@@ -60,6 +60,9 @@ namespace Investimentos.Infrastructure.Persistence
         public DbSet<DescontoFiscal> DescontosFiscais =>
             Set<DescontoFiscal>();
 
+        public DbSet<RelatorioDiarioIa> RelatoriosDiariosIa =>
+            Set<RelatorioDiarioIa>();
+
         public DbSet<Usuario> Usuarios =>
             Set<Usuario>();
 
