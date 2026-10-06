@@ -121,7 +121,7 @@ export function OpcoesTabela({
           <table className="data-table options-table">
             <thead>
               <tr>
-                <th>Finalização</th>
+                <th>Data de Referência</th>
                 <th>Vencimento</th>
                 <th>Ticker</th>
                 <th>Tipo</th>
