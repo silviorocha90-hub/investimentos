@@ -46,8 +46,8 @@ namespace Investimentos.Infrastructure.Persistence.Configurations
 
             builder.Property(x => x.UltimoLogin);
 
-            builder.Property(x => x.WhatsApp)
-                .HasMaxLength(15);
+            builder.Property(x => x.TelegramChatId)
+                .HasMaxLength(30);
 
             builder.Property(x => x.ReceberRelatorioIa)
                 .IsRequired();
