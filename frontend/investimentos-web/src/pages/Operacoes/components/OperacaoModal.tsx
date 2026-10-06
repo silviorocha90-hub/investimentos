@@ -3,8 +3,10 @@ import type {
 } from 'react'
 
 import { Modal } from '../../../components/Modal'
+import type { Investidor } from '../../../types/investidor'
 
 export interface NovaOperacaoForm {
+  investidorId: string
   ticker: string
   tipoOperacaoCodigo: string
   quantidade: string
@@ -17,6 +19,7 @@ interface OperacaoModalProps {
   form: NovaOperacaoForm
   salvando: boolean
   erro: string | null
+  investidores: readonly Investidor[]
   onChange: (
     form: NovaOperacaoForm,
   ) => void
@@ -30,6 +33,7 @@ export function OperacaoModal({
   form,
   salvando,
   erro,
+  investidores,
   onChange,
   onClose,
   onSubmit,
@@ -79,6 +83,37 @@ export function OperacaoModal({
         ) : null}
 
         <div className="operations-modal-grid">
+          <label>
+            <span>Investidor *</span>
+
+            <select
+              value={form.investidorId}
+              disabled={salvando}
+              onChange={(event) =>
+                onChange({
+                  ...form,
+                  investidorId:
+                    event.target.value,
+                })
+              }
+            >
+              <option value="">
+                Selecione
+              </option>
+
+              {investidores.map(
+                (investidor) => (
+                  <option
+                    key={investidor.id}
+                    value={investidor.id}
+                  >
+                    {investidor.nome}
+                  </option>
+                ),
+              )}
+            </select>
+          </label>
+
           <label>
             <span>Ticker *</span>
 
