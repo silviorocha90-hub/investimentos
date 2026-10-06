@@ -127,6 +127,7 @@ function App() {
   const {
     usuario,
     possuiPermissao,
+    logout,
   } = useAuth()
 
   const [
@@ -1156,6 +1157,18 @@ function App() {
               {atualizandoDados ? '◌' : '↻'}
             </span>
             {atualizandoDados ? 'Atualizando...' : 'Atualizar'}
+          </button>
+
+          <button
+            className="menu-item"
+            type="button"
+            title="Sair da aplicação"
+            onClick={() => void logout()}
+          >
+            <span className="menu-icone">
+              ↪
+            </span>
+            Sair
           </button>
         </nav>
 
