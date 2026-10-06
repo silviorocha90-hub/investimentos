@@ -1734,7 +1734,11 @@ Para cada ativo:
 
 `ResultadoEconomico = Valorizacao + Proventos + ResultadoOpcoes`
 
-`RentabilidadeEconomica = ResultadoEconomico / CustoTotal * 100`
+Na tabela de posições, `RentabilidadeEconomica` mede somente a valorização da posição atual:
+
+`RentabilidadeEconomica = Valorizacao / CustoTotal * 100`
+
+Proventos e resultado de opções continuam compondo `ResultadoEconomico`, mas não são somados novamente à rentabilidade da posição.
 
 `YieldProventos = Proventos / CustoTotal * 100`
 
