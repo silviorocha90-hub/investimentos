@@ -68,7 +68,6 @@ public sealed class AssistenteIaService
             substituir,
             null,
             "TODOS",
-            null,
             cancellationToken);
     }
 
@@ -83,8 +82,7 @@ public sealed class AssistenteIaService
             .Where(x =>
                 x.Perfil == PerfilUsuario.Admin &&
                 x.Status == StatusUsuario.Ativo &&
-                x.ReceberRelatorioIa &&
-                x.WhatsApp != null)
+                x.ReceberRelatorioIa)
             .ToListAsync(cancellationToken);
 
         foreach (var administrador in administradores)
@@ -97,9 +95,9 @@ public sealed class AssistenteIaService
 
             try
             {
-                await EnviarWhatsAppAsync(
+                await EnviarRelatorioAsync(
                     relatorioAdmin,
-                    administrador.WhatsApp!,
+                    administrador,
                     cancellationToken);
 
                 administrador.RegistrarEnvioRelatorioIa(dataLocal);
@@ -118,8 +116,7 @@ public sealed class AssistenteIaService
             .Where(x =>
                 x.Perfil == PerfilUsuario.Usuario &&
                 x.Status == StatusUsuario.Ativo &&
-                x.ReceberRelatorioIa &&
-                x.WhatsApp != null)
+                x.ReceberRelatorioIa)
             .Include(x => x.Investidores)
             .OrderBy(x => x.Nome)
             .ToListAsync(cancellationToken);
@@ -146,12 +143,16 @@ public sealed class AssistenteIaService
             {
                 try
                 {
-                    await GerarRelatorioAsync(
+                    var relatorio = await GerarRelatorioAsync(
                         dataLocal,
                         false,
                         investidorId,
                         "INVESTIDOR",
-                        usuario.WhatsApp,
+                        cancellationToken);
+
+                    await EnviarRelatorioAsync(
+                        relatorio,
+                        usuario,
                         cancellationToken);
                 }
                 catch (Exception ex)
@@ -173,7 +174,7 @@ public sealed class AssistenteIaService
         }
     }
 
-    public async Task<int> ReenviarWhatsAppAsync(
+    public async Task<int> ReenviarRelatorioAsync(
         Guid usuarioId,
         DateTime dataLocal,
         CancellationToken cancellationToken)
@@ -193,10 +194,6 @@ public sealed class AssistenteIaService
         if (!usuario.ReceberRelatorioIa)
             throw new InvalidOperationException(
                 "O recebimento do relatório IA está desativado para este usuário.");
-
-        if (string.IsNullOrWhiteSpace(usuario.WhatsApp))
-            throw new InvalidOperationException(
-                "O usuário não possui WhatsApp configurado.");
 
         var data = dataLocal.Date;
         var relatorios = new List<RelatorioDiarioIa>();
@@ -241,9 +238,9 @@ public sealed class AssistenteIaService
 
         foreach (var relatorio in relatorios)
         {
-            await EnviarWhatsAppAsync(
+            await EnviarRelatorioAsync(
                 relatorio,
-                usuario.WhatsApp,
+                usuario,
                 cancellationToken);
         }
 
@@ -277,7 +274,6 @@ public sealed class AssistenteIaService
         bool substituir,
         Guid? investidorId,
         string escopo,
-        string? destinatarioWhatsApp,
         CancellationToken cancellationToken)
     {
         var data = dataLocal.Date;
@@ -289,17 +285,7 @@ public sealed class AssistenteIaService
                 cancellationToken);
 
         if (existente is not null && !substituir)
-        {
-            if (!string.IsNullOrWhiteSpace(destinatarioWhatsApp))
-            {
-                await EnviarWhatsAppAsync(
-                    existente,
-                    destinatarioWhatsApp,
-                    cancellationToken);
-            }
-
             return existente;
-        }
 
         var apiKey = _configuration["OPENAI_API_KEY"];
         if (string.IsNullOrWhiteSpace(apiKey))
@@ -523,17 +509,6 @@ public sealed class AssistenteIaService
         _context.RelatoriosDiariosIa.Add(relatorio);
         await _context.SaveChangesAsync(cancellationToken);
 
-        if (escopo == "TODOS")
-            await EnviarTelegramAsync(relatorio, cancellationToken);
-
-        if (!string.IsNullOrWhiteSpace(destinatarioWhatsApp))
-        {
-            await EnviarWhatsAppAsync(
-                relatorio,
-                destinatarioWhatsApp,
-                cancellationToken);
-        }
-
         return relatorio;
     }
 
@@ -583,71 +558,65 @@ Sempre relacione a notícia à posição concreta informada.
         return string.Join(Environment.NewLine, textos);
     }
 
-    private async Task EnviarWhatsAppAsync(
+    private async Task EnviarRelatorioAsync(
         RelatorioDiarioIa relatorio,
-        string destinatario,
+        Usuario usuario,
         CancellationToken cancellationToken)
     {
-        var token = _configuration["WHATSAPP_ACCESS_TOKEN"];
-        var phoneNumberId = _configuration["WHATSAPP_PHONE_NUMBER_ID"];
-        var template = _configuration["WHATSAPP_TEMPLATE_NAME"];
-        var idioma = _configuration["WHATSAPP_TEMPLATE_LANGUAGE"]
-            ?? "pt_BR";
-        var graphVersion = _configuration["WHATSAPP_GRAPH_VERSION"]
-            ?? "v24.0";
+        await EnviarEmailAsync(
+            relatorio,
+            usuario.Email,
+            usuario.Nome,
+            cancellationToken);
 
-        if (string.IsNullOrWhiteSpace(token))
+        if (!string.IsNullOrWhiteSpace(usuario.TelegramChatId))
+        {
+            await EnviarTelegramAsync(
+                relatorio,
+                usuario.TelegramChatId,
+                cancellationToken);
+        }
+    }
+
+    private async Task EnviarEmailAsync(
+        RelatorioDiarioIa relatorio,
+        string destinatario,
+        string nome,
+        CancellationToken cancellationToken)
+    {
+        var apiKey = _configuration["RESEND_API_KEY"];
+        var remetente = _configuration["EMAIL_FROM"];
+
+        if (string.IsNullOrWhiteSpace(apiKey))
             throw new InvalidOperationException(
-                "WHATSAPP_ACCESS_TOKEN não configurado.");
+                "RESEND_API_KEY não configurada.");
 
-        if (string.IsNullOrWhiteSpace(phoneNumberId))
+        if (string.IsNullOrWhiteSpace(remetente))
             throw new InvalidOperationException(
-                "WHATSAPP_PHONE_NUMBER_ID não configurado.");
+                "EMAIL_FROM não configurado.");
 
-        if (string.IsNullOrWhiteSpace(template))
-            throw new InvalidOperationException(
-                "WHATSAPP_TEMPLATE_NAME não configurado.");
-
-        var resumo = relatorio.Conteudo;
-        if (resumo.Length > 3000)
-            resumo = resumo[..3000];
+        var assunto =
+            $"Relatório de investimentos — {relatorio.DataReferencia:dd/MM/yyyy}";
+        var texto =
+            $"Olá, {nome}.\n\n" +
+            relatorio.Conteudo +
+            "\n\nRelatório gerado automaticamente pelo Assistente IA.";
 
         var payload = JsonSerializer.Serialize(new
         {
-            messaging_product = "whatsapp",
-            to = destinatario,
-            type = "template",
-            template = new
-            {
-                name = template,
-                language = new { code = idioma },
-                components = new object[]
-                {
-                    new
-                    {
-                        type = "body",
-                        parameters = new object[]
-                        {
-                            new
-                            {
-                                type = "text",
-                                text = relatorio.DataReferencia
-                                    .ToString("dd/MM/yyyy")
-                            },
-                            new { type = "text", text = resumo }
-                        }
-                    }
-                }
-            }
+            from = remetente,
+            to = new[] { destinatario },
+            subject = assunto,
+            text = texto
         });
 
         var client = _httpClientFactory.CreateClient();
         using var request = new HttpRequestMessage(
             HttpMethod.Post,
-            $"https://graph.facebook.com/{graphVersion}/{phoneNumberId}/messages");
+            "https://api.resend.com/emails");
 
         request.Headers.Authorization =
-            new AuthenticationHeaderValue("Bearer", token);
+            new AuthenticationHeaderValue("Bearer", apiKey);
         request.Content = new StringContent(
             payload,
             Encoding.UTF8,
@@ -662,39 +631,67 @@ Sempre relacione a notícia à posição concreta informada.
             var erro = await response.Content.ReadAsStringAsync(
                 cancellationToken);
             throw new InvalidOperationException(
-                $"WhatsApp retornou {(int)response.StatusCode}: {erro}");
+                $"Resend retornou {(int)response.StatusCode}: {erro}");
         }
     }
 
     private async Task EnviarTelegramAsync(
         RelatorioDiarioIa relatorio,
+        string chatId,
         CancellationToken cancellationToken)
     {
         var token = _configuration["TELEGRAM_BOT_TOKEN"];
-        var chatId = _configuration["TELEGRAM_CHAT_ID"];
 
-        if (string.IsNullOrWhiteSpace(token) ||
-            string.IsNullOrWhiteSpace(chatId))
-            return;
+        if (string.IsNullOrWhiteSpace(token))
+            throw new InvalidOperationException(
+                "TELEGRAM_BOT_TOKEN não configurado.");
 
-        var texto =
-            $"Relatório da carteira — {relatorio.DataReferencia:dd/MM/yyyy}\n\n" +
-            relatorio.Conteudo;
+        var cabecalho =
+            $"Relatório de investimentos — {relatorio.DataReferencia:dd/MM/yyyy}\n\n";
+        var conteudo = relatorio.Conteudo;
+        const int limite = 3900;
 
-        if (texto.Length > 4000)
-            texto = texto[..4000];
+        var partes = new List<string>();
+        while (conteudo.Length > limite)
+        {
+            var corte = conteudo.LastIndexOf(
+                '\n',
+                limite);
+
+            if (corte < limite / 2)
+                corte = limite;
+
+            partes.Add(conteudo[..corte]);
+            conteudo = conteudo[corte..].TrimStart();
+        }
+
+        if (conteudo.Length > 0)
+            partes.Add(conteudo);
 
         var client = _httpClientFactory.CreateClient();
-        using var response = await client.PostAsync(
-            $"https://api.telegram.org/bot{token}/sendMessage",
-            new FormUrlEncodedContent(
-                new Dictionary<string, string>
-                {
-                    ["chat_id"] = chatId,
-                    ["text"] = texto
-                }),
-            cancellationToken);
 
-        response.EnsureSuccessStatusCode();
+        for (var i = 0; i < partes.Count; i++)
+        {
+            var texto = (i == 0 ? cabecalho : string.Empty) +
+                partes[i];
+
+            using var response = await client.PostAsync(
+                $"https://api.telegram.org/bot{token}/sendMessage",
+                new FormUrlEncodedContent(
+                    new Dictionary<string, string>
+                    {
+                        ["chat_id"] = chatId,
+                        ["text"] = texto
+                    }),
+                cancellationToken);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var erro = await response.Content.ReadAsStringAsync(
+                    cancellationToken);
+                throw new InvalidOperationException(
+                    $"Telegram retornou {(int)response.StatusCode}: {erro}");
+            }
+        }
     }
 }
