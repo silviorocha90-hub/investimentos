@@ -30,7 +30,7 @@ export function MovimentacoesFinanceirasTab({
   const ano = new Date().getFullYear()
   const [itens, setItens] = useState<MovimentacaoFinanceira[]>([])
   const [pagina, setPagina] = useState(1)
-  const itensPorPagina = 10
+  const itensPorPagina = 15
   const [filtro, setFiltro] = useState('TODOS')
   const [editando, setEditando] = useState<MovimentacaoFinanceira | null>(null)
   const [modal, setModal] = useState(false)
