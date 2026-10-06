@@ -1,3 +1,8 @@
+import {
+  useEffect,
+  useState,
+} from 'react'
+
 import type {
   OperacaoOpcao,
 } from '../../../types/dashboard'
@@ -44,7 +49,43 @@ export function OpcoesTabela({
   onEditar,
   onExcluir,
 }: OpcoesTabelaProps) {
+  const [pagina, setPagina] =
+    useState(1)
 
+  const itensPorPagina = 10
+
+  const totalPaginas =
+    Math.max(
+      1,
+      Math.ceil(
+        opcoes.length /
+          itensPorPagina,
+      ),
+    )
+
+  const paginaSegura =
+    Math.min(
+      pagina,
+      totalPaginas,
+    )
+
+  const opcoesExibidas =
+    opcoes.slice(
+      (paginaSegura - 1) *
+        itensPorPagina,
+      paginaSegura *
+        itensPorPagina,
+    )
+
+  useEffect(() => {
+    if (pagina > totalPaginas) {
+      setPagina(totalPaginas)
+    }
+  }, [pagina, totalPaginas])
+
+  useEffect(() => {
+    setPagina(1)
+  }, [opcoes])
 
   return (
     <article className="panel options-table-panel">
@@ -102,7 +143,7 @@ export function OpcoesTabela({
             </thead>
 
             <tbody>
-              {opcoes.map(
+              {opcoesExibidas.map(
                 (opcao) => {
                   const resultadoBruto =
                     opcao.resultadoBruto
@@ -273,7 +314,57 @@ export function OpcoesTabela({
         </div>
       )}
 
+      {totalPaginas > 1 ? (
+        <div className="proventos-pagination admin-table-pagination options-pagination">
+          <span>
+            {opcoes.length}{' '}
+            registros
+          </span>
 
+          <div>
+            <button
+              type="button"
+              disabled={
+                paginaSegura <= 1
+              }
+              onClick={() =>
+                setPagina((atual) =>
+                  Math.max(
+                    1,
+                    atual - 1,
+                  ),
+                )
+              }
+            >
+              ‹
+            </button>
+
+            <strong>
+              {paginaSegura}{' '}
+              /{' '}
+              {totalPaginas}
+            </strong>
+
+            <button
+              type="button"
+              disabled={
+                paginaSegura >=
+                totalPaginas
+              }
+              onClick={() =>
+                setPagina((atual) =>
+                  Math.min(
+                    totalPaginas,
+                    atual + 1,
+                  ),
+                )
+              }
+            >
+              ›
+            </button>
+          </div>
+        </div>
+      ) : null}
     </article>
   )
 }
