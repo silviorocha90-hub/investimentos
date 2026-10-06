@@ -786,3 +786,12 @@
 .user-investor-permissions label.selected{border-color:rgba(99,230,200,.38);background:rgba(99,230,200,.07);color:#63e6c8}
 .user-investor-permissions input{accent-color:var(--accent)}
 @media(max-width:680px){.user-investor-access-list{padding-left:0}.user-investor-permissions{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+
+.admin-inline-success {
+  margin: 0 0 16px;
+  padding: 12px 14px;
+  border: 1px solid currentColor;
+  border-radius: 10px;
+  font-size: 0.9rem;
+}
