@@ -1,4 +1,5 @@
 ﻿using System.Security.Claims;
+using Investimentos.Api.AssistenteIa;
 using Investimentos.Application.Usuarios.Administracao;
 using Investimentos.Domain.Usuarios;
 
@@ -46,6 +47,10 @@ namespace Investimentos.Api.Endpoints
             grupo.MapPut(
                 "/{id:guid}/acessos",
                 (Delegate)AlterarAcessosAsync);
+
+            grupo.MapPost(
+                "/{id:guid}/relatorio-ia/reenviar",
+                (Delegate)ReenviarRelatorioIaAsync);
 
             return app;
         }
@@ -225,6 +230,29 @@ namespace Investimentos.Api.Endpoints
                 cancellationToken);
 
             return Results.NoContent();
+        }
+
+        private static async Task<IResult>
+            ReenviarRelatorioIaAsync(
+                Guid id,
+                AssistenteIaService service,
+                CancellationToken cancellationToken)
+        {
+            var quantidade =
+                await service.ReenviarWhatsAppAsync(
+                    id,
+                    AssistenteIaWorker.ObterAgoraSaoPaulo(),
+                    cancellationToken);
+
+            return Results.Ok(
+                new
+                {
+                    quantidade,
+                    mensagem =
+                        quantidade == 1
+                            ? "Relatório reenviado pelo WhatsApp."
+                            : $"{quantidade} relatórios reenviados pelo WhatsApp."
+                });
         }
 
         private static Guid
