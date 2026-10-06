@@ -18,6 +18,16 @@ namespace Investimentos.Infrastructure.Persistence.Configurations
                 .HasMaxLength(150)
                 .IsRequired();
 
+            builder.Property(x => x.WhatsApp)
+                .HasMaxLength(15);
+
+            builder.Property(x => x.ReceberRelatorioIa)
+                .IsRequired();
+
+            builder.Property(x => x.FrequenciaRelatorioIa)
+                .HasMaxLength(20)
+                .IsRequired();
+
             builder.HasIndex(x => x.Nome)
                 .IsUnique();
         }
