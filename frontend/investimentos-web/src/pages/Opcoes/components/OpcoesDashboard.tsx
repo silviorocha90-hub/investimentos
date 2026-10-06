@@ -7,6 +7,7 @@ import {
 
 interface Props {
   opcoes: readonly OperacaoOpcao[]
+  totalDisponivel: number
 }
 
 const quantidade =
@@ -22,6 +23,7 @@ const percentual =
 
 export function OpcoesDashboard({
   opcoes,
+  totalDisponivel,
 }: Props) {
   const ativas =
     opcoes.filter(
@@ -64,13 +66,17 @@ export function OpcoesDashboard({
     <>
       <div className="options-advanced-grid">
         <article className="options-summary-card options-summary-highlight">
+          <span>Total disponível</span>
+          <strong>
+            {formatarMoeda(totalDisponivel)}
+          </strong>
+        </article>
+
+        <article className="options-summary-card options-summary-highlight">
           <span>Capital em PUT</span>
           <strong>
             {formatarMoeda(capitalPut)}
           </strong>
-          <small>
-            Strike × quantidade comprometida
-          </small>
         </article>
 
         <article className="options-summary-card">
@@ -80,9 +86,6 @@ export function OpcoesDashboard({
               acoesCall,
             )}
           </strong>
-          <small>
-            Cobertura atualmente comprometida
-          </small>
         </article>
 
         <article className="options-summary-card">
@@ -92,9 +95,6 @@ export function OpcoesDashboard({
               premioAtivo,
             )}
           </strong>
-          <small>
-            Prêmio recebido menos taxas
-          </small>
         </article>
 
         <article className="options-summary-card">
@@ -106,9 +106,6 @@ export function OpcoesDashboard({
               retornoCapital,
             )}%
           </strong>
-          <small>
-            Prêmios ativos sobre capital comprometido
-          </small>
         </article></div></>
   )
 }
