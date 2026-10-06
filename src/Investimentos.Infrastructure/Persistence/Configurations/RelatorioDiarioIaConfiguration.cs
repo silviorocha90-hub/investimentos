@@ -29,6 +29,7 @@ public class RelatorioDiarioIaConfiguration
 
         builder.Property(x => x.Escopo)
             .HasMaxLength(20)
+            .HasDefaultValue("TODOS")
             .IsRequired();
 
         builder.Property(x => x.InvestidorId);
