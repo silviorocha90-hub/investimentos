@@ -58,11 +58,6 @@ namespace Investimentos.Api.Endpoints
                 investidor.AlterarNome(
                     request.Nome);
 
-                investidor.ConfigurarRelatorioIa(
-                    request.WhatsApp,
-                    request.ReceberRelatorioIa,
-                    request.FrequenciaRelatorioIa);
-
                 var saldo =
                     await saldoRepository.ObterAtualAsync(
                         id,
@@ -257,10 +252,7 @@ namespace Investimentos.Api.Endpoints
 
     public record AtualizarInvestidorAdministracaoRequest(
         string Nome,
-        decimal SaldoDisponivel,
-        string? WhatsApp,
-        bool ReceberRelatorioIa,
-        string FrequenciaRelatorioIa);
+        decimal SaldoDisponivel);
 
     public record CriarHistoricoPatrimonioAdministracaoRequest(
         DateTime DataReferencia,
