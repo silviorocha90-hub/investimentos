@@ -155,8 +155,8 @@ namespace Investimentos.Application.Usuarios.Administracao
                 perfil);
 
             usuario.ConfigurarRelatorioIa(
-                perfil == PerfilUsuario.Admin ? whatsApp : null,
-                perfil == PerfilUsuario.Admin && receberRelatorioIa,
+                whatsApp,
+                receberRelatorioIa,
                 frequenciaRelatorioIa);
 
             if (perfil ==
