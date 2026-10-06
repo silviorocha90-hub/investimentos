@@ -174,7 +174,7 @@ namespace Investimentos.Infrastructure.Persistence.Repositories
                             investidor.Id,
                             cancellationToken);
 
-                var historicoMesAtual =
+                var historicosMesAtual =
                     await _context.HistoricosPatrimonio
                         .Include(x => x.Investidor)
                         .Where(x =>
@@ -183,10 +183,12 @@ namespace Investimentos.Infrastructure.Persistence.Repositories
                             x.DataReferencia < inicioProximoMes)
                         .OrderByDescending(
                             x => x.DataReferencia)
-                        .FirstOrDefaultAsync(
+                        .ThenByDescending(
+                            x => x.Id)
+                        .ToListAsync(
                             cancellationToken);
 
-                if (historicoMesAtual is null)
+                if (historicosMesAtual.Count == 0)
                 {
                     var investidorPersistido =
                         await _context.Investidores
@@ -207,10 +209,35 @@ namespace Investimentos.Infrastructure.Persistence.Repositories
                 }
                 else
                 {
+                    /*
+                     * Se já existir uma competência no
+                     * último dia do mês, ela é a canônica.
+                     * Caso contrário, reaproveitamos o
+                     * registro mais recente do mês.
+                     */
+                    var historicoMesAtual =
+                        historicosMesAtual
+                            .FirstOrDefault(x =>
+                                x.DataReferencia.Date ==
+                                fimMes.Date)
+                        ?? historicosMesAtual.First();
+
+                    var duplicadosMes =
+                        historicosMesAtual
+                            .Where(x =>
+                                x.Id !=
+                                historicoMesAtual.Id)
+                            .ToList();
+
+                    if (duplicadosMes.Count > 0)
+                    {
+                        _context.HistoricosPatrimonio
+                            .RemoveRange(
+                                duplicadosMes);
+                    }
+
                     historicoMesAtual.Atualizar(
-                        historicoMesAtual.DataReferencia == fimMes
-                            ? historicoMesAtual.DataReferencia
-                            : fimMes,
+                        fimMes,
                         dashboardInvestidor
                             .PatrimonioEstimado);
                 }
