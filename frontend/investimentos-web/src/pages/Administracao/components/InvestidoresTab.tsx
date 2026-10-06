@@ -247,11 +247,28 @@ export function InvestidoresTab({
   }
 
   function abrirNovoHistorico() {
+    const hoje = new Date()
+    const ultimoDiaMes =
+      new Date(
+        hoje.getFullYear(),
+        hoje.getMonth() + 1,
+        0,
+      )
+
+    const dataCompetencia =
+      [
+        ultimoDiaMes.getFullYear(),
+        String(
+          ultimoDiaMes.getMonth() + 1,
+        ).padStart(2, '0'),
+        String(
+          ultimoDiaMes.getDate(),
+        ).padStart(2, '0'),
+      ].join('-')
+
     setFormularioHistorico({
       dataReferencia:
-        new Date()
-          .toISOString()
-          .slice(0, 10),
+        dataCompetencia,
 
       valorCarteira: '',
     })
