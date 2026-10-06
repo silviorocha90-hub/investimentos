@@ -736,6 +736,7 @@ app.MapPost(
         CadastrarOperacaoOpcaoHandler cadastrarHandler,
         IOperacaoOpcaoRepository repository,
         IOperacaoOpcaoCrudRepository crudRepository,
+        InvestimentosDbContext context,
         CancellationToken cancellationToken) =>
     {
         if (request.InvestidorId == Guid.Empty)
@@ -834,6 +835,50 @@ app.MapPost(
                 : ObterAtivoBaseMapeado(
                     raizOpcao);
 
+        /*
+         * Para raízes sem histórico e sem mapeamento especial,
+         * procuramos o ativo diretamente no cadastro.
+         *
+         * Exemplo:
+         * ITUBW459 -> ITUB -> ITUB4.
+         *
+         * A resolução só é automática quando existe exatamente
+         * um ticker cadastrado iniciado pela raiz. Se houver mais
+         * de um, não escolhemos arbitrariamente.
+         */
+        if (string.IsNullOrWhiteSpace(
+                tickerAtivo))
+        {
+            var ativosCadastrados =
+                await context.Ativos
+                    .AsNoTracking()
+                    .Where(
+                        x =>
+                            x.Ticker.Codigo.StartsWith(
+                                raizOpcao))
+                    .Select(
+                        x =>
+                            x.Ticker.Codigo)
+                    .Distinct()
+                    .ToListAsync(
+                        cancellationToken);
+
+            if (ativosCadastrados.Count == 1)
+            {
+                tickerAtivo =
+                    ativosCadastrados[0];
+            }
+            else if (ativosCadastrados.Count > 1)
+            {
+                return Results.BadRequest(
+                    new
+                    {
+                        detail =
+                            $"A raiz {raizOpcao} corresponde a mais de um ativo cadastrado ({string.Join(", ", ativosCadastrados)}). Não é possível escolher automaticamente com segurança."
+                    });
+            }
+        }
+
         if (string.IsNullOrWhiteSpace(
                 tickerAtivo))
         {
@@ -841,7 +886,7 @@ app.MapPost(
                 new
                 {
                     detail =
-                        $"Não foi possível identificar automaticamente o ativo-base da opção {tickerOpcao}. Não existe associação histórica nem mapeamento conhecido para a raiz {raizOpcao}."
+                        $"Não foi possível identificar automaticamente o ativo-base da opção {tickerOpcao}. Não existe associação histórica, mapeamento conhecido ou ativo cadastrado compatível com a raiz {raizOpcao}."
                 });
         }
 
