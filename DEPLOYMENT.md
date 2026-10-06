@@ -20,15 +20,20 @@ ASSISTENTE_IA_HORA=19
 FRONTEND_ORIGINS=https://<dominio-do-frontend>
 ```
 
-## Telegram opcional
+## Envio de relatórios por e-mail e Telegram
+
+O e-mail é enviado pelo Resend para o e-mail cadastrado do usuário. O Telegram
+é enviado quando o usuário possui um Chat ID configurado.
 
 ```
+RESEND_API_KEY=<chave da Resend>
+EMAIL_FROM=Investimentos <relatorios@seu-dominio.com>
 TELEGRAM_BOT_TOKEN=<token do bot>
-TELEGRAM_CHAT_ID=<chat id>
 ```
 
-Sem essas duas variáveis o relatório continua sendo gerado e salvo, apenas
-não é enviado pelo Telegram.
+Não existe configuração do WhatsApp. O administrador recebe a visão consolidada
+`TODOS`; usuários comuns recebem apenas os relatórios `INVESTIDOR` das
+carteiras às quais possuem acesso.
 
 ## Frontend
 
@@ -72,17 +77,3 @@ atualizados. A cotação EOD de opções exige plano Pro para séries fora do
 sandbox. Quando uma cotação de opção não estiver disponível, o relatório
 continua usando preço do ativo-base, strike e vencimento e não inventa o
 preço da opção.
-
-## WhatsApp Cloud API
-
-O envio do relatório pelo WhatsApp é opcional. Configure:
-
-- `WHATSAPP_ACCESS_TOKEN`;
-- `WHATSAPP_PHONE_NUMBER_ID`;
-- `WHATSAPP_TEMPLATE_NAME`;
-- `WHATSAPP_TEMPLATE_LANGUAGE` (fallback `pt_BR`);
-- `WHATSAPP_GRAPH_VERSION` (fallback `v24.0`).
-
-O template deve possuir dois parâmetros no corpo: data do relatório e resumo.
-Sem essas variáveis o relatório continua sendo persistido normalmente no
-sistema, apenas sem envio por WhatsApp.
