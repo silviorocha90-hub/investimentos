@@ -2098,3 +2098,10 @@
   width: 100% !important;
   visibility: visible !important;
 }
+
+
+/* Administração > Ativos > Renda Variável — amplia a área visível em 2 linhas.
+   A segunda seção (Outros Investimentos) mantém a altura padrão. */
+.admin-page .admin-asset-section:first-of-type .admin-table-wrap {
+  max-height: 520px;
+}
