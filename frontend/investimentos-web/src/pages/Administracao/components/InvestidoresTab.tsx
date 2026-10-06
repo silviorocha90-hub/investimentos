@@ -128,10 +128,6 @@ export function InvestidoresTab({
     setSaldoDisponivel,
   ] = useState('')
 
-  const [whatsApp, setWhatsApp] = useState('')
-  const [receberRelatorioIa, setReceberRelatorioIa] = useState(false)
-  const [frequenciaRelatorioIa, setFrequenciaRelatorioIa] = useState<'DIARIO' | 'SEMANAL' | 'QUINZENAL' | 'MENSAL'>('DIARIO')
-
   const [
     salvandoDados,
     setSalvandoDados,
@@ -180,9 +176,6 @@ export function InvestidoresTab({
     ) {
       setNomeInvestidor('')
       setSaldoDisponivel('')
-      setWhatsApp('')
-      setReceberRelatorioIa(false)
-      setFrequenciaRelatorioIa('DIARIO')
       return
     }
 
@@ -196,17 +189,11 @@ export function InvestidoresTab({
       ),
     )
 
-    setWhatsApp(investidorSelecionado.whatsApp ?? '')
-    setReceberRelatorioIa(investidorSelecionado.receberRelatorioIa)
-    setFrequenciaRelatorioIa(investidorSelecionado.frequenciaRelatorioIa ?? 'DIARIO')
     setErro(null)
   }, [
     investidorSelecionado?.id,
     investidorSelecionado?.nome,
     investidorSelecionado?.saldoDisponivel,
-    investidorSelecionado?.whatsApp,
-    investidorSelecionado?.receberRelatorioIa,
-    investidorSelecionado?.frequenciaRelatorioIa,
   ])
 
   async function salvarDados(
@@ -248,9 +235,9 @@ export function InvestidoresTab({
 
           saldoDisponivel:
             saldo,
-          whatsApp: whatsApp || null,
-          receberRelatorioIa,
-          frequenciaRelatorioIa,
+          whatsApp: investidorSelecionado.whatsApp ?? null,
+          receberRelatorioIa: investidorSelecionado.receberRelatorioIa,
+          frequenciaRelatorioIa: investidorSelecionado.frequenciaRelatorioIa ?? 'DIARIO',
         },
       )
 
@@ -602,46 +589,6 @@ export function InvestidoresTab({
                     }
                   />
                 </div>
-              </label>
-
-              <label>
-                <span>WhatsApp para relatórios</span>
-                <input
-                  type="tel"
-                  value={whatsApp}
-                  placeholder="5511999999999"
-                  inputMode="tel"
-                  autoComplete="tel"
-                  onChange={(event) => setWhatsApp(event.target.value)}
-                />
-                <small>
-                  Informe DDI + DDD + número. Ex.: 5511999999999.
-                </small>
-              </label>
-
-              <label>
-                <span>Relatório do Assistente IA</span>
-                <select
-                  value={receberRelatorioIa ? 'SIM' : 'NAO'}
-                  onChange={(event) => setReceberRelatorioIa(event.target.value === 'SIM')}
-                >
-                  <option value="NAO">Não receber</option>
-                  <option value="SIM">Receber pelo WhatsApp</option>
-                </select>
-              </label>
-
-              <label>
-                <span>Frequência do relatório</span>
-                <select
-                  value={frequenciaRelatorioIa}
-                  disabled={!receberRelatorioIa}
-                  onChange={(event) => setFrequenciaRelatorioIa(event.target.value as 'DIARIO' | 'SEMANAL' | 'QUINZENAL' | 'MENSAL')}
-                >
-                  <option value="DIARIO">Diário</option>
-                  <option value="SEMANAL">Semanal</option>
-                  <option value="QUINZENAL">Quinzenal</option>
-                  <option value="MENSAL">Mensal</option>
-                </select>
               </label>
 
               <div className="admin-modal-actions">
