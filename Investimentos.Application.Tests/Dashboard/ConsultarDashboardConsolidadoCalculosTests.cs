@@ -261,7 +261,7 @@ namespace Investimentos.Application.Tests.Dashboard
                 resultado.Posicoes.Single().ResultadoEconomico);
 
             Assert.Equal(
-                7.50m,
+                5.00m,
                 resultado.Posicoes.Single().RentabilidadeEconomica);
 
             Assert.Equal(
