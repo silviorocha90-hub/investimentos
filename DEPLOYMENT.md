@@ -59,3 +59,34 @@ Para manter o custo baixo, hospedar API e frontend em containers e usar um
 SQL Server/Azure SQL gerenciado. O projeto não depende de tarefas agendadas
 do provedor: o próprio worker da API executa a rotina diária, desde que o
 serviço permaneça ativo.
+
+
+## Dados de mercado (brapi)
+
+O Assistente IA atualiza as cotações dos ativos da carteira antes de gerar o
+relatório diário.
+
+Configuração opcional/recomendada:
+
+- `BRAPI_TOKEN`: token da brapi.dev.
+
+Sem token, somente os tickers liberados pelo sandbox da brapi serão
+atualizados. A cotação EOD de opções exige plano Pro para séries fora do
+sandbox. Quando uma cotação de opção não estiver disponível, o relatório
+continua usando preço do ativo-base, strike e vencimento e não inventa o
+preço da opção.
+
+## WhatsApp Cloud API
+
+O envio do relatório pelo WhatsApp é opcional. Configure:
+
+- `WHATSAPP_ACCESS_TOKEN`;
+- `WHATSAPP_PHONE_NUMBER_ID`;
+- `WHATSAPP_TO`;
+- `WHATSAPP_TEMPLATE_NAME`;
+- `WHATSAPP_TEMPLATE_LANGUAGE` (fallback `pt_BR`);
+- `WHATSAPP_GRAPH_VERSION` (fallback `v24.0`).
+
+O template deve possuir dois parâmetros no corpo: data do relatório e resumo.
+Sem essas variáveis o relatório continua sendo persistido normalmente no
+sistema, apenas sem envio por WhatsApp.
