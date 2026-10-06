@@ -173,6 +173,86 @@ public sealed class AssistenteIaService
         }
     }
 
+    public async Task<int> ReenviarWhatsAppAsync(
+        Guid usuarioId,
+        DateTime dataLocal,
+        CancellationToken cancellationToken)
+    {
+        var usuario = await _context.Usuarios
+            .Include(x => x.Investidores)
+            .FirstOrDefaultAsync(
+                x => x.Id == usuarioId,
+                cancellationToken)
+            ?? throw new InvalidOperationException(
+                "Usuário não encontrado.");
+
+        if (usuario.Status != StatusUsuario.Ativo)
+            throw new InvalidOperationException(
+                "O usuário precisa estar ativo para receber o relatório.");
+
+        if (!usuario.ReceberRelatorioIa)
+            throw new InvalidOperationException(
+                "O recebimento do relatório IA está desativado para este usuário.");
+
+        if (string.IsNullOrWhiteSpace(usuario.WhatsApp))
+            throw new InvalidOperationException(
+                "O usuário não possui WhatsApp configurado.");
+
+        var data = dataLocal.Date;
+        var relatorios = new List<RelatorioDiarioIa>();
+
+        if (usuario.Perfil == PerfilUsuario.Admin)
+        {
+            var relatorio = await _context.RelatoriosDiariosIa
+                .AsNoTracking()
+                .FirstOrDefaultAsync(
+                    x => x.DataReferencia == data &&
+                         x.Escopo == "TODOS",
+                    cancellationToken);
+
+            if (relatorio is not null)
+                relatorios.Add(relatorio);
+        }
+        else
+        {
+            var investidoresIds = usuario.Investidores
+                .Select(x => x.InvestidorId)
+                .Distinct()
+                .ToArray();
+
+            if (investidoresIds.Length == 0)
+                throw new InvalidOperationException(
+                    "O usuário não possui investidores vinculados.");
+
+            relatorios = await _context.RelatoriosDiariosIa
+                .AsNoTracking()
+                .Where(x =>
+                    x.DataReferencia == data &&
+                    x.Escopo == "INVESTIDOR" &&
+                    x.InvestidorId.HasValue &&
+                    investidoresIds.Contains(x.InvestidorId.Value))
+                .OrderBy(x => x.InvestidorId)
+                .ToListAsync(cancellationToken);
+        }
+
+        if (relatorios.Count == 0)
+            throw new InvalidOperationException(
+                $"Não existe relatório salvo para {data:dd/MM/yyyy}. O reenvio não gera um novo relatório.");
+
+        foreach (var relatorio in relatorios)
+        {
+            await EnviarWhatsAppAsync(
+                relatorio,
+                usuario.WhatsApp,
+                cancellationToken);
+        }
+
+        usuario.RegistrarEnvioRelatorioIa(dataLocal);
+        await _context.SaveChangesAsync(cancellationToken);
+
+        return relatorios.Count;
+    }
+
     private static bool DeveEnviar(
         DateTime hoje,
         DateTime? ultimoEnvio,
