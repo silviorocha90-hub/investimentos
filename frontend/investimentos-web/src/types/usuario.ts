@@ -34,9 +34,6 @@ export interface UsuarioAdministracao {
   permissoes: string[]
   investidoresIds: string[]
   acessosInvestidores: AcessoInvestidor[]
-  whatsApp?: string | null
-  receberRelatorioIa: boolean
-  frequenciaRelatorioIa: 'DIARIO' | 'SEMANAL' | 'QUINZENAL' | 'MENSAL'
 }
 
 export interface AcessoInvestidor {
@@ -49,6 +46,9 @@ export interface AlterarAcessosUsuario {
   permissoes: PermissaoSistema[]
   investidoresIds: string[]
   acessosInvestidores: AcessoInvestidor[]
+  whatsApp?: string | null
+  receberRelatorioIa: boolean
+  frequenciaRelatorioIa: 'DIARIO' | 'SEMANAL' | 'QUINZENAL' | 'MENSAL'
 }
 
 export const permissoesVisualizacao:
