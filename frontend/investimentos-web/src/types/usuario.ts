@@ -23,6 +23,10 @@ export interface UsuarioAdministracao {
   email: string
   perfil: PerfilUsuario
   status: StatusUsuario
+  whatsApp?: string | null
+  receberRelatorioIa: boolean
+  frequenciaRelatorioIa: 'DIARIO' | 'SEMANAL' | 'QUINZENAL' | 'MENSAL'
+  ultimoEnvioRelatorioIa?: string | null
   dataCadastro: string
   dataAprovacao?: string | null
   aprovadoPorUsuarioId?: string | null
@@ -30,6 +34,9 @@ export interface UsuarioAdministracao {
   permissoes: string[]
   investidoresIds: string[]
   acessosInvestidores: AcessoInvestidor[]
+  whatsApp?: string | null
+  receberRelatorioIa: boolean
+  frequenciaRelatorioIa: 'DIARIO' | 'SEMANAL' | 'QUINZENAL' | 'MENSAL'
 }
 
 export interface AcessoInvestidor {
