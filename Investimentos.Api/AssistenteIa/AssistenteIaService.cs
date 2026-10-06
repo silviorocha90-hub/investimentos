@@ -209,7 +209,17 @@ public sealed class AssistenteIaService
                 cancellationToken);
 
         if (existente is not null && !substituir)
+        {
+            if (!string.IsNullOrWhiteSpace(destinatarioWhatsApp))
+            {
+                await EnviarWhatsAppAsync(
+                    existente,
+                    destinatarioWhatsApp,
+                    cancellationToken);
+            }
+
             return existente;
+        }
 
         var apiKey = _configuration["OPENAI_API_KEY"];
         if (string.IsNullOrWhiteSpace(apiKey))
@@ -438,20 +448,10 @@ public sealed class AssistenteIaService
 
         if (!string.IsNullOrWhiteSpace(destinatarioWhatsApp))
         {
-            try
-            {
-                await EnviarWhatsAppAsync(
-                    relatorio,
-                    destinatarioWhatsApp,
-                    cancellationToken);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(
-                    ex,
-                    "Falha ao enviar relatório IA via WhatsApp para o escopo {Escopo}.",
-                    escopo);
-            }
+            await EnviarWhatsAppAsync(
+                relatorio,
+                destinatarioWhatsApp,
+                cancellationToken);
         }
 
         return relatorio;
@@ -516,10 +516,17 @@ Sempre relacione a notícia à posição concreta informada.
         var graphVersion = _configuration["WHATSAPP_GRAPH_VERSION"]
             ?? "v24.0";
 
-        if (string.IsNullOrWhiteSpace(token) ||
-            string.IsNullOrWhiteSpace(phoneNumberId) ||
-            string.IsNullOrWhiteSpace(template))
-            return;
+        if (string.IsNullOrWhiteSpace(token))
+            throw new InvalidOperationException(
+                "WHATSAPP_ACCESS_TOKEN não configurado.");
+
+        if (string.IsNullOrWhiteSpace(phoneNumberId))
+            throw new InvalidOperationException(
+                "WHATSAPP_PHONE_NUMBER_ID não configurado.");
+
+        if (string.IsNullOrWhiteSpace(template))
+            throw new InvalidOperationException(
+                "WHATSAPP_TEMPLATE_NAME não configurado.");
 
         var resumo = relatorio.Conteudo;
         if (resumo.Length > 3000)
