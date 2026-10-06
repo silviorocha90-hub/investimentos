@@ -2335,3 +2335,15 @@ Regras:
   performance temporal;
 - não criar uma nova linha a cada dia: o mês corrente deve permanecer como uma
   única competência atualizável.
+
+
+### Painel — Evolução da Carteira
+
+O gráfico `Painel > Evolução da Carteira` deve usar o Histórico Patrimonial
+persistido como fonte. Antes de retornar `/api/dashboard/evolucao`, a competência
+mensal corrente deve ser sincronizada para todos os investidores, garantindo que
+o gráfico considere a fotografia patrimonial mais recente mesmo quando o usuário
+não abriu previamente a tela Administração.
+
+A competência anterior permanece congelada; somente a competência do mês corrente
+é atualizada.
