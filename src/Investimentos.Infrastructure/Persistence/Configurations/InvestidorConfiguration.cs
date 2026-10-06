@@ -26,6 +26,7 @@ namespace Investimentos.Infrastructure.Persistence.Configurations
 
             builder.Property(x => x.FrequenciaRelatorioIa)
                 .HasMaxLength(20)
+                .HasDefaultValue("DIARIO")
                 .IsRequired();
 
             builder.HasIndex(x => x.Nome)
