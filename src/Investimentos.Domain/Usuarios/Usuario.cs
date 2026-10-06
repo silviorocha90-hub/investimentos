@@ -31,7 +31,7 @@
 
         public DateTime? UltimoLogin { get; private set; }
 
-        public string? WhatsApp { get; private set; }
+        public string? TelegramChatId { get; private set; }
 
         public bool ReceberRelatorioIa { get; private set; }
 
@@ -159,27 +159,20 @@
         }
 
         public void ConfigurarRelatorioIa(
-            string? whatsApp,
+            string? telegramChatId,
             bool receberRelatorioIa,
             string? frequencia)
         {
-            var numero = new string(
-                (whatsApp ?? string.Empty)
-                    .Where(char.IsDigit)
-                    .ToArray());
+            var chatId = string.IsNullOrWhiteSpace(telegramChatId)
+                ? null
+                : telegramChatId.Trim();
 
-            if (receberRelatorioIa &&
-                string.IsNullOrWhiteSpace(numero))
+            if (chatId is not null &&
+                (chatId.Length > 30 ||
+                 !chatId.All(x => char.IsDigit(x) || x == '-')))
             {
                 throw new ArgumentException(
-                    "O WhatsApp é obrigatório para receber o relatório IA.");
-            }
-
-            if (!string.IsNullOrWhiteSpace(numero) &&
-                (numero.Length < 10 || numero.Length > 15))
-            {
-                throw new ArgumentException(
-                    "O WhatsApp deve possuir entre 10 e 15 dígitos, incluindo DDI e DDD.");
+                    "O Chat ID do Telegram deve conter apenas números e, quando aplicável, sinal negativo.");
             }
 
             var frequenciaNormalizada =
@@ -194,9 +187,7 @@
                     "Frequência de relatório IA inválida.");
             }
 
-            WhatsApp = string.IsNullOrWhiteSpace(numero)
-                ? null
-                : numero;
+            TelegramChatId = chatId;
             ReceberRelatorioIa = receberRelatorioIa;
             FrequenciaRelatorioIa = frequenciaNormalizada;
         }
