@@ -1779,3 +1779,42 @@
   top: 0 !important;
   z-index: 5 !important;
 }
+
+
+/* Administração > Opções — tipografia compacta para melhorar as colunas. */
+.admin-page .admin-standard-history .options-page-admin .options-table {
+  font-size: 0.70rem !important;
+}
+
+.admin-page .admin-standard-history .options-page-admin .options-table th {
+  height: 42px !important;
+  padding: 9px 6px !important;
+  font-size: 0.58rem !important;
+  line-height: 1.15 !important;
+}
+
+.admin-page .admin-standard-history .options-page-admin .options-table td {
+  height: 42px !important;
+  padding: 9px 6px !important;
+  font-size: 0.70rem !important;
+  line-height: 1.15 !important;
+}
+
+.admin-page .admin-standard-history .options-page-admin .options-table .ticker {
+  font-size: 0.70rem !important;
+}
+
+.admin-page .admin-standard-history .options-page-admin .options-table .option-type-chip,
+.admin-page .admin-standard-history .options-page-admin .options-table .option-status-chip {
+  min-height: 25px !important;
+  padding: 0 7px !important;
+  font-size: 0.60rem !important;
+  line-height: 25px !important;
+}
+
+.admin-page .admin-standard-history .options-page-admin .options-table .options-edit-button,
+.admin-page .admin-standard-history .options-page-admin .options-table .options-delete-button {
+  min-height: 27px !important;
+  padding: 0 8px !important;
+  font-size: 0.61rem !important;
+}
