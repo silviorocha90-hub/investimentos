@@ -878,17 +878,20 @@ export function UsuariosTab({
 
                               <button
                                 type="button"
-                                className="user-primary-action"
-                                disabled={
-                                  processando
-                                }
-                                onClick={() =>
-                                  abrirAcessos(
-                                    usuario,
-                                  )
-                                }
+                                className="user-secondary-action"
+                                disabled={processando}
+                                onClick={() => abrirAcessos(usuario)}
                               >
                                 Gerenciar acesso
+                              </button>
+
+                              <button
+                                type="button"
+                                className="user-primary-action"
+                                disabled={processando}
+                                onClick={() => abrirAcessos(usuario)}
+                              >
+                                Configurar relatório IA
                               </button>
                             </>
                           ) : null}
