@@ -119,6 +119,11 @@ export function InvestidoresTab({
   )
 
   const [
+    nomeInvestidor,
+    setNomeInvestidor,
+  ] = useState('')
+
+  const [
     saldoDisponivel,
     setSaldoDisponivel,
   ] = useState('')
@@ -173,12 +178,15 @@ export function InvestidoresTab({
     if (
       !investidorSelecionado
     ) {
+      setNomeInvestidor('')
       setSaldoDisponivel('')
       setWhatsApp('')
       setReceberRelatorioIa(false)
       setFrequenciaRelatorioIa('DIARIO')
       return
     }
+
+    setNomeInvestidor(investidorSelecionado.nome)
 
     setSaldoDisponivel(
       formatarValorParaEntrada(
@@ -194,8 +202,11 @@ export function InvestidoresTab({
     setErro(null)
   }, [
     investidorSelecionado?.id,
-    investidorSelecionado
-      ?.saldoDisponivel,
+    investidorSelecionado?.nome,
+    investidorSelecionado?.saldoDisponivel,
+    investidorSelecionado?.whatsApp,
+    investidorSelecionado?.receberRelatorioIa,
+    investidorSelecionado?.frequenciaRelatorioIa,
   ])
 
   async function salvarDados(
@@ -233,7 +244,7 @@ export function InvestidoresTab({
         investidorSelecionado.id,
         {
           nome:
-            investidorSelecionado.nome,
+            nomeInvestidor.trim(),
 
           saldoDisponivel:
             saldo,
@@ -554,9 +565,14 @@ export function InvestidoresTab({
                 <input
                   type="text"
                   value={
-                    investidorSelecionado.nome
+                    nomeInvestidor
                   }
-                  readOnly
+                  onChange={(event) =>
+                    setNomeInvestidor(
+                      event.target.value,
+                    )
+                  }
+                  required
                 />
               </label>
 
@@ -589,13 +605,18 @@ export function InvestidoresTab({
               </label>
 
               <label>
-                <span>WhatsApp</span>
+                <span>WhatsApp para relatórios</span>
                 <input
                   type="tel"
                   value={whatsApp}
                   placeholder="5511999999999"
+                  inputMode="tel"
+                  autoComplete="tel"
                   onChange={(event) => setWhatsApp(event.target.value)}
                 />
+                <small>
+                  Informe DDI + DDD + número. Ex.: 5511999999999.
+                </small>
               </label>
 
               <label>
@@ -610,7 +631,7 @@ export function InvestidoresTab({
               </label>
 
               <label>
-                <span>Frequência</span>
+                <span>Frequência do relatório</span>
                 <select
                   value={frequenciaRelatorioIa}
                   disabled={!receberRelatorioIa}
