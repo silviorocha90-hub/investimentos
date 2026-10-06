@@ -1818,3 +1818,105 @@
   padding: 0 8px !important;
   font-size: 0.61rem !important;
 }
+
+
+/* =========================================================
+   ADMINISTRAÇÃO — ESCALA COMPACTA ÚNICA
+   Padroniza todas as tabelas administrativas com a escala
+   aprovada em Administração > Opções.
+   ========================================================= */
+
+.admin-page table {
+  font-size: 0.70rem !important;
+}
+
+.admin-page table th {
+  height: 42px !important;
+  padding: 9px 6px !important;
+  font-size: 0.58rem !important;
+  line-height: 1.15 !important;
+}
+
+.admin-page table td {
+  height: 42px !important;
+  padding: 9px 6px !important;
+  font-size: 0.70rem !important;
+  line-height: 1.15 !important;
+}
+
+.admin-page table .ticker,
+.admin-page table strong,
+.admin-page table b {
+  font-size: 0.70rem !important;
+}
+
+.admin-page table button,
+.admin-page table .admin-action-button,
+.admin-page table .admin-row-action,
+.admin-page table .operations-edit-button,
+.admin-page table .operations-delete-button,
+.admin-page table .options-edit-button,
+.admin-page table .options-delete-button,
+.admin-page table .admin-movement-edit,
+.admin-page table .admin-movement-delete {
+  min-height: 27px !important;
+  padding: 0 8px !important;
+  font-size: 0.61rem !important;
+  line-height: 1.1 !important;
+}
+
+.admin-page table .option-type-chip,
+.admin-page table .option-status-chip,
+.admin-page table .movement-entry,
+.admin-page table .movement-exit,
+.admin-page table [class*="status"],
+.admin-page table [class*="chip"] {
+  min-height: 25px !important;
+  padding: 0 7px !important;
+  font-size: 0.60rem !important;
+  line-height: 25px !important;
+}
+
+/* Mantém a regra mais específica de Opções alinhada ao padrão global. */
+.admin-page .admin-standard-history .options-page-admin .options-table,
+.admin-page .admin-standard-history .operations-table,
+.admin-page .admin-standard-history .options-table,
+.admin-page .admin-movement-table,
+.admin-page .proventos-table,
+.admin-page .fiscal-participation-table {
+  font-size: 0.70rem !important;
+}
+
+.admin-page .admin-standard-history .operations-table th,
+.admin-page .admin-standard-history .operations-table td,
+.admin-page .admin-standard-history .options-table th,
+.admin-page .admin-standard-history .options-table td,
+.admin-page .admin-movement-table th,
+.admin-page .admin-movement-table td,
+.admin-page .proventos-table th,
+.admin-page .proventos-table td,
+.admin-page .fiscal-participation-table th,
+.admin-page .fiscal-participation-table td {
+  padding-left: 6px !important;
+  padding-right: 6px !important;
+}
+
+.admin-page .admin-standard-history .operations-table th,
+.admin-page .admin-standard-history .options-table th,
+.admin-page .admin-movement-table th,
+.admin-page .proventos-table th,
+.admin-page .fiscal-participation-table th {
+  height: 42px !important;
+  font-size: 0.58rem !important;
+  line-height: 1.15 !important;
+}
+
+.admin-page .admin-standard-history .operations-table td,
+.admin-page .admin-standard-history .options-table td,
+.admin-page .admin-movement-table td,
+.admin-page .proventos-table td,
+.admin-page .fiscal-participation-table td {
+  height: 42px !important;
+  font-size: 0.70rem !important;
+  line-height: 1.15 !important;
+}
