@@ -125,6 +125,9 @@ namespace Investimentos.Application.Usuarios.Administracao
                 investidoresIds,
             IReadOnlyCollection<AcessoInvestidorDto>?
                 acessosInvestidores,
+            string? whatsApp,
+            bool receberRelatorioIa,
+            string? frequenciaRelatorioIa,
             CancellationToken cancellationToken = default)
         {
             var usuario =
@@ -150,6 +153,11 @@ namespace Investimentos.Application.Usuarios.Administracao
 
             usuario.AlterarPerfil(
                 perfil);
+
+            usuario.ConfigurarRelatorioIa(
+                perfil == PerfilUsuario.Admin ? whatsApp : null,
+                perfil == PerfilUsuario.Admin && receberRelatorioIa,
+                frequenciaRelatorioIa);
 
             if (perfil ==
                 PerfilUsuario.Admin)
@@ -272,6 +280,10 @@ namespace Investimentos.Application.Usuarios.Administracao
                 usuario.Email,
                 usuario.Perfil.ToString(),
                 usuario.Status.ToString(),
+                usuario.WhatsApp,
+                usuario.ReceberRelatorioIa,
+                usuario.FrequenciaRelatorioIa,
+                ComoUtc(usuario.UltimoEnvioRelatorioIa),
 
                 /*
                  * Datas persistidas no banco estão
@@ -358,6 +370,10 @@ namespace Investimentos.Application.Usuarios.Administracao
         string Email,
         string Perfil,
         string Status,
+        string? WhatsApp,
+        bool ReceberRelatorioIa,
+        string FrequenciaRelatorioIa,
+        DateTime? UltimoEnvioRelatorioIa,
         DateTime DataCadastro,
         DateTime? DataAprovacao,
         Guid? AprovadoPorUsuarioId,
