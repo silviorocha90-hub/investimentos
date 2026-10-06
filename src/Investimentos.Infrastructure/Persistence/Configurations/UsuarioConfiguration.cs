@@ -46,6 +46,19 @@ namespace Investimentos.Infrastructure.Persistence.Configurations
 
             builder.Property(x => x.UltimoLogin);
 
+            builder.Property(x => x.WhatsApp)
+                .HasMaxLength(15);
+
+            builder.Property(x => x.ReceberRelatorioIa)
+                .IsRequired();
+
+            builder.Property(x => x.FrequenciaRelatorioIa)
+                .HasMaxLength(20)
+                .HasDefaultValue("DIARIO")
+                .IsRequired();
+
+            builder.Property(x => x.UltimoEnvioRelatorioIa);
+
             builder.HasIndex(x => x.Email)
                 .IsUnique();
 
