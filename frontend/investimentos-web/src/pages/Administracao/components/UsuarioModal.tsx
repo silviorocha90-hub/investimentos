@@ -32,7 +32,7 @@ export interface FormularioUsuario {
     investidorId: string
     permissoes: PermissaoSistema[]
   }>
-  whatsApp: string
+  telegramChatId: string
   receberRelatorioIa: boolean
   frequenciaRelatorioIa: 'DIARIO' | 'SEMANAL' | 'QUINZENAL' | 'MENSAL'
 }
@@ -333,17 +333,16 @@ export function UsuarioModal({
             </header>
 
             <label className="user-profile-field">
-              <span>WhatsApp para relatórios</span>
+              <span>Chat ID do Telegram</span>
               <input
-                type="tel"
-                inputMode="tel"
-                autoComplete="tel"
-                placeholder="5511999999999"
-                value={formulario.whatsApp}
+                type="text"
+                inputMode="numeric"
+                placeholder="Ex.: 123456789"
+                value={formulario.telegramChatId}
                 disabled={salvando}
-                onChange={(event) => setFormulario((atual) => ({ ...atual, whatsApp: event.target.value }))}
+                onChange={(event) => setFormulario((atual) => ({ ...atual, telegramChatId: event.target.value }))}
               />
-              <small>Informe DDI + DDD + número. Ex.: 5511999999999.</small>
+              <small>O e-mail do usuário já será usado automaticamente. Informe o Chat ID para receber também pelo Telegram.</small>
             </label>
 
             <label className="user-profile-field">
@@ -354,7 +353,7 @@ export function UsuarioModal({
                 onChange={(event) => setFormulario((atual) => ({ ...atual, receberRelatorioIa: event.target.value === 'SIM' }))}
               >
                 <option value="NAO">Não receber</option>
-                <option value="SIM">Receber pelo WhatsApp</option>
+                <option value="SIM">Receber por e-mail e Telegram</option>
               </select>
             </label>
 
