@@ -10,11 +10,6 @@ interface Props {
   totalDisponivel: number
 }
 
-const quantidade =
-  new Intl.NumberFormat('pt-BR', {
-    maximumFractionDigits: 0,
-  })
-
 const percentual =
   new Intl.NumberFormat('pt-BR', {
     minimumFractionDigits: 2,
@@ -39,11 +34,17 @@ export function OpcoesDashboard({
       0,
     )
 
-  const acoesCall =
+  const capitalCall =
     ativas.reduce(
       (total, opcao) =>
         total +
-        opcao.acoesComprometidasCall,
+        (
+          opcao.acoesComprometidasCall *
+          (
+            opcao.valorAcaoAtual ??
+            opcao.strike
+          )
+        ),
       0,
     )
 
@@ -80,10 +81,10 @@ export function OpcoesDashboard({
         </article>
 
         <article className="options-summary-card">
-          <span>Ações em CALL</span>
+          <span>Capital em CALL</span>
           <strong>
-            {quantidade.format(
-              acoesCall,
+            {formatarMoeda(
+              capitalCall,
             )}
           </strong>
         </article>
