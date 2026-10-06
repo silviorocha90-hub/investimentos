@@ -2395,3 +2395,35 @@ Configuração por ambiente:
 A aplicação possui Dockerfiles para API e frontend e instruções em
 `DEPLOYMENT.md`, permitindo execução em nuvem sem depender do computador
 local.
+
+
+### Assistente IA — atualização automática de mercado e WhatsApp (06/10/2026)
+
+Antes de gerar o relatório, o Assistente IA identifica os ativos realmente
+presentes nas carteiras e nas opções ativas e tenta atualizar suas cotações
+pela brapi. Após persistir as cotações disponíveis, os dashboards são
+recalculados para que patrimônio, valor atual e distância do strike usem os
+dados mais recentes.
+
+Para opções ABERTA/EXECUTADA, o serviço tenta obter também a última cotação
+EOD da série. Quando disponível e a natureza é VENDA, o contexto da IA recebe
+custo estimado de recompra, ganho estimado de recompra e percentual do prêmio
+capturado. Cotação indisponível nunca deve ser inventada.
+
+A semântica existente de opções é preservada: EXECUTADA continua significando
+opção registrada/ativa no domínio. Exercício/atribuição da ação-base só é
+tratado como confirmado quando ValorExecucao > 0.
+
+Integração de mercado:
+
+- `Investimentos.Api/AssistenteIa/MercadoBrapiService.cs`;
+- `BRAPI_TOKEN` opcional, porém necessário para cobertura ampla;
+- opções fora do sandbox dependem do acesso contratado na brapi.
+
+Entrega:
+
+- relatório completo permanece persistido no sistema;
+- Telegram continua opcional por compatibilidade;
+- WhatsApp Cloud API passa a ser suportado por template aprovado;
+- sem credenciais de mensageria, a geração/persistência do relatório continua
+  funcionando.
