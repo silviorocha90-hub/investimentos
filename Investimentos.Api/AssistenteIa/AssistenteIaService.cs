@@ -14,17 +14,20 @@ public sealed class AssistenteIaService
     private readonly ConsultarDashboardHandler _dashboardHandler;
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly IConfiguration _configuration;
+    private readonly MercadoBrapiService _mercadoBrapiService;
 
     public AssistenteIaService(
         InvestimentosDbContext context,
         ConsultarDashboardHandler dashboardHandler,
         IHttpClientFactory httpClientFactory,
-        IConfiguration configuration)
+        IConfiguration configuration,
+        MercadoBrapiService mercadoBrapiService)
     {
         _context = context;
         _dashboardHandler = dashboardHandler;
         _httpClientFactory = httpClientFactory;
         _configuration = configuration;
+        _mercadoBrapiService = mercadoBrapiService;
     }
 
     public async Task<IReadOnlyList<RelatorioDiarioIa>> ListarAsync(
@@ -83,6 +86,54 @@ public sealed class AssistenteIaService
                 .Select(x => new { x.Id, x.Nome })
                 .ToListAsync(cancellationToken);
 
+        /*
+         * Primeiro lemos a carteira apenas para descobrir quais ativos e
+         * opções precisam de cotação. Depois da atualização de mercado,
+         * reconstruímos os dashboards para que patrimônio, distância do
+         * strike e exposição usem os preços recém-obtidos.
+         */
+        var tickersAtivos =
+            new HashSet<string>(
+                StringComparer.OrdinalIgnoreCase);
+        var opcoesMercado =
+            new Dictionary<string, OpcaoMercadoConsulta>(
+                StringComparer.OrdinalIgnoreCase);
+
+        foreach (var investidor in investidores)
+        {
+            var dashboard =
+                await _dashboardHandler.HandleAsync(
+                    investidor.Id,
+                    cancellationToken);
+
+            foreach (var posicao in dashboard.Posicoes
+                         .Where(x => x.Quantidade > 0))
+            {
+                tickersAtivos.Add(posicao.Ticker);
+            }
+
+            foreach (var opcao in dashboard.Opcoes
+                         .Where(x =>
+                             x.Situacao == "ABERTA" ||
+                             x.Situacao == "EXECUTADA"))
+            {
+                tickersAtivos.Add(opcao.TickerAtivo);
+
+                opcoesMercado[opcao.TickerOpcao] =
+                    new OpcaoMercadoConsulta(
+                        opcao.TickerOpcao,
+                        opcao.Vencimento,
+                        opcao.Strike);
+            }
+        }
+
+        var mercado =
+            await _mercadoBrapiService.AtualizarAsync(
+                tickersAtivos,
+                opcoesMercado.Values,
+                dataLocal,
+                cancellationToken);
+
         var carteiras = new List<object>();
 
         foreach (var investidor in investidores)
@@ -105,26 +156,86 @@ public sealed class AssistenteIaService
                         x.Quantidade,
                         x.PrecoMedio,
                         x.ValorAtual,
-                        x.Valorizacao
+                        x.Valorizacao,
+                        CotacaoAtualizada =
+                            mercado.Ativos.TryGetValue(
+                                x.Ticker,
+                                out var cotacaoAtivo)
+                                ? cotacaoAtivo.Preco
+                                : (decimal?)null,
+                        VariacaoDiaPercentual =
+                            mercado.Ativos.TryGetValue(
+                                x.Ticker,
+                                out var variacaoAtivo)
+                                ? variacaoAtivo.VariacaoPercentual
+                                : null
                     }),
                 Opcoes = dashboard.Opcoes
                     .Where(x =>
                         x.Situacao == "ABERTA" ||
                         x.Situacao == "EXECUTADA")
-                    .Select(x => new
+                    .Select(x =>
                     {
-                        x.TickerAtivo,
-                        x.TickerOpcao,
-                        x.TipoOpcao,
-                        x.Natureza,
-                        x.Strike,
-                        x.Quantidade,
-                        x.PremioTotal,
-                        x.Vencimento,
-                        x.Situacao,
-                        x.ValorAcaoAtual,
-                        x.DistanciaStrikePercentual,
-                        x.EmRiscoExercicio
+                        mercado.Opcoes.TryGetValue(
+                            x.TickerOpcao,
+                            out var cotacaoOpcao);
+
+                        decimal? custoRecompra = null;
+                        decimal? ganhoRecompra = null;
+                        decimal? percentualPremioCapturado = null;
+
+                        if (cotacaoOpcao is not null &&
+                            x.Natureza == "VENDA")
+                        {
+                            custoRecompra =
+                                cotacaoOpcao.Preco *
+                                x.Quantidade;
+
+                            ganhoRecompra =
+                                x.PremioTotal -
+                                custoRecompra.Value -
+                                x.Taxas;
+
+                            if (x.PremioTotal > 0)
+                            {
+                                percentualPremioCapturado =
+                                    ganhoRecompra.Value /
+                                    x.PremioTotal *
+                                    100m;
+                            }
+                        }
+
+                        return new
+                        {
+                            x.TickerAtivo,
+                            x.TickerOpcao,
+                            x.TipoOpcao,
+                            x.Natureza,
+                            x.Strike,
+                            x.Quantidade,
+                            x.PremioUnitario,
+                            x.PremioTotal,
+                            x.Taxas,
+                            x.Vencimento,
+                            x.Situacao,
+                            x.ValorExecucao,
+                            ExercicioOuAtribuicaoConfirmado =
+                                x.ValorExecucao.HasValue &&
+                                x.ValorExecucao.Value > 0,
+                            x.ValorAcaoAtual,
+                            x.DistanciaStrikePercentual,
+                            x.EmRiscoExercicio,
+                            CotacaoOpcao =
+                                cotacaoOpcao?.Preco,
+                            DataCotacaoOpcao =
+                                cotacaoOpcao?.DataReferencia,
+                            CustoRecompraEstimado =
+                                custoRecompra,
+                            GanhoRecompraEstimado =
+                                ganhoRecompra,
+                            PercentualPremioCapturado =
+                                percentualPremioCapturado
+                        };
                     })
             });
         }
@@ -229,6 +340,10 @@ Sempre relacione a notícia à posição concreta informada.
             relatorio,
             cancellationToken);
 
+        await EnviarWhatsAppAsync(
+            relatorio,
+            cancellationToken);
+
         return relatorio;
     }
 
@@ -271,6 +386,109 @@ Sempre relacione a notícia à posição concreta informada.
         return string.Join(
             Environment.NewLine,
             textos);
+    }
+
+
+    private async Task EnviarWhatsAppAsync(
+        RelatorioDiarioIa relatorio,
+        CancellationToken cancellationToken)
+    {
+        var token =
+            _configuration["WHATSAPP_ACCESS_TOKEN"];
+        var phoneNumberId =
+            _configuration["WHATSAPP_PHONE_NUMBER_ID"];
+        var destinatario =
+            _configuration["WHATSAPP_TO"];
+        var template =
+            _configuration["WHATSAPP_TEMPLATE_NAME"];
+        var idioma =
+            _configuration["WHATSAPP_TEMPLATE_LANGUAGE"]
+            ?? "pt_BR";
+        var graphVersion =
+            _configuration["WHATSAPP_GRAPH_VERSION"]
+            ?? "v24.0";
+
+        if (string.IsNullOrWhiteSpace(token) ||
+            string.IsNullOrWhiteSpace(phoneNumberId) ||
+            string.IsNullOrWhiteSpace(destinatario) ||
+            string.IsNullOrWhiteSpace(template))
+            return;
+
+        var resumo = relatorio.Conteudo;
+        if (resumo.Length > 3000)
+            resumo = resumo[..3000];
+
+        var payload =
+            JsonSerializer.Serialize(new
+            {
+                messaging_product = "whatsapp",
+                to = destinatario,
+                type = "template",
+                template = new
+                {
+                    name = template,
+                    language = new
+                    {
+                        code = idioma
+                    },
+                    components = new object[]
+                    {
+                        new
+                        {
+                            type = "body",
+                            parameters = new object[]
+                            {
+                                new
+                                {
+                                    type = "text",
+                                    text =
+                                        relatorio.DataReferencia
+                                            .ToString("dd/MM/yyyy")
+                                },
+                                new
+                                {
+                                    type = "text",
+                                    text = resumo
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+        var client =
+            _httpClientFactory.CreateClient();
+
+        using var request =
+            new HttpRequestMessage(
+                HttpMethod.Post,
+                $"https://graph.facebook.com/{graphVersion}/{phoneNumberId}/messages");
+
+        request.Headers.Authorization =
+            new AuthenticationHeaderValue(
+                "Bearer",
+                token);
+
+        request.Content =
+            new StringContent(
+                payload,
+                Encoding.UTF8,
+                "application/json");
+
+        using var response =
+            await client.SendAsync(
+                request,
+                cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            var erro =
+                await response.Content.ReadAsStringAsync(
+                    cancellationToken);
+
+            throw new InvalidOperationException(
+                $"WhatsApp retornou {(int)response.StatusCode}: {erro}");
+        }
     }
 
     private async Task EnviarTelegramAsync(
