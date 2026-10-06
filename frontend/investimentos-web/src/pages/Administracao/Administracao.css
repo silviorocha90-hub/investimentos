@@ -1996,3 +1996,105 @@
   width: 100% !important;
   visibility: visible !important;
 }
+
+
+/* =========================================================
+   ADMINISTRAÇÃO — 10 REGISTROS VISÍVEIS POR PÁGINA
+   Mesmo padrão aprovado em Opções para Operações,
+   Proventos e Entradas / Saídas.
+   ========================================================= */
+
+/* Operações */
+.admin-page .admin-standard-history .portfolio-operations {
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+.admin-page .admin-standard-history .operations-table-wrap {
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  overflow-x: hidden !important;
+  overflow-y: visible !important;
+}
+
+.admin-page .admin-standard-history .operations-table thead tr,
+.admin-page .admin-standard-history .operations-table th,
+.admin-page .admin-standard-history .operations-table tbody tr,
+.admin-page .admin-standard-history .operations-table td {
+  height: 38px !important;
+}
+
+.admin-page .admin-standard-history .operations-table th,
+.admin-page .admin-standard-history .operations-table td {
+  padding-top: 7px !important;
+  padding-bottom: 7px !important;
+}
+
+.admin-page .admin-standard-history .operations-pagination {
+  position: static !important;
+  display: flex !important;
+  width: 100% !important;
+  visibility: visible !important;
+}
+
+/* Proventos */
+.admin-page .proventos-table-wrap {
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  overflow-x: hidden !important;
+  overflow-y: visible !important;
+}
+
+.admin-page .proventos-table thead tr,
+.admin-page .proventos-table th,
+.admin-page .proventos-table tbody tr,
+.admin-page .proventos-table td {
+  height: 38px !important;
+}
+
+.admin-page .proventos-table th,
+.admin-page .proventos-table td {
+  padding-top: 7px !important;
+  padding-bottom: 7px !important;
+}
+
+/* Entradas / Saídas */
+.admin-page .admin-panel:has(.admin-movement-table) {
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+.admin-page .admin-table-wrap:has(.admin-movement-table) {
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  overflow-x: hidden !important;
+  overflow-y: visible !important;
+}
+
+.admin-page .admin-movement-table thead tr,
+.admin-page .admin-movement-table th,
+.admin-page .admin-movement-table tbody tr,
+.admin-page .admin-movement-table td {
+  height: 38px !important;
+}
+
+.admin-page .admin-movement-table th,
+.admin-page .admin-movement-table td {
+  padding-top: 7px !important;
+  padding-bottom: 7px !important;
+}
+
+/* Paginação comum das tabelas administrativas */
+.admin-page .admin-table-pagination,
+.admin-page .proventos-pagination {
+  position: static !important;
+  width: 100% !important;
+  visibility: visible !important;
+}
