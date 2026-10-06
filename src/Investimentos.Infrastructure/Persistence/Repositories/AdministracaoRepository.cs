@@ -1,5 +1,6 @@
 ﻿using Investimentos.Application.Administracao;
 using Investimentos.Application.Carteira.ConsultarCarteira;
+using Investimentos.Application.Dashboard;
 using Investimentos.Domain.Entities;
 using Investimentos.Domain.ValueObjects;
 using Microsoft.EntityFrameworkCore;
@@ -11,14 +12,19 @@ namespace Investimentos.Infrastructure.Persistence.Repositories
         private readonly InvestimentosDbContext _context;
         private readonly CalcularCarteiraService
             _calcularCarteiraService;
+        private readonly ConsultarDashboardHandler
+            _consultarDashboardHandler;
 
         public AdministracaoRepository(
             InvestimentosDbContext context,
-            CalcularCarteiraService calcularCarteiraService)
+            CalcularCarteiraService calcularCarteiraService,
+            ConsultarDashboardHandler consultarDashboardHandler)
         {
             _context = context;
             _calcularCarteiraService =
                 calcularCarteiraService;
+            _consultarDashboardHandler =
+                consultarDashboardHandler;
         }
 
         public async Task<AdministracaoDto> ObterAsync(
@@ -136,6 +142,78 @@ namespace Investimentos.Infrastructure.Persistence.Repositories
                     .OrderByDescending(
                         x => x.DataReferencia)
                     .ToListAsync(cancellationToken);
+
+            /*
+             * HISTÓRICO PATRIMONIAL MENSAL AUTOMÁTICO
+             *
+             * Existe somente uma competência corrente
+             * por investidor. Enquanto o mês estiver
+             * aberto, o registro é atualizado com a
+             * fotografia patrimonial do dia.
+             *
+             * Na primeira atualização de um novo mês,
+             * o registro do mês anterior permanece
+             * congelado e uma nova competência é criada.
+             */
+            var hoje = DateTime.Today;
+            var inicioMes =
+                new DateTime(
+                    hoje.Year,
+                    hoje.Month,
+                    1);
+            var inicioProximoMes =
+                inicioMes.AddMonths(1);
+
+            foreach (var investidor in investidoresBanco)
+            {
+                var dashboardInvestidor =
+                    await _consultarDashboardHandler
+                        .HandleAsync(
+                            investidor.Id,
+                            cancellationToken);
+
+                var historicoMesAtual =
+                    await _context.HistoricosPatrimonio
+                        .Include(x => x.Investidor)
+                        .Where(x =>
+                            x.InvestidorId == investidor.Id &&
+                            x.DataReferencia >= inicioMes &&
+                            x.DataReferencia < inicioProximoMes)
+                        .OrderByDescending(
+                            x => x.DataReferencia)
+                        .FirstOrDefaultAsync(
+                            cancellationToken);
+
+                if (historicoMesAtual is null)
+                {
+                    var investidorPersistido =
+                        await _context.Investidores
+                            .FirstAsync(
+                                x =>
+                                    x.Id ==
+                                    investidor.Id,
+                                cancellationToken);
+
+                    await _context.HistoricosPatrimonio
+                        .AddAsync(
+                            new HistoricoPatrimonio(
+                                investidorPersistido,
+                                hoje,
+                                dashboardInvestidor
+                                    .PatrimonioEstimado),
+                            cancellationToken);
+                }
+                else
+                {
+                    historicoMesAtual.Atualizar(
+                        hoje,
+                        dashboardInvestidor
+                            .PatrimonioEstimado);
+                }
+            }
+
+            await _context.SaveChangesAsync(
+                cancellationToken);
 
             var historicosBanco =
                 await _context.HistoricosPatrimonio
