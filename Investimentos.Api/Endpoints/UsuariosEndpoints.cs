@@ -224,7 +224,7 @@ namespace Investimentos.Api.Endpoints
                                 p != PermissaoSistema.Operacoes)
                             .ToArray()))
                     .ToArray(),
-                request.WhatsApp,
+                request.TelegramChatId,
                 request.ReceberRelatorioIa,
                 request.FrequenciaRelatorioIa,
                 cancellationToken);
@@ -239,7 +239,7 @@ namespace Investimentos.Api.Endpoints
                 CancellationToken cancellationToken)
         {
             var quantidade =
-                await service.ReenviarWhatsAppAsync(
+                await service.ReenviarRelatorioAsync(
                     id,
                     AssistenteIaWorker.ObterAgoraSaoPaulo(),
                     cancellationToken);
@@ -250,8 +250,8 @@ namespace Investimentos.Api.Endpoints
                     quantidade,
                     mensagem =
                         quantidade == 1
-                            ? "Relatório reenviado pelo WhatsApp."
-                            : $"{quantidade} relatórios reenviados pelo WhatsApp."
+                            ? "Relatório reenviado por e-mail e Telegram."
+                            : $"{quantidade} relatórios reenviados por e-mail e Telegram."
                 });
         }
 
@@ -283,7 +283,7 @@ namespace Investimentos.Api.Endpoints
             InvestidoresIds,
         IReadOnlyCollection<AcessoInvestidorRequest>?
             AcessosInvestidores,
-        string? WhatsApp,
+        string? TelegramChatId,
         bool ReceberRelatorioIa,
         string? FrequenciaRelatorioIa);
 
