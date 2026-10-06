@@ -88,6 +88,7 @@ builder.Services
 builder.Services.AddAuthorization();
 builder.Services.AddHttpClient();
 builder.Services.AddScoped<AssistenteIaService>();
+builder.Services.AddScoped<MercadoBrapiService>();
 builder.Services.AddHostedService<AssistenteIaWorker>();
 
 builder.Services.AddScoped<CadastrarInvestidorHandler>();
