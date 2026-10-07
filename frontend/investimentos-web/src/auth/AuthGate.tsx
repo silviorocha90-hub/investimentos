@@ -1,48 +1,20 @@
-import {
-  useState,
-} from 'react'
-
-import App from '../App'
+ import App from '../App'
 
 import {
   LoginView,
 } from '../pages/Login/LoginView'
 
-import {
-  CadastroView,
-} from '../pages/Cadastro/CadastroView'
-
-import {
+ import {
   useAuth,
 } from './AuthContext'
 
 import './auth.css'
 
-type TelaAutenticacao =
-  | 'login'
-  | 'cadastro'
-
-export function AuthGate() {
+ export function AuthGate() {
   const {
     usuario,
     carregando,
   } = useAuth()
-
-  const [
-    tela,
-    setTela,
-  ] =
-    useState<TelaAutenticacao>(
-      'login',
-    )
-
-  const [
-    mensagem,
-    setMensagem,
-  ] =
-    useState<string | null>(
-      null,
-    )
 
   if (carregando) {
     return (
@@ -60,8 +32,7 @@ export function AuthGate() {
     return <App />
   }
 
-  if (tela === 'cadastro') {
-    return (
+  return (
       <CadastroView
         onVoltar={() => {
           setMensagem(null)
@@ -83,12 +54,7 @@ export function AuthGate() {
 
   return (
     <LoginView
-      mensagem={mensagem}
-
-      onCriarConta={() => {
-        setMensagem(null)
-        setTela('cadastro')
-      }}
+      mensagem={null}
     />
   )
 }
