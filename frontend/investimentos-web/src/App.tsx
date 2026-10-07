@@ -1021,19 +1021,6 @@ function App() {
             alt="Aportiva"
           />
 
-          <div className="marca-info">
-            <strong>
-              {usuario?.nome ??
-                'Aportiva'}
-            </strong>
-
-            <span>
-              {usuario?.perfil ===
-              'Admin'
-                ? 'Administrador'
-                : 'Dashboard de Carteira'}
-            </span>
-          </div>
         </div>
 
         <nav className="menu">
@@ -1229,17 +1216,14 @@ function App() {
         </nav>
 
         <div className="sidebar-rodape">
-          <span>
-            {
-              dashboardSnapshot
-                .referencia
-            }
+          <span className="sidebar-usuario">
+            {usuario?.nome ?? 'Aportiva'}
           </span>
 
-          <small>
-            {modoSnapshot
-              ? 'Snapshot local'
-              : 'API conectada'}
+          <small className="sidebar-perfil">
+            {usuario?.perfil === 'Admin'
+              ? 'Administrador'
+              : 'Investidor'}
           </small>
         </div>
       </aside>
