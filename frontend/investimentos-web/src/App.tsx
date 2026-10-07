@@ -973,17 +973,6 @@ function App() {
     await atualizarTudo()
   }
 
-  const modoSnapshot =
-    !apiDisponivel ||
-    todosInvestidores.length ===
-      0 ||
-    (
-      possuiPermissao(
-        'Dashboard',
-      ) &&
-      dashboard === null
-    )
-
   if (
     carregandoInvestidores
   ) {
