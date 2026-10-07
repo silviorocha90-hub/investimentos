@@ -134,11 +134,14 @@ export function LoginView({
 
         <div className="auth-login-panel">
           <div className="auth-brand auth-brand-login auth-brand-logo-only">
-            <img
-              className="auth-login-mark"
-              src="/aportiva-logo.svg"
-              alt="Aportiva — Gestão de Carteira"
-            />
+            <picture>
+              <source srcSet="/aportiva-hero.png" type="image/png" />
+              <img
+                className="auth-login-mark"
+                src="/aportiva-logo.svg"
+                alt="Aportiva — Gestão de Carteira"
+              />
+            </picture>
           </div>
 
           <div className="auth-heading">
