@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title">
+  <title id="title">Aportiva</title>
+  <defs>
+    <linearGradient id="metal" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset=".48" stop-color="#dbeafe"/>
+      <stop offset="1" stop-color="#64748b"/>
+    </linearGradient>
+    <linearGradient id="blue" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0" stop-color="#1d4ed8"/>
+      <stop offset=".55" stop-color="#38bdf8"/>
+      <stop offset="1" stop-color="#7dd3fc"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="104" fill="#071426"/>
+  <path d="M105 365 230 105h57l122 260h-74l-77-171-78 171z" fill="url(#metal)"/>
+  <path d="M105 367c72-10 143-43 201-88 34-26 62-57 83-91l-6 53 49-70-83-9 34 22c-29 38-63 69-102 95-51 34-110 58-176 70z" fill="url(#blue)"/>
+  <g fill="url(#blue)">
+    <rect x="208" y="310" width="31" height="55" rx="3"/>
+    <rect x="250" y="282" width="31" height="83" rx="3"/>
+    <rect x="292" y="250" width="31" height="115" rx="3"/>
+  </g>
+</svg>
