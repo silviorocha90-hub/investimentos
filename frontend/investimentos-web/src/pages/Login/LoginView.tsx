@@ -8,12 +8,10 @@ import {
 
 interface LoginViewProps {
   mensagem: string | null
-  onCriarConta: () => void
 }
 
 export function LoginView({
   mensagem,
-  onCriarConta,
 }: LoginViewProps) {
   const {
     login,
@@ -118,10 +116,14 @@ export function LoginView({
             </button>
           </form>
 
-          <div className="auth-links">
-            <button type="button" onClick={onCriarConta}>
-              Criar uma conta
-            </button>
+          <div className="auth-registration-closed">
+            <strong>Acesso restrito</strong>
+            <span>
+              A Aportiva está em fase de testes. Novos cadastros estão temporariamente indisponíveis.
+            </span>
+          </div>
+
+          <div className="auth-links auth-links-single">
             <button
               type="button"
               className="auth-forgot"
