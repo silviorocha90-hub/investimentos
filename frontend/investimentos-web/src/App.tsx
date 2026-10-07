@@ -120,7 +120,7 @@ const menuPrincipal:
     },
     {
       tela: 'assistente-ia',
-      permissao: 'Dashboard',
+      permissao: 'AssistenteIa',
       titulo: 'Assistente IA',
       icone: '✦',
     },
@@ -1370,7 +1370,9 @@ function App() {
         permissaoNoInvestidor(
           'Dashboard',
         ) ? (
-          <AssistenteIaView />
+          <AssistenteIaView
+            podeGerar={usuario?.perfil === 'Admin'}
+          />
         ) : null}
 
         {telaAtual ===
