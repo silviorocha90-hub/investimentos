@@ -72,169 +72,72 @@ export function LoginView({
 
   return (
     <main className="auth-page">
-      <section className="auth-card auth-card-login">
-        <aside className="auth-showcase">
-          <div className="auth-showcase-brand">
-            <img
-              className="auth-showcase-mark"
-              src="/aportiva-logo.svg"
-              alt="Aportiva"
-            />
-
-            <div>
-              <strong>Aportiva</strong>
-              <span>Gestão da carteira</span>
-            </div>
-          </div>
-
-          <div className="auth-showcase-copy">
-            <h1>
-              Disciplina hoje,
-              <em> mais liberdade amanhã.</em>
-            </h1>
-
-            <p>
-              Acompanhe seus investimentos
-              de forma simples, organizada
-              e segura.
-            </p>
-          </div>
-
-          <div className="auth-benefits">
-            <div>
-              <span>▥</span>
-              <p>
-                <strong>Visão completa</strong>
-                <small>Carteira, proventos e opções</small>
-              </p>
-            </div>
-
-            <div>
-              <span>◇</span>
-              <p>
-                <strong>Seus dados protegidos</strong>
-                <small>Segurança em primeiro lugar</small>
-              </p>
-            </div>
-
-            <div>
-              <span>↗</span>
-              <p>
-                <strong>Mais controle</strong>
-                <small>Decisões melhores no longo prazo</small>
-              </p>
-            </div>
-          </div>
-
-          <blockquote>
-            “Investir bem é construir
-            possibilidades.”
-          </blockquote>
-        </aside>
-
+      <section className="auth-card auth-card-login aportiva-login">
         <div className="auth-login-panel">
-          <div className="auth-brand auth-brand-login auth-brand-logo-only">
-            <picture>
-              <source srcSet="/aportiva-hero.png" type="image/png" />
-              <img
-                className="auth-login-mark"
-                src="/aportiva-logo.svg"
-                alt="Aportiva — Gestão de Carteira"
+          <div className="auth-heading aportiva-login-heading">
+            <span>Acesso seguro</span>
+            <h2>Bem-vindo</h2>
+            <p>Acesse sua conta para continuar</p>
+          </div>
+
+          {mensagem ? (
+            <div className="auth-success">{mensagem}</div>
+          ) : null}
+
+          {erro ? (
+            <div className="auth-error">{erro}</div>
+          ) : null}
+
+          <form className="auth-form" onSubmit={enviar}>
+            <label>
+              <span>Usuário ou e-mail</span>
+              <input
+                type="text"
+                value={identificador}
+                autoComplete="username"
+                autoFocus
+                required
+                placeholder="admin ou seu e-mail"
+                onChange={(event) => setIdentificador(event.target.value)}
               />
-            </picture>
-          </div>
+            </label>
 
-          <div className="auth-heading">
-            <span>
-              Acesso seguro
-            </span>
-          </div>
+            <label>
+              <span>Senha</span>
+              <input
+                type="password"
+                value={senha}
+                autoComplete="current-password"
+                required
+                onChange={(event) => setSenha(event.target.value)}
+              />
+            </label>
 
-        {mensagem ? (
-          <div className="auth-success">
-            {mensagem}
-          </div>
-        ) : null}
+            <button className="auth-primary" type="submit" disabled={entrando}>
+              {entrando ? 'Entrando...' : 'Entrar'}
+            </button>
+          </form>
 
-        {erro ? (
-          <div className="auth-error">
-            {erro}
-          </div>
-        ) : null}
-
-        <form
-          className="auth-form"
-          onSubmit={enviar}
-        >
-          <label>
-            <span>
-              Usuário ou e-mail
-            </span>
-
-            <input
-              type="text"
-              value={identificador}
-              autoComplete="username"
-              autoFocus
-              required
-              placeholder="admin ou seu e-mail"
-              onChange={(event) =>
-                setIdentificador(
-                  event.target.value,
+          <div className="auth-links">
+            <button type="button" onClick={onCriarConta}>
+              Criar uma conta
+            </button>
+            <button
+              type="button"
+              className="auth-forgot"
+              onClick={() =>
+                setErro(
+                  'Recuperação de senha disponível em breve. O envio por e-mail ainda precisa ser configurado no servidor.',
                 )
               }
-            />
-          </label>
-
-          <label>
-            <span>
-              Senha
-            </span>
-
-            <input
-              type="password"
-              value={senha}
-              autoComplete="current-password"
-              required
-              onChange={(event) =>
-                setSenha(
-                  event.target.value,
-                )
-              }
-            />
-          </label>
-
-          <button
-            className="auth-primary"
-            type="submit"
-            disabled={entrando}
-          >
-            {entrando
-              ? 'Entrando...'
-              : 'Entrar'}
-          </button>
-        </form>
-
-        <div className="auth-links">
-          <button
-            type="button"
-            onClick={onCriarConta}
-          >
-            Criar uma conta
-          </button>
-
-          <button
-            type="button"
-            className="auth-forgot"
-            onClick={() =>
-              setErro(
-                'Recuperação de senha disponível em breve. O envio por e-mail ainda precisa ser configurado no servidor.',
-              )
-            }
-          >
-            Esqueci minha senha
-          </button>
+            >
+              Esqueci minha senha
+            </button>
+          </div>
         </div>
+
+        <div className="aportiva-login-hero" aria-label="Aportiva Gestão de Carteira">
+          <img src="/aportiva-logo.svg" alt="Aportiva — Gestão de Carteira" />
         </div>
       </section>
     </main>
