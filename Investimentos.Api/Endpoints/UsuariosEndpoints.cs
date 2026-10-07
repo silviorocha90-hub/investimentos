@@ -221,7 +221,8 @@ namespace Investimentos.Api.Endpoints
                             .Where(p =>
                                 Enum.IsDefined(p) &&
                                 p != PermissaoSistema.Administracao &&
-                                p != PermissaoSistema.Operacoes)
+                                p != PermissaoSistema.Operacoes &&
+                                p != PermissaoSistema.AssistenteIa)
                             .ToArray()))
                     .ToArray(),
                 request.TelegramChatId,
