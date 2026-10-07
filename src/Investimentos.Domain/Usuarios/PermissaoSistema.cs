@@ -8,6 +8,7 @@
         Opcoes = 4,
         Proventos = 5,
         Administracao = 6,
-        Ativos = 7
+        Ativos = 7,
+        AssistenteIa = 8
     }
 }
