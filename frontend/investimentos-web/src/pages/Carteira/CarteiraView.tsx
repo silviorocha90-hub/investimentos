@@ -21,6 +21,7 @@ interface CarteiraViewProps {
     dashboard: Dashboard
   }>
   selectedInvestor: string
+  permitirTodos?: boolean
   onSelectInvestor: (nome: string) => void
   snapshotSeries: Record<string, { data: string; carteira: number }[]>
    saldosDisponiveis?: ReadonlyArray<{
@@ -77,13 +78,34 @@ export function CarteiraView({
   investidores,
   dashboardConsolidado,
   carteiras,
-   onSelectInvestor,
+  selectedInvestor,
+  onSelectInvestor,
+  permitirTodos = true,
 }: CarteiraViewProps) {
-  const [filtroInvestidor, setFiltroInvestidor] = useState('TOTAL')
+  const [filtroInvestidor, setFiltroInvestidor] = useState(
+    permitirTodos ? 'TOTAL' : selectedInvestor,
+  )
 
   useEffect(() => {
-    setFiltroInvestidor('TOTAL')
-  }, [])
+    if (permitirTodos) {
+      return
+    }
+
+    const permitido = investidores.some(
+      (item) => item.nome === filtroInvestidor,
+    )
+
+    if (!permitido) {
+      const primeiro = investidores[0]?.nome ?? ''
+      setFiltroInvestidor(primeiro)
+      onSelectInvestor(primeiro)
+    }
+  }, [
+    permitirTodos,
+    investidores,
+    filtroInvestidor,
+    onSelectInvestor,
+  ])
 
 
   const investidoresComCarteira = useMemo(() => {
@@ -201,7 +223,7 @@ export function CarteiraView({
         investidores={investidoresComCarteira}
         selectedInvestor={filtroInvestidor}
         onSelectInvestor={selecionarInvestidor}
-        incluirTodos
+        incluirTodos={permitirTodos}
         rotuloTodos="Todos"
       />
 
