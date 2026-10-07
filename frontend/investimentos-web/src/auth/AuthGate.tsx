@@ -1,16 +1,16 @@
- import App from '../App'
+import App from '../App'
 
 import {
   LoginView,
 } from '../pages/Login/LoginView'
 
- import {
+import {
   useAuth,
 } from './AuthContext'
 
 import './auth.css'
 
- export function AuthGate() {
+export function AuthGate() {
   const {
     usuario,
     carregando,
@@ -30,26 +30,6 @@ import './auth.css'
 
   if (usuario) {
     return <App />
-  }
-
-  return (
-      <CadastroView
-        onVoltar={() => {
-          setMensagem(null)
-          setTela('login')
-        }}
-
-        onCadastroRealizado={(
-          mensagemCadastro,
-        ) => {
-          setMensagem(
-            mensagemCadastro,
-          )
-
-          setTela('login')
-        }}
-      />
-    )
   }
 
   return (
