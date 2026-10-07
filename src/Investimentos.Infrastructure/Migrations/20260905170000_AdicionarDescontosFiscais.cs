@@ -1,9 +1,12 @@
+using Investimentos.Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
 namespace Investimentos.Infrastructure.Migrations
 {
+    [DbContext(typeof(InvestimentosDbContext))]
     [Migration("20260905170000_AdicionarDescontosFiscais")]
     public partial class AdicionarDescontosFiscais : Migration
     {
