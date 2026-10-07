@@ -1023,14 +1023,14 @@ function App() {
         <div className="marca">
           <img
             className="marca-icone"
-            src="/tio-patinhas.png"
-            alt="Tio Patinhas mergulhando em moedas"
+            src="/aportiva-logo.svg"
+            alt="Aportiva"
           />
 
           <div className="marca-info">
             <strong>
               {usuario?.nome ??
-                'Investimentos'}
+                'Aportiva'}
             </strong>
 
             <span>
