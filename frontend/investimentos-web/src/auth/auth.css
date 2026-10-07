@@ -597,3 +597,18 @@
     width: min(100%, 360px);
   }
 }
+
+
+/* Usa a arte completa aprovada da Aportiva, sem redesenhar o logo. */
+.auth-brand-logo-only picture {
+  width: 100%;
+  display: block;
+}
+
+.auth-login-panel .auth-brand-logo-only picture .auth-login-mark {
+  width: 100%;
+  max-width: none;
+  max-height: 330px;
+  display: block;
+  object-fit: contain;
+}
