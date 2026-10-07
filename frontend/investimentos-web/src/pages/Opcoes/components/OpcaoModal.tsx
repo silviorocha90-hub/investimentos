@@ -406,10 +406,37 @@ function EditarOpcaoModal({
       ...opcao,
     })
 
+  const [
+    resultadoInformadoEntrada,
+    setResultadoInformadoEntrada,
+  ] = useState(
+    opcao.resultadoInformado == null
+      ? ''
+      : opcao.resultadoInformado.toLocaleString(
+          'pt-BR',
+          {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          },
+        ),
+  )
+
   useEffect(() => {
     setForm({
       ...opcao,
     })
+
+    setResultadoInformadoEntrada(
+      opcao.resultadoInformado == null
+        ? ''
+        : opcao.resultadoInformado.toLocaleString(
+            'pt-BR',
+            {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            },
+          ),
+    )
   }, [opcao])
 
   const executada =
@@ -689,21 +716,17 @@ function EditarOpcaoModal({
               <input
                 inputMode="decimal"
                 value={
-                  form.resultadoInformado == null
-                    ? ''
-                    : form.resultadoInformado.toLocaleString(
-                        'pt-BR',
-                        {
-                          minimumFractionDigits: 2,
-                          maximumFractionDigits: 2,
-                        },
-                      )
+                  resultadoInformadoEntrada
                 }
                 onChange={(event) => {
                   const valor =
                     formatarMoedaEntradaComSinal(
                       event.target.value,
                     )
+
+                  setResultadoInformadoEntrada(
+                    valor,
+                  )
 
                   setForm({
                     ...form,
