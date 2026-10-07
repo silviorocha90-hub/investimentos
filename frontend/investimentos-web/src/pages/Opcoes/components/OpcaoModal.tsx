@@ -9,6 +9,7 @@ import type {
 } from '../../../types/dashboard'
 
 export interface NovaOpcaoForm {
+  investidorId: string
   dataOperacao: string
   ticker: string
   tipoOpcao: string
@@ -21,6 +22,10 @@ export interface NovaOpcaoForm {
 
 interface OpcaoModalNovoProps {
   modo: 'novo'
+  investidores: ReadonlyArray<{
+    id: string
+    nome: string
+  }>
   salvando: boolean
   erro: string | null
   onClose: () => void
@@ -141,6 +146,7 @@ function criarNovaOpcao():
   const hoje = hojeLocal()
 
   return {
+    investidorId: '',
     dataOperacao: hoje,
     ticker: '',
     tipoOpcao: 'PUT',
@@ -153,6 +159,7 @@ function criarNovaOpcao():
 }
 
 function NovoOpcaoModal({
+  investidores,
   salvando,
   erro,
   onClose,
@@ -166,6 +173,7 @@ function NovoOpcaoModal({
   )
 
   const formularioValido =
+    form.investidorId.length > 0 &&
     form.ticker.trim().length > 0 &&
     Number(form.quantidade) > 0 &&
     moedaParaNumero(form.strike) > 0 &&
@@ -220,6 +228,37 @@ function NovoOpcaoModal({
 
         <div className="options-form-grid">
           <label>
+            <span>Investidor</span>
+
+            <select
+              autoFocus
+              value={form.investidorId}
+              onChange={(event) =>
+                setForm({
+                  ...form,
+                  investidorId:
+                    event.target.value,
+                })
+              }
+            >
+              <option value="" disabled>
+                Selecione
+              </option>
+
+              {investidores.map(
+                (investidor) => (
+                  <option
+                    key={investidor.id}
+                    value={investidor.id}
+                  >
+                    {investidor.nome}
+                  </option>
+                ),
+              )}
+            </select>
+          </label>
+
+          <label>
             <span>Data</span>
 
             <input
@@ -241,7 +280,6 @@ function NovoOpcaoModal({
             <span>Ticker</span>
 
             <input
-              autoFocus
               value={form.ticker}
               placeholder="Ex.: ITUBU407"
               onChange={(event) =>
