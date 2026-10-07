@@ -1001,3 +1001,69 @@
     min-height: 300px;
   }
 }
+
+
+/* Palco único de autenticação — posições absolutas evitam qualquer reflow entre telas. */
+@media (min-width: 901px) {
+  .auth-page:has(.aportiva-login),
+  .auth-page:has(.aportiva-cadastro) {
+    min-height: 100vh !important;
+    padding: 24px !important;
+    box-sizing: border-box !important;
+    display: grid !important;
+    place-items: center !important;
+  }
+
+  .aportiva-login.auth-card-login,
+  .aportiva-cadastro.auth-card-cadastro {
+    position: relative !important;
+    display: block !important;
+    width: min(1180px, calc(100vw - 48px)) !important;
+    height: min(720px, calc(100vh - 48px)) !important;
+    min-height: 620px !important;
+    max-height: 720px !important;
+    margin: 0 !important;
+    overflow: hidden !important;
+  }
+
+  .aportiva-login .auth-login-panel,
+  .aportiva-cadastro .auth-cadastro-panel {
+    position: absolute !important;
+    z-index: 2 !important;
+    left: 32px !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    width: 416px !important;
+    max-width: none !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  .aportiva-login-hero,
+  .aportiva-cadastro-hero {
+    position: absolute !important;
+    z-index: 1 !important;
+    left: 500px !important;
+    top: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: auto !important;
+    height: auto !important;
+    min-height: 0 !important;
+    display: grid !important;
+    place-items: center !important;
+  }
+
+  .aportiva-login-hero img,
+  .aportiva-cadastro-hero img {
+    position: relative !important;
+    z-index: 1 !important;
+    display: block !important;
+    width: 650px !important;
+    max-width: 92% !important;
+    height: auto !important;
+    max-height: 78% !important;
+    object-fit: contain !important;
+    margin: 0 !important;
+  }
+}
