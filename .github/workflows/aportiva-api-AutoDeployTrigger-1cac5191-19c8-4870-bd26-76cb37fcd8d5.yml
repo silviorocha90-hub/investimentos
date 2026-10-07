@@ -6,6 +6,10 @@ on:
       - main
   workflow_dispatch:
 
+concurrency:
+  group: aportiva-api-deploy
+  cancel-in-progress: true
+
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
@@ -37,7 +41,9 @@ jobs:
           context: .
           file: Investimentos.Api/Dockerfile
           push: true
-          tags: aportivacr.azurecr.io/aportiva-api:${{ github.sha }}
+          tags: |
+            aportivacr.azurecr.io/aportiva-api:${{ github.sha }}
+            aportivacr.azurecr.io/aportiva-api:latest
 
       - name: Configure Container App registry
         run: >
@@ -47,6 +53,14 @@ jobs:
           --server aportivacr.azurecr.io
           --username "${{ secrets.APORTIVA_ACR_USERNAME }}"
           --password "${{ secrets.APORTIVA_ACR_PASSWORD }}"
+
+      - name: Verify image was pushed
+        run: >
+          az acr repository show-tags
+          --name aportivacr
+          --repository aportiva-api
+          --query "[?@=='${{ github.sha }}']"
+          --output tsv | grep -Fx "${{ github.sha }}"
 
       - name: Deploy image to Container App
         run: >
