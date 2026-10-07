@@ -1238,49 +1238,51 @@ export function DashboardView({
         </article>
 
 
-        <article className="panel dashboard-evolution-panel">
-          <SectionTitle
-            title="Evolução por Investidor"
-          />
-
-          {seriesEvolucao.length >
-          0 ? (
-            <MultiTrendChart
-              series={
-                seriesEvolucao
-              }
+        <div className="dashboard-evolution-grid">
+          <article className="panel dashboard-evolution-panel">
+            <SectionTitle
+              title="Evolução por Investidor"
             />
-          ) : (
-            <div className="empty-state">
-              <strong>
-                Evolução indisponível
-                no banco
-              </strong>
-            </div>
-          )}
-        </article>
 
-        <article className="panel dashboard-evolution-panel">
-          <SectionTitle
-            title="Evolução da Carteira"
-          />
+            {seriesEvolucao.length >
+            0 ? (
+              <MultiTrendChart
+                series={
+                  seriesEvolucao
+                }
+              />
+            ) : (
+              <div className="empty-state">
+                <strong>
+                  Evolução indisponível
+                  no banco
+                </strong>
+              </div>
+            )}
+          </article>
 
-          {evolucaoCarteiraTotal[0]
-            .pontos.length > 0 ? (
-            <MultiTrendChart
-              series={
-                evolucaoCarteiraTotal
-              }
+          <article className="panel dashboard-evolution-panel">
+            <SectionTitle
+              title="Evolução da Carteira"
             />
-          ) : (
-            <div className="empty-state">
-              <strong>
-                Evolução indisponível
-                no banco
-              </strong>
-            </div>
-          )}
-        </article>
+
+            {evolucaoCarteiraTotal[0]
+              .pontos.length > 0 ? (
+              <MultiTrendChart
+                series={
+                  evolucaoCarteiraTotal
+                }
+              />
+            ) : (
+              <div className="empty-state">
+                <strong>
+                  Evolução indisponível
+                  no banco
+                </strong>
+              </div>
+            )}
+          </article>
+        </div>
       </section>
     </>
   )
