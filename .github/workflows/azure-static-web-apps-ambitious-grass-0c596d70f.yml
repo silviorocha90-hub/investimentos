@@ -19,22 +19,20 @@ jobs:
         with:
           submodules: true
           lfs: false
+
       - name: Build And Deploy
         id: builddeploy
         uses: Azure/static-web-apps-deploy@v1
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_AMBITIOUS_GRASS_0C596D70F }}
-          repo_token: ${{ secrets.GITHUB_TOKEN }} # Used for Github integrations (i.e. PR comments)
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
           action: "upload"
+          app_location: "./frontend/investimentos-web"
+          api_location: ""
+          output_location: "dist"
           app_build_command: "npm run build"
         env:
           VITE_API_URL: "https://aportiva-api.livelybeach-22ee0130.brazilsouth.azurecontainerapps.io"
-          ###### Repository/Build Configurations - These values can be configured to match your app requirements. ######
-          # For more information regarding Static Web App workflow configurations, please visit: https://aka.ms/swaworkflowconfig
-          app_location: "./frontend/investimentos-web" # App source code path
-          api_location: "" # Api source code path - optional
-          output_location: "dist" # Vite build output directory
-          ###### End of Repository/Build Configurations ######
 
   close_pull_request_job:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
