@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Investimentos.Api.Endpoints;
 using Investimentos.Api.ExceptionHandling;
 using Investimentos.Api.AssistenteIa;
@@ -200,11 +201,35 @@ app.UseAuthorization();
 app.MapGet(
     "/api/assistente-ia/relatorios",
     async (
+        ClaimsPrincipal principal,
         AssistenteIaService service,
         CancellationToken cancellationToken) =>
     {
+        var id = principal.FindFirstValue(
+            ClaimTypes.NameIdentifier);
+
+        if (!Guid.TryParse(id, out var usuarioId))
+            return Results.Unauthorized();
+
+        var administrador =
+            principal.IsInRole("Admin");
+
+        var possuiAcesso =
+            administrador ||
+            principal.Claims.Any(x =>
+                x.Type == "permissao" &&
+                string.Equals(
+                    x.Value,
+                    "AssistenteIa",
+                    StringComparison.OrdinalIgnoreCase));
+
+        if (!possuiAcesso)
+            return Results.Forbid();
+
         var relatorios =
             await service.ListarAsync(
+                usuarioId,
+                administrador,
                 cancellationToken);
 
         return Results.Ok(
@@ -222,9 +247,13 @@ app.MapGet(
 app.MapPost(
     "/api/assistente-ia/gerar",
     async (
+        ClaimsPrincipal principal,
         AssistenteIaService service,
         CancellationToken cancellationToken) =>
     {
+        if (!principal.IsInRole("Admin"))
+            return Results.Forbid();
+
         var relatorio =
             await service.GerarAsync(
                 AssistenteIaWorker.ObterAgoraSaoPaulo(),
