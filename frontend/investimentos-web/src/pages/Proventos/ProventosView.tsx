@@ -55,6 +55,7 @@ interface ProventosViewProps {
   ) => void
 
   modo?: 'consulta' | 'administracao'
+  permitirTodos?: boolean
   onDataChanged?: () => Promise<void>
 }
 
@@ -66,6 +67,7 @@ export function ProventosView({
   selectedInvestor,
   onSelectInvestor,
   modo = 'consulta',
+  permitirTodos = true,
   onDataChanged,
 }: ProventosViewProps) {
   const modoAdministracao =
@@ -164,7 +166,11 @@ export function ProventosView({
     investidorConsulta,
     setInvestidorConsulta,
   ] = useState(
-    modoAdministracao ? selectedInvestor : 'TOTAL',
+    modoAdministracao
+      ? selectedInvestor
+      : permitirTodos
+        ? 'TOTAL'
+        : (selectedInvestor || investidores[0]?.nome || ''),
   )
 
   const investidorAtivo =
@@ -767,7 +773,7 @@ export function ProventosView({
             }
           }
         }}
-        incluirTodos
+        incluirTodos={permitirTodos}
         rotuloTodos="Todos"
       />
 
