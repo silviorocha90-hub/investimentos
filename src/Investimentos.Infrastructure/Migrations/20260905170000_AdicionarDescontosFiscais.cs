@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Investimentos.Infrastructure.Migrations
 {
+    [Migration("20260905170000_AdicionarDescontosFiscais")]
     public partial class AdicionarDescontosFiscais : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
