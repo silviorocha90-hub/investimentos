@@ -16,6 +16,7 @@ export type PermissaoSistema =
   | 'Opcoes'
   | 'Proventos'
   | 'Administracao'
+  | 'AssistenteIa'
 
 export interface UsuarioAdministracao {
   id: string
@@ -51,13 +52,19 @@ export interface AlterarAcessosUsuario {
   frequenciaRelatorioIa: 'DIARIO' | 'SEMANAL' | 'QUINZENAL' | 'MENSAL'
 }
 
-export const permissoesVisualizacao:
+export const permissoesInvestidor:
   PermissaoSistema[] = [
     'Dashboard',
     'Carteira',
     'Ativos',
     'Opcoes',
     'Proventos',
+  ]
+
+export const permissoesVisualizacao:
+  PermissaoSistema[] = [
+    ...permissoesInvestidor,
+    'AssistenteIa',
   ]
 
 export const permissoesSistema:
@@ -80,4 +87,5 @@ export const nomesPermissoes:
     Proventos: 'Proventos',
     Administracao:
       'Administração',
+    AssistenteIa: 'Assistente IA',
   }
