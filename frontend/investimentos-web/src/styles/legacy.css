@@ -162,15 +162,28 @@ a {
 .sidebar-rodape {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  padding: 18px 16px 10px;
+  gap: 2px;
+  padding: 12px 16px 8px;
   border-top: 1px solid var(--border);
   color: var(--muted);
-  font-size: 0.8rem;
+  font-size: 0.68rem;
+  line-height: 1.2;
 }
 
-.sidebar-rodape small {
+.sidebar-usuario {
+  overflow: hidden;
   color: var(--muted-strong);
+  font-size: 0.68rem;
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sidebar-rodape small.sidebar-perfil {
+  color: var(--muted);
+  font-size: 0.6rem;
+  font-weight: 400;
+  opacity: 0.72;
 }
 
 .main {
