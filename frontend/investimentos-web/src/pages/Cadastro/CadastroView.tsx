@@ -102,15 +102,15 @@ export function CadastroView({
     <main className="auth-page">
       <section className="auth-card">
         <div className="auth-brand auth-brand-login">
-          <span className="auth-login-mark" aria-hidden="true">
-            <i />
-            <i />
-            <i />
-          </span>
+          <img
+            className="auth-login-mark"
+            src="/aportiva-logo.svg"
+            alt="Aportiva"
+          />
 
           <div>
             <h1>
-              Investimentos
+              Aportiva
             </h1>
 
             <p>
