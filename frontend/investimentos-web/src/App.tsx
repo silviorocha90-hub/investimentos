@@ -118,12 +118,6 @@ const menuPrincipal:
       titulo: 'Proventos',
       icone: '$',
     },
-    {
-      tela: 'assistente-ia',
-      permissao: 'AssistenteIa',
-      titulo: 'Assistente IA',
-      icone: '✦',
-    },
   ]
 
 const menuAdministracao:
@@ -1104,6 +1098,57 @@ function App() {
           )}
 
           <div className="menu-separator" />
+
+          {(() => {
+            const permitido =
+              possuiPermissao(
+                'AssistenteIa',
+              )
+
+            return (
+              <button
+                className={`menu-item ${
+                  telaAtual ===
+                  'assistente-ia'
+                    ? 'ativo'
+                    : ''
+                } ${
+                  !permitido
+                    ? 'bloqueado'
+                    : ''
+                }`}
+                type="button"
+                disabled={
+                  !permitido
+                }
+                title={
+                  permitido
+                    ? 'Assistente IA'
+                    : 'Módulo não liberado para este usuário'
+                }
+                onClick={() =>
+                  navegar(
+                    'assistente-ia',
+                  )
+                }
+              >
+                <span className="menu-icone">
+                  ✦
+                </span>
+
+                Assistente IA
+
+                {!permitido ? (
+                  <span
+                    className="menu-lock"
+                    aria-hidden="true"
+                  >
+                    🔒
+                  </span>
+                ) : null}
+              </button>
+            )
+          })()}
 
           {(() => {
             const permitido =
