@@ -983,6 +983,12 @@ a {
   grid-column: 1 / -1;
 }
 
+.dashboard-evolution-panel {
+  width: 96%;
+  box-sizing: border-box;
+  justify-self: center;
+}
+
 .content-grid {
   margin-top: 18px;
   display: grid;
