@@ -792,18 +792,36 @@ export function OpcoesView({
          * as opções do investidor em vez de apenas copiar os
          * campos editados para o estado local.
          */
-        const investidor =
+        const carteiraDaOpcao =
+          carteiras.find(
+            (item) =>
+              (
+                item.dashboard.opcoes ??
+                []
+              ).some(
+                (itemOpcao) =>
+                  itemOpcao.id ===
+                  opcao.id,
+              ),
+          )
+
+        const investidorDaOpcao =
+          investidores.find(
+            (item) =>
+              item.nome ===
+              carteiraDaOpcao?.nome,
+          ) ??
           obterInvestidor()
 
-        if (!investidor) {
+        if (!investidorDaOpcao) {
           throw new Error(
-            'Investidor não selecionado.',
+            'Não foi possível identificar o investidor desta opção.',
           )
         }
 
         const responseAtualizada =
           await fetch(
-            `${apiUrl}/api/opcoes/${investidor.id}?_=${Date.now()}`,
+            `${apiUrl}/api/opcoes/${investidorDaOpcao.id}?_=${Date.now()}`,
             {
               cache: 'no-store',
             },
