@@ -11,7 +11,13 @@ import {
 
 import './AssistenteIa.css'
 
-export function AssistenteIaView() {
+interface AssistenteIaViewProps {
+  podeGerar?: boolean
+}
+
+export function AssistenteIaView({
+  podeGerar = false,
+}: AssistenteIaViewProps) {
   const [
     relatorios,
     setRelatorios,
@@ -87,18 +93,20 @@ export function AssistenteIaView() {
           </p>
         </div>
 
-        <button
-          type="button"
-          className="assistant-generate"
-          disabled={gerando}
-          onClick={() =>
-            void gerarAgora()
-          }
-        >
-          {gerando
-            ? 'Analisando...'
-            : 'Gerar análise agora'}
-        </button>
+        {podeGerar ? (
+          <button
+            type="button"
+            className="assistant-generate"
+            disabled={gerando}
+            onClick={() =>
+              void gerarAgora()
+            }
+          >
+            {gerando
+              ? 'Analisando...'
+              : 'Gerar análise agora'}
+          </button>
+        ) : null}
       </header>
 
       {erro ? (
