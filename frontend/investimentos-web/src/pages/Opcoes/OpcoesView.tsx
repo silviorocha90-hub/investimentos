@@ -161,6 +161,11 @@ export function OpcoesView({
   ] = useState('TODOS')
 
   const [
+    tickerConsulta,
+    setTickerConsulta,
+  ] = useState('')
+
+  const [
     tipoSelecionado,
     setTipoSelecionado,
   ] = useState('TODOS')
@@ -368,6 +373,16 @@ export function OpcoesView({
         opcoes.filter(
           (opcao) =>
             (
+              !tickerConsulta.trim() ||
+              opcao.tickerOpcao
+                .toUpperCase()
+                .includes(
+                  tickerConsulta
+                    .trim()
+                    .toUpperCase(),
+                )
+            ) &&
+            (
               tickerSelecionado ===
                 'TODOS' ||
               opcao.tickerOpcao ===
@@ -396,6 +411,7 @@ export function OpcoesView({
         naturezaSelecionada,
         opcoes,
         statusSelecionado,
+        tickerConsulta,
         tickerSelecionado,
         tipoSelecionado,
       ],
@@ -986,52 +1002,72 @@ export function OpcoesView({
           </h1>
         </div>
 
-        <label className="options-investor-label">
-          <span>
-            Investidor
-          </span>
+        <div className="options-header-filters">
+          <label className="options-investor-label">
+            <span>
+              Investidor
+            </span>
 
-          <select
-            value={
-              investidorAtivo
-            }
-            onChange={(event) => {
-              const nome = event.target.value
-              if (modoAdministracao) {
-                onSelectInvestor(nome)
-              } else {
-                setInvestidorConsulta(nome)
-                if (nome !== 'TOTAL') {
-                  onSelectInvestor(nome)
-                }
+            <select
+              value={
+                investidorAtivo
               }
-            }}
-          >
-            {permitirTodos ? (
-              <option value="TOTAL">
-                Todos
-              </option>
-            ) : null}
-            {investidoresComOpcoes.map(
-              (
-                investidor,
-              ) => (
-                <option
-                  key={
-                    investidor.id
+              onChange={(event) => {
+                const nome = event.target.value
+                if (modoAdministracao) {
+                  onSelectInvestor(nome)
+                } else {
+                  setInvestidorConsulta(nome)
+                  if (nome !== 'TOTAL') {
+                    onSelectInvestor(nome)
                   }
-                  value={
-                    investidor.nome
-                  }
-                >
-                  {
-                    investidor.nome
-                  }
+                }
+              }}
+            >
+              {permitirTodos ? (
+                <option value="TOTAL">
+                  Todos
                 </option>
-              ),
-            )}
-          </select>
-        </label>
+              ) : null}
+              {investidoresComOpcoes.map(
+                (
+                  investidor,
+                ) => (
+                  <option
+                    key={
+                      investidor.id
+                    }
+                    value={
+                      investidor.nome
+                    }
+                  >
+                    {
+                      investidor.nome
+                    }
+                  </option>
+                ),
+              )}
+            </select>
+          </label>
+
+          <label className="options-ticker-search-label">
+            <span>
+              Ticker
+            </span>
+
+            <input
+              type="search"
+              value={tickerConsulta}
+              placeholder="Ex.: TAEEW381"
+              autoComplete="off"
+              onChange={(event) =>
+                setTickerConsulta(
+                  event.target.value,
+                )
+              }
+            />
+          </label>
+        </div>
       </article>
 
       {!modoAdministracao ? (
