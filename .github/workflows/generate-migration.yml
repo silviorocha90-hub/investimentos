@@ -1,0 +1,44 @@
+name: Generate EF migration
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Install EF tool
+        run: dotnet tool install --global dotnet-ef --version 10.*
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Generate migration
+        run: >
+          dotnet ef migrations add SincronizarModeloAtual
+          --project src/Investimentos.Infrastructure/Investimentos.Infrastructure.csproj
+          --startup-project Investimentos.Api/Investimentos.Api.csproj
+          --output-dir Migrations
+
+      - name: Commit migration
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/Investimentos.Infrastructure/Migrations
+          if git diff --cached --quiet; then
+            echo "Nenhuma migration nova foi gerada."
+            exit 0
+          fi
+          git commit -m "Adiciona migration para sincronizar modelo atual"
+          git push
