@@ -59,6 +59,8 @@ interface OpcoesViewProps {
 
   modo?: 'consulta' | 'administracao'
 
+  permitirTodos?: boolean
+
   onDataChanged?: () => Promise<void>
 }
 
@@ -95,6 +97,7 @@ export function OpcoesView({
   selectedInvestor,
   onSelectInvestor,
   modo = 'consulta',
+  permitirTodos = true,
   onDataChanged,
 }: OpcoesViewProps) {
   const modoAdministracao =
@@ -212,7 +215,11 @@ export function OpcoesView({
     investidorConsulta,
     setInvestidorConsulta,
   ] = useState(
-    modoAdministracao ? selectedInvestor : 'TOTAL',
+    modoAdministracao
+      ? selectedInvestor
+      : permitirTodos
+        ? 'TOTAL'
+        : (selectedInvestor || investidores[0]?.nome || ''),
   )
 
   const investidorAtivo =
@@ -1000,9 +1007,11 @@ export function OpcoesView({
               }
             }}
           >
-            <option value="TOTAL">
-              Todos
-            </option>
+            {permitirTodos ? (
+              <option value="TOTAL">
+                Todos
+              </option>
+            ) : null}
             {investidoresComOpcoes.map(
               (
                 investidor,
