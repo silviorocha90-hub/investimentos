@@ -86,16 +86,12 @@ a {
 }
 
 .marca-icone {
-  width: 220px;
-  height: 220px;
-  display: grid;
-  place-items: center;
-  border-radius: 22px;
-  object-fit: cover;
+  width: 232px;
+  height: auto;
+  display: block;
+  object-fit: contain;
   object-position: center;
-  font-weight: 900;
-  letter-spacing: 0.08em;
-  box-shadow: 0 16px 28px rgba(99, 230, 200, 0.18);
+  filter: drop-shadow(0 16px 28px rgba(99, 230, 200, 0.2));
 }
 
 .marca-info {
