@@ -1067,3 +1067,24 @@
     margin: 0 !important;
   }
 }
+
+
+.auth-registration-closed {
+  margin-top: 18px;
+  padding: 13px 15px;
+  display: grid;
+  gap: 4px;
+  border: 1px solid rgba(99, 230, 200, 0.18);
+  border-radius: 12px;
+  background: rgba(99, 230, 200, 0.06);
+  color: var(--muted);
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+.auth-registration-closed strong {
+  color: var(--accent);
+  font-size: 0.76rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
