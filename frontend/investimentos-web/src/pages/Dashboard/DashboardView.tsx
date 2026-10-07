@@ -925,6 +925,51 @@ export function DashboardView({
       [evolucao],
     )
 
+  const evolucaoCarteiraTotal =
+    useMemo(() => {
+      const totaisPorData =
+        new Map<string, number>()
+
+      seriesEvolucao.forEach(
+        (serie) => {
+          serie.pontos.forEach(
+            (ponto) => {
+              const data =
+                normalizarDataEvolucao(
+                  ponto.data,
+                )
+
+              totaisPorData.set(
+                data,
+                (totaisPorData.get(
+                  data,
+                ) ?? 0) +
+                  ponto.carteira,
+              )
+            },
+          )
+        },
+      )
+
+      return [
+        {
+          investidor: 'Carteira',
+          pontos: Array.from(
+            totaisPorData.entries(),
+          )
+            .sort(([a], [b]) =>
+              a.localeCompare(b),
+            )
+            .map(
+              ([data, carteira]) => ({
+                data,
+                carteira,
+              }),
+            ),
+        },
+      ]
+    }, [seriesEvolucao])
+
   return (
     <>
       <header className="hero">
@@ -1193,9 +1238,9 @@ export function DashboardView({
         </article>
 
 
-        <article className="panel panel-wide dashboard-evolution-panel">
+        <article className="panel dashboard-evolution-panel">
           <SectionTitle
-            title="Evolução da Carteira"
+            title="Evolução por Investidor"
           />
 
           {seriesEvolucao.length >
@@ -1203,6 +1248,28 @@ export function DashboardView({
             <MultiTrendChart
               series={
                 seriesEvolucao
+              }
+            />
+          ) : (
+            <div className="empty-state">
+              <strong>
+                Evolução indisponível
+                no banco
+              </strong>
+            </div>
+          )}
+        </article>
+
+        <article className="panel dashboard-evolution-panel">
+          <SectionTitle
+            title="Evolução da Carteira"
+          />
+
+          {evolucaoCarteiraTotal[0]
+            .pontos.length > 0 ? (
+            <MultiTrendChart
+              series={
+                evolucaoCarteiraTotal
               }
             />
           ) : (
