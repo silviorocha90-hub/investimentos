@@ -111,6 +111,16 @@ function formatarMoedaEntradaComSinal(
     return negativo ? '-' : ''
   }
 
+  const somenteDigitos =
+    valor.replace(/\D/g, '')
+
+  if (
+    somenteDigitos &&
+    Number(somenteDigitos) === 0
+  ) {
+    return formatado
+  }
+
   return negativo
     ? `-${formatado}`
     : formatado
