@@ -98,6 +98,34 @@ function moedaParaNumero(
   )
 }
 
+function formatarMoedaEntradaComSinal(
+  valor: string,
+) {
+  const negativo =
+    valor.trim().startsWith('-')
+
+  const formatado =
+    formatarMoedaEntrada(valor)
+
+  if (!formatado) {
+    return negativo ? '-' : ''
+  }
+
+  return negativo
+    ? `-${formatado}`
+    : formatado
+}
+
+function moedaComSinalParaNumero(
+  valor: string,
+) {
+  if (!valor || valor === '-') {
+    return 0
+  }
+
+  return moedaParaNumero(valor)
+}
+
 function criarNovaOpcao():
   NovaOpcaoForm {
   const hoje = hojeLocal()
@@ -659,7 +687,7 @@ function EditarOpcaoModal({
             <div className="admin-money-input">
               <span>R$</span>
               <input
-                inputMode="numeric"
+                inputMode="decimal"
                 value={
                   form.resultadoInformado == null
                     ? ''
@@ -673,21 +701,22 @@ function EditarOpcaoModal({
                 }
                 onChange={(event) => {
                   const valor =
-                    formatarMoedaEntrada(
+                    formatarMoedaEntradaComSinal(
                       event.target.value,
                     )
 
                   setForm({
                     ...form,
                     resultadoInformado:
-                      valor === ''
+                      valor === '' ||
+                      valor === '-'
                         ? null
-                        : moedaParaNumero(
+                        : moedaComSinalParaNumero(
                             valor,
                           ),
                   })
                 }}
-                placeholder="Opcional"
+                placeholder="Ex.: -150,00"
               />
             </div>
           </label>
