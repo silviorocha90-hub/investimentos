@@ -41,6 +41,13 @@
   text-transform: uppercase;
 }
 
+.options-header-filters {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  min-width: 0;
+}
+
 .options-investor-label {
   width: 188px;
   min-width: 0;
@@ -88,6 +95,50 @@
 .options-investor-label select option:checked {
   background: #1b3448;
   color: #ffffff;
+}
+
+.options-ticker-search-label {
+  width: 188px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.options-ticker-search-label span {
+  color: var(--muted);
+  font-size: 0.66rem;
+  font-weight: 700;
+}
+
+.options-ticker-search-label input {
+  width: 100%;
+  height: 38px;
+  min-width: 0;
+  padding: 0 12px;
+  box-sizing: border-box;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  outline: none;
+  background: var(--panel-strong);
+  color: var(--text);
+  font: inherit;
+  font-size: 0.74rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.options-ticker-search-label input:hover {
+  border-color: rgba(70, 211, 178, 0.28);
+}
+
+.options-ticker-search-label input:focus {
+  border-color: rgba(70, 211, 178, 0.55);
+}
+
+.options-ticker-search-label input::placeholder {
+  color: var(--muted);
+  text-transform: none;
 }
 
 /* =========================================================
