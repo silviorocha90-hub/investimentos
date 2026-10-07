@@ -203,6 +203,7 @@ app.MapGet(
     async (
         ClaimsPrincipal principal,
         AssistenteIaService service,
+        InvestimentosDbContext dbContext,
         CancellationToken cancellationToken) =>
     {
         var id = principal.FindFirstValue(
@@ -211,17 +212,25 @@ app.MapGet(
         if (!Guid.TryParse(id, out var usuarioId))
             return Results.Unauthorized();
 
+        var usuarioAcesso = await dbContext.Usuarios
+            .AsNoTracking()
+            .Include(x => x.Permissoes)
+            .FirstOrDefaultAsync(
+                x => x.Id == usuarioId,
+                cancellationToken);
+
+        if (usuarioAcesso is null)
+            return Results.Unauthorized();
+
         var administrador =
-            principal.IsInRole("Admin");
+            usuarioAcesso.Perfil ==
+            Investimentos.Domain.Usuarios.PerfilUsuario.Admin;
 
         var possuiAcesso =
             administrador ||
-            principal.Claims.Any(x =>
-                x.Type == "permissao" &&
-                string.Equals(
-                    x.Value,
-                    "AssistenteIa",
-                    StringComparison.OrdinalIgnoreCase));
+            usuarioAcesso.Permissoes.Any(x =>
+                x.Permissao ==
+                Investimentos.Domain.Usuarios.PermissaoSistema.AssistenteIa);
 
         if (!possuiAcesso)
             return Results.Forbid();
