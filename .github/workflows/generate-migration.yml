@@ -22,7 +22,7 @@ jobs:
         run: dotnet tool install --global dotnet-ef --version 10.*
 
       - name: Restore
-        run: dotnet restore
+        run: dotnet restore Investimentos.Api/Investimentos.Api.csproj
 
       - name: Generate migration
         run: >
