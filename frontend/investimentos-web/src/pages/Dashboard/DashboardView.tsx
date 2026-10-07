@@ -1193,7 +1193,7 @@ export function DashboardView({
         </article>
 
 
-        <article className="panel panel-wide">
+        <article className="panel panel-wide dashboard-evolution-panel">
           <SectionTitle
             title="Evolução da Carteira"
           />
