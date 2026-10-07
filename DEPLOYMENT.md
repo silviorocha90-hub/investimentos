@@ -77,3 +77,80 @@ atualizados. A cotação EOD de opções exige plano Pro para séries fora do
 sandbox. Quando uma cotação de opção não estiver disponível, o relatório
 continua usando preço do ativo-base, strike e vencimento e não inventa o
 preço da opção.
+
+## Estado real da publicação — 07/10/2026
+
+Arquitetura de produção definida:
+
+```text
+aportiva.com.br
+      |
+      v
+Azure Static Web Apps Free (aportiva-web)
+      |
+      v
+Azure Container Apps Consumption (aportiva-api)
+      |
+      v
+Azure SQL (aportiva)
+```
+
+Recursos:
+
+- Resource Group: `rg-aportiva-prod`
+- Frontend: `aportiva-web`
+- Frontend Azure: `https://ambitious-grass-0c596d70f.5.azurestaticapps.net`
+- API: `aportiva-api`
+- Container Apps Environment: `managedEnvironment-rgaportivaprod-a57a`
+- Região da API: Brazil South
+- SQL Server: `sql-aportiva-prod.database.windows.net`
+- Banco: `aportiva`
+
+O frontend está publicado e o workflow do Static Web Apps está funcional.
+
+A API ainda não está publicada corretamente. A revisão inicial usa uma imagem
+temporária da Microsoft e falhou por incompatibilidade de porta. O workflow
+automático criado pelo portal também falhou e precisa ser corrigido para usar o
+Dockerfile real da API.
+
+O log do GitHub Actions mostrou entradas inválidas geradas no YAML do portal e
+uso de Cloud Build a partir da raiz do repositório. Não tratar esse workflow
+como configuração final.
+
+### Ordem para continuar
+
+1. Corrigir o GitHub Actions do `aportiva-api`.
+2. Usar explicitamente o Dockerfile `Investimentos.Api/Dockerfile`.
+3. Publicar uma nova revisão saudável.
+4. Confirmar a URL pública e um endpoint simples da API.
+5. Configurar `ConnectionStrings__InvestimentosDb` e demais secrets no
+   Container App.
+6. Aplicar/validar migrations no Azure SQL.
+7. Configurar `FRONTEND_ORIGINS` com o endereço do Static Web App e domínio.
+8. Configurar `VITE_API_URL` no frontend e republicar.
+9. Finalizar o domínio `aportiva.com.br`.
+10. Fazer teste ponta a ponta de login, carteira, opções, proventos e Assistente IA.
+
+### Domínio
+
+A propriedade de `aportiva.com.br` foi iniciada no Azure Static Web Apps por
+TXT no Registro.br. O DNS está em modo avançado e não aceita `@` como nome.
+
+Não criar CNAME de apex com `@` no Registro.br. Depois da validação de
+propriedade, resolver o roteamento do domínio raiz separadamente. Se necessário,
+usar `www` com CNAME e redirecionamento do apex, ou um DNS com CNAME flattening.
+
+### Segurança
+
+Nunca colocar em GitHub:
+
+- senha do Azure SQL;
+- connection string de produção com senha;
+- `OPENAI_API_KEY`;
+- `RESEND_API_KEY`;
+- `BRAPI_TOKEN`;
+- senha de BootstrapAdmin;
+- token de Telegram ou outra mensageria.
+
+Esses valores devem ser configurados como secrets/variáveis do ambiente Azure.
+
