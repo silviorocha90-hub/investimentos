@@ -11,6 +11,7 @@ interface AtivosViewProps {
   investidores: readonly Investidor[]
   carteiras: ReadonlyArray<{ nome: string; dashboard: Dashboard }>
   dashboardConsolidado: Dashboard | null
+  permitirTodos?: boolean
 }
 
 interface AtivoAnalise extends PosicaoAtivo {
@@ -30,8 +31,11 @@ export function AtivosView({
   investidores,
   carteiras,
   dashboardConsolidado,
+  permitirTodos = true,
 }: AtivosViewProps) {
-  const [investidor, setInvestidor] = useState('TOTAL')
+  const [investidor, setInvestidor] = useState(
+    permitirTodos ? 'TOTAL' : (investidores[0]?.nome ?? ''),
+  )
 
   const investidoresComAtivos = useMemo(
     () => {
@@ -148,7 +152,7 @@ export function AtivosView({
         investidores={investidoresComAtivos}
         selectedInvestor={investidor}
         onSelectInvestor={setInvestidor}
-        incluirTodos
+        incluirTodos={permitirTodos}
         rotuloTodos="Todos"
       />
 
