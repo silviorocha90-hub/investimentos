@@ -1598,836 +1598,106 @@ Isso era comportamento correto.
 
 Não suprimir esse warning.
 
-Aplicar a migration correspondente.
-
 ---
 
-# 54. BANCO ANTES DA IMPORTAÇÃO REAL
+# 75. PUBLICAÇÃO AZURE — ESTADO EM 07/10/2026
 
-Antes da reconstrução real, o banco possuía dados artificiais de
-desenvolvimento.
+A publicação de produção está sendo montada com foco em baixo custo e execução
+independente do computador local.
 
-Investidor:
+Arquitetura definida:
 
-Silvio
+- frontend React/Vite: Azure Static Web Apps Free;
+- API .NET 10: Azure Container Apps, perfil Consumption;
+- banco: Azure SQL;
+- CI/CD: GitHub Actions;
+- domínio: `aportiva.com.br`.
 
-Ativo:
+Recursos de produção conhecidos:
 
-ITUB4
+- Resource Group: `rg-aportiva-prod`;
+- Static Web App: `aportiva-web`;
+- URL atual do frontend:
+  `https://ambitious-grass-0c596d70f.5.azurestaticapps.net`;
+- Container App: `aportiva-api`;
+- Container Apps Environment:
+  `managedEnvironment-rgaportivaprod-a57a`;
+- região do Container App: Brazil South;
+- Azure SQL Server: `sql-aportiva-prod.database.windows.net`;
+- banco Azure SQL: `aportiva`.
 
-Operações artificiais:
+O frontend já possui CI/CD funcional no GitHub Actions. O workflow do Static Web
+App usa:
 
-2026-09-04
-seq 1
-ITUB4
-COMPRA
-100 @ 40
+- `app_location: "./frontend/investimentos-web"`;
+- `api_location: ""`;
+- `output_location: "dist"`.
 
-2026-09-04
-seq 2
-ITUB4
-COMPRA
-100 @ 42
+## Estado atual da API no Azure
 
-2026-09-04
-seq 3
-ITUB4
-VENDA
-50 @ 45
+O Container App foi criado, mas a revisão inicial ainda não está saudável.
 
-Esses dados devem desaparecer quando a importação real reconstruir o banco.
+A revisão inicial utilizou a imagem temporária
+`mcr.microsoft.com/k8se/quickstart:latest` e apresentou incompatibilidade entre
+a porta configurada no ingress e a porta escutada pelo contêiner. Essa revisão
+não representa a API real do projeto.
 
----
+O workflow automático criado pelo portal também falhou. O log mostrou que a
+action `azure/container-apps-deploy-action@v2` recebeu entradas inválidas
+geradas pelo portal e, em seguida, tentou usar o Cloud Build a partir da raiz do
+repositório. O builder do ambiente chegou a ser criado, mas o fluxo não deve ser
+considerado validado.
 
-# 55. API
+Próximo passo da publicação da API:
 
-Swagger conhecido:
+1. corrigir o workflow de deploy do `aportiva-api`;
+2. apontar explicitamente para o Dockerfile real da API;
+3. garantir que a porta exposta/escutada pela API seja a mesma configurada no
+   ingress do Container App;
+4. publicar uma nova revisão;
+5. validar a URL pública da API;
+6. configurar os secrets/variáveis de produção;
+7. apontar `VITE_API_URL` do frontend para a API;
+8. somente depois concluir domínio, CORS e testes ponta a ponta.
 
-https://localhost:7237/swagger/index.html
+Não versionar segredos. Connection string, OpenAI, Resend, brapi, bootstrap e
+tokens de mensageria devem permanecer em secrets/configuração do ambiente.
 
----
+## Domínio
 
-# 56. ESTADO ATUAL EXATO DO DESENVOLVIMENTO
+O domínio `aportiva.com.br` está em processo de associação ao Azure Static Web
+Apps. A validação de propriedade foi iniciada por registro TXT no DNS do
+Registro.br.
 
-Última atualização: 2026-09-25.
+O Registro.br está usando seus próprios servidores DNS em modo avançado. Esse
+modo não aceita `@` como nome de registro. Não criar CNAME no apex usando
+`@`.
 
-A primeira fase de importação já foi superada. O sistema atual opera com os
-dados persistidos no SQL Server e possui API e frontend funcionais.
+A validação TXT comprova a propriedade, mas não resolve sozinha o roteamento do
+domínio raiz. Após a validação no Azure, definir a estratégia final para o apex.
+Se o DNS nativo do Registro.br não oferecer ALIAS/ANAME/CNAME flattening, uma
+alternativa simples é usar `www.aportiva.com.br` via CNAME e redirecionar o
+domínio raiz, ou migrar o DNS para um provedor que suporte flattening.
 
-A prioridade técnica atual é manter uma única interpretação financeira entre
-backend e frontend e garantir consistência após qualquer manutenção dos dados.
+## Acesso de usuários em produção
 
-Entregas estruturais concluídas nesta fase:
+O cadastro público está desabilitado. A fase de testes será restrita a poucos
+usuários cadastrados/controlados manualmente.
 
-1. Motor financeiro único no backend.
-2. Remoção dos principais cálculos financeiros duplicados do frontend.
-3. Cobertura de testes para a regra econômica central.
-4. Refresh/invalidação global após CRUDs relevantes.
-5. Relatório administrativo de reconciliação e integridade.
-6. Atualização deste CODEX para refletir o sistema real.
+Investidores não administradores não devem receber a visão consolidada
+`Todos` em Carteira, Ativos, Opções e Proventos.
 
-O frontend continua mantendo snapshot local somente como fallback/referência.
-Quando a API está disponível, os indicadores financeiros devem vir da API.
+O acesso ao Assistente IA é uma permissão própria. Administradores podem gerar
+análises manualmente; investidores autorizados podem consultar seus relatórios,
+mas não usar o botão de geração manual.
 
----
+## Regra para retomada em novo chat
 
-# 57. REGRA FINANCEIRA PADRÃO
+Antes de continuar a publicação:
 
-A regra econômica oficial da carteira é:
+1. ler este `CODEX.md` e o `DEPLOYMENT.md`;
+2. conferir o workflow atual do Container App no GitHub;
+3. não recriar recursos Azure que já existem;
+4. corrigir primeiro o deploy da API;
+5. validar uma etapa por vez antes de avançar para banco, secrets, CORS e domínio.
 
-Resultado da carteira =
-Valorização dos ativos em carteira
-+ Proventos/dividendos líquidos recebidos
-+ Prêmio líquido (ganho) de opções.
-
-A classe central é:
-
-`Investimentos.Application/Dashboard/CalculadoraResultadoCarteira.cs`
-
-Ela concentra:
-
-- cálculo do resultado econômico;
-- cálculo do capital-base;
-- cálculo da rentabilidade.
-
-Resultado realizado na venda de ações continua sendo calculado e exposto
-separadamente em `ResultadoRealizadoAcoes`.
-
-IMPORTANTE:
-
-`ResultadoRealizadoAcoes` NÃO deve ser somado novamente ao Resultado da
-Carteira.
-
-Isso evita dupla contagem entre valorização, posição remanescente e resultado
-realizado.
-
-No dashboard individual, o resultado operacional de opções atualmente é
-utilizado sem rateio de desconto fiscal global.
-
-No consolidado:
-
-`PremioLiquidoOpcoes = OpcoesBrutas - DescontosFiscais`
-
-Os descontos fiscais são globais e devem ser abatidos exatamente uma vez.
-
-O IR estimado de opções é informativo e não substitui os descontos fiscais
-efetivamente persistidos.
-
----
-
-# 58. INDICADORES POR ATIVO
-
-`PosicaoAtivoDto` expõe, além da posição contábil:
-
-- PrecoAtual
-- ValorAtual
-- Valorizacao
-- Proventos
-- ResultadoOpcoes
-- ResultadoEconomico
-- RentabilidadeEconomica
-- YieldProventos
-
-As telas não devem reconstruir essas fórmulas.
-
-Para cada ativo:
-
-`ResultadoEconomico = Valorizacao + Proventos + ResultadoOpcoes`
-
-Na tabela de posições, `RentabilidadeEconomica` mede somente a valorização da posição atual:
-
-`RentabilidadeEconomica = Valorizacao / CustoTotal * 100`
-
-Proventos e resultado de opções continuam compondo `ResultadoEconomico`, mas não são somados novamente à rentabilidade da posição.
-
-`YieldProventos = Proventos / CustoTotal * 100`
-
-quando `CustoTotal > 0`.
-
-O consolidado recompõe os componentes por ticker a partir dos dashboards
-individuais e mantém a mesma semântica.
-
-Observação importante:
-
-descontos fiscais de opções são globais. Como não existe regra de rateio por
-ativo, a soma dos resultados econômicos individuais por ativo pode diferir do
-resultado consolidado pelo valor desses descontos. Não criar rateio implícito
-sem decisão explícita de negócio.
-
----
-
-# 59. VALOR ATUAL E ATIVOS SEM COTAÇÃO DE MERCADO
-
-Ativos negociados com cotação usam a última cotação disponível.
-
-Alguns investimentos são marcados por valor patrimonial informado, e não por
-cotação:
-
-- PREVIDENCIA / label visual PREV
-- CDB NEON
-- CDB BTG
-- FMP ELETROBRAS
-
-Esses ativos usam o último valor patrimonial persistido por
-ativo/investidor.
-
-PREVIDENCIA permanece fora do indicador `ValorAplicado` do Painel, mas
-integra o patrimônio estimado.
-
----
-
-# 60. REFRESH / INVALIDAÇÃO GLOBAL
-
-`frontend/investimentos-web/src/App.tsx` possui o fluxo central:
-
-- `carregarDadosAtuais()`
-- `atualizarTudo()`
-
-Após alterações relevantes, o frontend deve invalidar/recarregar os dados
-globais através desse fluxo, em vez de manter versões financeiras paralelas.
-
-CRUDs conectados ao refresh global incluem:
-
-- Ativos
-- Operações
-- Opções
-- Proventos
-- Entradas/Saídas
-- Investidores
-- DARF/descontos fiscais
-
-Não reintroduzir:
-
-- `window.location.reload()`;
-- contador artificial `versaoDados`;
-- recargas parciais que atualizem apenas um dashboard e deixem os demais
-  estados financeiros defasados;
-- remount forçado de telas como mecanismo de sincronização.
-
-O botão lateral `Atualizar` executa a mesma recarga global contra a API.
-
----
-
-# 61. RECONCILIAÇÃO E INTEGRIDADE
-
-Existe relatório administrativo em:
-
-`Administração -> Integridade`
-
-Endpoint:
-
-`GET /api/admin/integridade`
-
-Contrato:
-
-`Investimentos.Application/Administracao/Integridade`
-
-Implementação:
-
-`src/Investimentos.Infrastructure/Persistence/Repositories/IntegridadeRepository.cs`
-
-A verificação atual procura:
-
-- venda superior à posição disponível;
-- tipo de operação não reconhecido;
-- opção com quantidade, strike ou datas incompatíveis;
-- opção ENCERRADA sem data de finalização ou preço de recompra;
-- finalização de opção anterior à operação;
-- provento com quantidade, valor ou datas incompatíveis;
-- posição atual sem cotação, quando o ativo depende de cotação;
-- cotação duplicada por ativo/data;
-- saldo disponível duplicado por investidor/data.
-
-Severidades:
-
-- ERRO
-- AVISO
-
-O relatório é diagnóstico. Não deve corrigir dados automaticamente.
-
-Ao encontrar inconsistência, identificar primeiro a origem e corrigir pelo
-fluxo de domínio/CRUD apropriado.
-
----
-
-# 62. OPÇÕES — SEMÂNTICA ATUAL
-
-Status persistidos atualmente relevantes:
-
-- ABERTA
-- EXECUTADA
-- ENCERRADA
-- EXPIRADA
-
-A interface atual cadastra novas opções e as marca imediatamente como
-`EXECUTADA`.
-
-No contexto atual da aplicação, `EXECUTADA` representa a operação de opção
-registrada/ativa. Não interpretar o nome isoladamente como prova de exercício
-da ação-base.
-
-`ENCERRADA` representa fechamento por recompra e exige:
-
-- DataFinalizacao
-- PrecoRecompraUnitario
-
-`ValorExecucao > 0` é o sinal histórico utilizado quando existe liquidação
-por exercício/atribuição que deve impactar a operação da ação-base.
-
-Na manutenção administrativa:
-
-- dados originais de uma EXECUTADA são preservados;
-- EXECUTADA pode ser finalizada como ENCERRADA com os dados de fechamento;
-- ENCERRADA mantém edição restrita aos dados de finalização/resultado.
-
-Não voltar a usar `EXERCIDA` como status persistido sem migration e revisão
-das regras atuais.
-
----
-
-# 63. EXERCÍCIO DE OPÇÕES E PREÇO MÉDIO
-
-`CalcularCarteiraService` calcula posição e preço médio a partir das
-operações.
-
-Regras principais:
-
-- COMPRA aumenta quantidade e custo;
-- VENDA realiza resultado usando o preço médio corrente;
-- venda reduz o custo proporcionalmente;
-- o preço médio da posição remanescente não é alterado por uma venda;
-- venda acima da posição disponível é inválida.
-
-Para opções com `ValorExecucao > 0`, a carteira procura a operação normal de
-ação correspondente por ativo, natureza derivada, quantidade e data.
-
-Mapeamento:
-
-- PUT VENDA -> COMPRA
-- PUT COMPRA -> VENDA
-- CALL VENDA -> VENDA
-- CALL COMPRA -> COMPRA
-
-Quando a operação correspondente existe, o preço unitário utilizado no
-cálculo da carteira é substituído pelo valor de execução da opção.
-
-Não criar uma segunda operação automaticamente quando não houver
-correspondência segura.
-
----
-
-# 64. PROVENTOS
-
-Tipos internos permitidos:
-
-- DIVIDENDO
-- JCP
-- RENDIMENTO
-
-Na interface, JCP pode ser apresentado ao usuário como `JUROS`, mas o valor
-interno/domínio permanece `JCP`.
-
-`ValorRecebido` é o valor líquido efetivamente recebido e deve ser
-preservado.
-
-No cadastro total/rateado, os registros pertencem aos investidores conforme
-a participação utilizada no rateio. O consolidado não deve duplicar o valor
-original ao somar os registros individuais.
-
----
-
-# 65. ADMINISTRAÇÃO E NAVEGAÇÃO
-
-Telas de consulta principais:
-
-- Painel
-- Carteira
-- Ativos/Análise
-- Opções
-- Proventos
-
-Manutenção fica concentrada em Administração.
-
-Abas administrativas relevantes:
-
-- Ativos
-- Operações
-- Opções
-- Proventos
-- Entradas / Saídas
-- Investidores
-- DARF
-- Integridade
-- Parâmetros
-- Usuários
-- Metas
-
-Padrões visuais já adotados:
-
-- indicadores positivos verdes e negativos vermelhos;
-- labels financeiros principais verdes;
-- botões Editar/Excluir padronizados;
-- evitar scroll horizontal;
-- filtro TODOS quando aplicável;
-- label visual PREV para previdência.
-
----
-
-# 66. TESTES E VALIDAÇÃO
-
-A regra econômica central possui testes em
-`Investimentos.Application.Tests`.
-
-Coberturas importantes:
-
-- `CalculadoraResultadoCarteiraTests`;
-- dashboard individual;
-- dashboard consolidado;
-- cálculo da carteira e resultado realizado;
-- regras atuais de atualização/exclusão de opções;
-- YieldProventos calculado no backend.
-
-Após alteração financeira ou estrutural relevante, executar:
-
-```bash
-dotnet test Investimentos.Application.Tests/Investimentos.Application.Tests.csproj
-```
-
-Frontend:
-
-```bash
-cd frontend/investimentos-web
-npm run build
-```
-
-O build da solução completa pode apresentar o problema histórico MSB4249
-relacionado ao projeto Web/Solution. Para validar a API isoladamente:
-
-```bash
-cd Investimentos.Api
-dotnet build Investimentos.Api.csproj
-```
-
-Não tratar MSB4249 como erro da regra financeira sem confirmar o projeto que
-falhou.
-
----
-
-# 67. EXECUÇÃO LOCAL
-
-API:
-
-```bash
-cd Investimentos.Api
-dotnet run
-```
-
-Perfil HTTPS conhecido:
-
-`https://localhost:7237`
-
-HTTP alternativo:
-
-`http://localhost:5001`
-
-Frontend:
-
-```bash
-cd frontend/investimentos-web
-npm run dev
-```
-
-`VITE_API_URL` deve apontar para a API correta. O fallback atual do frontend
-é `https://localhost:7237`.
-
-Se necessário:
-
-```bash
-dotnet dev-certs https --trust
-```
-
----
-
-# 68. MIGRATIONS
-
-Regras permanentes:
-
-- não editar migrations antigas;
-- não editar ModelSnapshot manualmente;
-- criar migration nova para alteração real de modelo;
-- aplicar migration antes de concluir que o modelo está inconsistente.
-
-O sistema executa `Database.MigrateAsync()` na inicialização da API.
-
-Migrations posteriores às primeiras versões incluem normalização de opções,
-descontos fiscais, movimentações financeiras e valor patrimonial por ativo.
-
-Consultar a pasta `src/Investimentos.Infrastructure/Migrations` para a lista
-canônica atual, em vez de confiar em uma lista histórica fixa neste documento.
-
----
-
-# 69. LIMITAÇÕES CONHECIDAS / DECISÕES PENDENTES
-
-1. `RentabilidadeAno` é um nome legado. O cálculo atual representa a
-   rentabilidade econômica acumulada com base no resultado e capital-base;
-   não é ainda uma performance temporal anual rigorosa.
-
-2. Entradas e saídas são expostas no dashboard, mas ainda não compõem uma
-   metodologia temporal como Modified Dietz/TWR/XIRR.
-
-3. O campo/indicador `ValorAplicado` do Painel representa atualmente valor
-   de mercado das posições elegíveis, e o nome é legado.
-
-4. Descontos fiscais globais de opções não são rateados por ativo.
-
-5. Histórico/auditoria completa da carteira e performance temporal pertencem
-   à próxima fase funcional.
-
-Essas limitações devem ser tratadas explicitamente. Não alterar a semântica
-silenciosamente.
-
----
-
-# 70. FASE FUNCIONAL
-
-## Dashboard avançado de Opções — concluído
-
-A tela de consulta de Opções possui agora indicadores calculados a partir das
-métricas fornecidas pelo backend:
-
-- capital comprometido em PUT de venda ativa;
-- ações comprometidas em CALL de venda ativa;
-- prêmio recebido nas posições ativas, líquido das taxas da operação;
-- retorno dos prêmios ativos sobre o capital comprometido em PUT;
-- próximos vencimentos;
-- exposição a exercício com base na relação entre cotação atual e strike.
-
-Uma opção é considerada ativa para esses indicadores quando a situação é
-ABERTA ou EXECUTADA.
-
-Para PUT de venda:
-
-`CapitalComprometidoPut = Strike * Quantidade`
-
-Para CALL de venda:
-
-`AcoesComprometidasCall = Quantidade`
-
-A exposição a exercício é sinalizada quando:
-
-- PUT: preço atual do ativo-base <= strike;
-- CALL: preço atual do ativo-base >= strike.
-
-Essa sinalização representa exposição objetiva pelo preço/strike e não uma
-previsão de exercício.
-
-As métricas por operação ficam em `OperacaoOpcaoDto`; o React agrega e
-apresenta os valores, sem reconstruir a regra de classificação da exposição.
-
-## Metas por ativo — concluído
-
-As metas são configuráveis por investidor e ativo e ficam persistidas em `MetaAtivo`.
-
-A combinação `InvestidorId + AtivoId` é única e cada meta armazena `QuantidadeDesejada`.
-A quantidade atual não é persistida na meta: ela é calculada pelo backend a partir da carteira,
-utilizando `CalcularCarteiraService` como fonte da posição.
-
-A API expõe:
-
-- `GET /api/metas-ativos`, com filtro opcional por investidor;
-- `PUT /api/metas-ativos`, para inclusão/atualização;
-- `DELETE /api/metas-ativos/{id}`.
-
-O DTO de consulta fornece:
-
-- quantidade atual;
-- quantidade desejada;
-- quantidade faltante;
-- percentual atingido.
-
-A manutenção visual fica em `Administração -> Metas`, com inclusão, edição, exclusão e barra de progresso.
-A meta não é fixa em 1.000 unidades: a quantidade desejada é configurável por ativo/investidor.
-
-Persistência adicionada pela migration `20260925205931_AdicionarMetasAtivos`, com FKs para
-Investidor e Ativo e índice único para impedir metas duplicadas da mesma combinação.
-
-## Histórico/auditoria da carteira e performance temporal — concluído
-
-A rentabilidade temporal passou a ser calculada separadamente do resultado econômico acumulado da carteira.
-
-A metodologia adotada é **Modified Dietz**, utilizando os snapshots de `HistoricoPatrimonio` como limites dos períodos e `MovimentacaoFinanceira` para identificar aportes e retiradas. Os fluxos são ponderados pelo tempo em que permaneceram investidos no período.
-
-Regras principais:
-
-- aporte não é tratado como rendimento;
-- retirada não é tratada como prejuízo;
-- ganho líquido do período = patrimônio final - patrimônio inicial - fluxo líquido;
-- retornos dos períodos são encadeados geometricamente para formar a rentabilidade acumulada;
-- no consolidado, a série começa somente quando todos os investidores presentes no histórico possuem referência patrimonial, evitando entrada artificial de patrimônio como performance;
-- o resultado econômico oficial da carteira permanece separado e continua sendo valorização dos ativos + proventos/dividendos líquidos + prêmio líquido de opções.
-
-A API expõe `GET /api/performance`, com filtro opcional `investidorId`.
-
-O Painel usa a performance temporal quando existem ao menos dois snapshots patrimoniais e apresenta uma área de auditoria com patrimônio inicial/final, aportes, retiradas, ganho líquido, retorno do período e retorno acumulado. Sem histórico suficiente, mantém o indicador econômico existente como fallback.
-
-Arquivos centrais:
-
-- `Investimentos.Application/Performance/CalculadoraPerformanceCarteira.cs`
-- `Investimentos.Application/Performance/ConsultarPerformanceCarteiraService.cs`
-- `Investimentos.Application/Performance/PerformanceCarteiraDto.cs`
-- `frontend/investimentos-web/src/pages/Dashboard/DashboardView.tsx`
-
-Validação da unidade concluída em 25/09/2026:
-
-- Application Tests: 78/78 aprovados;
-- frontend: `npm run build` concluído com sucesso;
-- permanece apenas o warning nullable já existente em `CalcularCarteiraService.cs`, sem falha de build.
-
-## Próximos itens
-
-1. Corrigir e validar a apuração fiscal/DARF com ações + opções e consolidação mensal.
-2. Concluir o ajuste visual/ordenação da tabela de Opções.
-
-A ordem pode ser revista por decisão explícita de produto.
-
-
-## Fiscal / DARF — estado em 01/10/2026
-
-A evolução Fiscal/DARF está em andamento.
-
-Estado funcional atual:
-
-- a tela mantém a tabela **DARFs registrados** como histórico real dos pagamentos cadastrados;
-- a tabela de DARFs registrados exibe **Competência** e **Pagamento** separadamente;
-- no modelo atual, enquanto não existir competência persistida no domínio, a competência do DARF é inferida como o mês anterior à `DataPagamento`;
-- exemplo: pagamento em 30/09/2026 é apresentado como competência 08/2026;
-- acima do histórico existe uma **simulação da próxima competência**, definida como a competência imediatamente posterior à última competência já paga;
-- exemplo: se 08/2026 está paga, a simulação deve apresentar 09/2026, que será paga posteriormente em outubro;
-- a simulação é separada por investidor.
-
-Arquivos centrais:
-
-- `Investimentos.Application/Fiscal/FiscalDto.cs`
-- `src/Investimentos.Infrastructure/Persistence/Repositories/FiscalRepository.cs`
-- `frontend/investimentos-web/src/pages/Administracao/components/CarteiraTab.tsx`
-
-Limitações conhecidas da apuração fiscal atual:
-
-- `FiscalRepository` considera opções somente quando `DataFinalizacao` e `ResultadoFinal` estão preenchidos;
-- operações `EXECUTADA` sem `DataFinalizacao` ficam fora da estimativa e são tratadas como pendência;
-- a estimativa atual calcula imposto por resultado positivo individual (15% comum / 20% day trade), portanto ainda não faz corretamente a consolidação mensal de ganhos e perdas antes da aplicação da alíquota;
-- prejuízos acumulados, compensações, IRRF e demais regras fiscais ainda não são tratados automaticamente;
-- o filtro anual dos DARFs ainda merece revisão na virada do ano porque a competência é inferida a partir do mês anterior ao pagamento.
-
-Referência de validação informada em 01/10/2026:
-
-- no MyProfit, para a competência 09/2026, foi observada base de cálculo de R$ 6.509,34 e DARF estimada de R$ 976,40;
-- o MyProfit ainda estava recebendo atualizações da B3, portanto esses valores são referência de comparação, não valor definitivo;
-- foi identificado que a estimativa do projeto precisa considerar **ações e opções**, aproximando a metodologia do MyProfit;
-- a próxima evolução do motor fiscal deve auditar todas as operações realizadas/finalizadas dentro da competência, somar ações e opções e separar corretamente operações comuns e day trade antes de calcular a estimativa;
-- não ajustar números artificialmente para coincidir com o MyProfit: a diferença deve ser explicável operação por operação.
-
-## Opções — ajuste visual solicitado em 01/10/2026
-
-A tela Administração -> Opções ainda precisa receber o seguinte ajuste solicitado:
-
-- retirar a paginação;
-- manter somente scroll vertical;
-- aumentar significativamente a altura/área visível da tabela;
-- incluir/exibir a **Data de finalização**;
-- ordenar prioritariamente pela Data de finalização;
-- para operações com status **EXECUTADA** sem data de finalização, usar a **Data de inclusão/operação** para ordenação;
-- a solicitação de aumento da tabela foi reforçada após a última captura de tela: a área atual ainda está pequena e deixa grande espaço vazio abaixo.
-
-Esse ajuste ainda não deve ser considerado concluído até validação visual do usuário.
-
----
-
-# 71. REFERÊNCIAS PRINCIPAIS DO CÓDIGO
-
-Motor financeiro:
-
-- `Investimentos.Application/Dashboard/CalculadoraResultadoCarteira.cs`
-- `Investimentos.Application/Dashboard/ConsultarDashboardHandler.cs`
-- `Investimentos.Application/Dashboard/ConsultarDashboardConsolidadoHandler.cs`
-- `Investimentos.Application/Carteira/ConsultarCarteira/CalcularCarteiraService.cs`
-- `Investimentos.Application/Carteira/ConsultarCarteira/PosicaoAtivoDto.cs`
-
-Refresh frontend:
-
-- `frontend/investimentos-web/src/App.tsx`
-
-Administração:
-
-- `frontend/investimentos-web/src/pages/Administracao/AdministracaoView.tsx`
-
-Metas por ativo:
-
-- `Investimentos.Application/Metas/MetaAtivoDto.cs`
-- `Investimentos.Application/Metas/IMetaAtivoRepository.cs`
-- `src/Investimentos.Infrastructure/Persistence/Repositories/MetaAtivoRepository.cs`
-- `frontend/investimentos-web/src/pages/Administracao/components/MetasAtivosTab.tsx`
-
-Integridade:
-
-- `Investimentos.Application/Administracao/Integridade/IntegridadeDto.cs`
-- `Investimentos.Application/Administracao/Integridade/IIntegridadeRepository.cs`
-- `src/Investimentos.Infrastructure/Persistence/Repositories/IntegridadeRepository.cs`
-- `frontend/investimentos-web/src/pages/Administracao/components/IntegridadeTab.tsx`
-
-API:
-
-- `Investimentos.Api/Program.cs`
-
----
-
-# 72. QUANDO RETOMAR O PROJETO
-
-Antes de propor mudança estrutural:
-
-1. Ler este `CODEX.md`.
-2. Conferir o estado atual e as limitações conhecidas.
-3. Não reimplementar cálculos no frontend quando o backend já os fornece.
-4. Preservar o motor financeiro único.
-5. Usar o refresh global após CRUD financeiro.
-6. Executar Integridade quando houver suspeita de divergência nos dados.
-7. Não alterar migrations antigas nem ModelSnapshot manualmente.
-8. Compilar/testar uma unidade coerente antes de avançar.
-9. Atualizar este documento quando uma decisão estrutural mudar.
-
----
-
-# 73. REGRA DE MANUTENÇÃO DO CODEX
-
-Este documento é a referência técnica viva do projeto.
-
-Atualizar a data e as seções afetadas sempre que houver mudança em:
-
-- regra financeira;
-- arquitetura de refresh;
-- semântica de opções;
-- persistência/modelo;
-- reconciliação;
-- fluxo principal de navegação;
-- metodologia de performance;
-- roadmap funcional.
-
-Não manter instruções de \"próximo passo\" que já tenham sido concluídas.
-O estado atual deve prevalecer sobre registros históricos.
-
-
----
-
-## Histórico patrimonial mensal automático
-
-Em Administração > Investidores > Histórico Patrimonial, a competência corrente
-é mantida automaticamente a partir do patrimônio estimado calculado pelo
-`ConsultarDashboardHandler` de cada investidor.
-
-Regras:
-
-- a competência é mensal e individual por investidor;
-- a data da competência corrente é sempre o último dia do respectivo mês
-  (por exemplo, outubro/2026 = 31/10/2026), mesmo antes do encerramento do mês;
-- enquanto o mês estiver aberto, somente o valor patrimonial da competência
-  corrente é atualizado; sua data permanece fixa no último dia do mês;
-- ao iniciar um novo mês, a competência anterior não é mais alterada;
-- na primeira atualização administrativa do novo mês, uma nova competência é
-  criada automaticamente;
-- o valor persistido é a mesma fotografia patrimonial usada pelo Dashboard:
-  valor aplicado atual + caixa disponível;
-- registros de meses anteriores permanecem congelados para auditoria e
-  performance temporal;
-- não criar uma nova linha a cada dia: o mês corrente deve permanecer como uma
-  única competência atualizável.
-
-
-### Painel — Evolução da Carteira
-
-O gráfico `Painel > Evolução da Carteira` deve usar o Histórico Patrimonial
-persistido como fonte. Antes de retornar `/api/dashboard/evolucao`, a competência
-mensal corrente deve ser sincronizada para todos os investidores, garantindo que
-o gráfico considere a fotografia patrimonial mais recente mesmo quando o usuário
-não abriu previamente a tela Administração.
-
-A competência anterior permanece congelada; somente o valor da competência do mês
-corrente é atualizado. A data dessa competência permanece sempre fixada no último
-dia do respectivo mês.
-
-
----
-
-# 74. ASSISTENTE IA AUTÔNOMO
-
-O projeto possui um Assistente IA diário integrado à carteira.
-
-Componentes principais:
-
-- `Investimentos.Api/AssistenteIa/AssistenteIaService.cs`;
-- `Investimentos.Api/AssistenteIa/AssistenteIaWorker.cs`;
-- entidade `RelatorioDiarioIa`;
-- tela `Assistente IA` no menu principal;
-- endpoints `GET /api/assistente-ia/relatorios` e
-  `POST /api/assistente-ia/gerar`.
-
-Regras:
-
-- o backend coleta automaticamente posições e opções dos investidores;
-- somente posições com quantidade positiva entram no contexto;
-- opções ABERTA/EXECUTADA entram com strike, vencimento, prêmio e exposição;
-- a IA usa a Responses API da OpenAI com pesquisa web para informações atuais;
-- fatos devem ser relacionados à posição concreta da carteira;
-- a IA não executa ordens de compra, venda ou opções;
-- um relatório diário é persistido por data;
-- o worker usa o horário de São Paulo e gera no máximo um relatório automático
-  por dia depois da hora configurada;
-- reinícios da API não duplicam o relatório já persistido;
-- o botão Gerar análise agora força nova geração do relatório do dia;
-- envio por Telegram é opcional e ativado somente quando token e chat id
-  estiverem configurados.
-
-Configuração por ambiente:
-
-- `OPENAI_API_KEY`;
-- `OPENAI_MODEL` (fallback `gpt-6-luna`);
-- `ASSISTENTE_IA_ATIVO`;
-- `ASSISTENTE_IA_HORA` (fallback 19);
-- `TELEGRAM_BOT_TOKEN` e `TELEGRAM_CHAT_ID` opcionais;
-- `FRONTEND_ORIGINS` para CORS em produção.
-
-A aplicação possui Dockerfiles para API e frontend e instruções em
-`DEPLOYMENT.md`, permitindo execução em nuvem sem depender do computador
-local.
-
-
-### Assistente IA — atualização automática de mercado e WhatsApp (06/10/2026)
-
-Antes de gerar o relatório, o Assistente IA identifica os ativos realmente
-presentes nas carteiras e nas opções ativas e tenta atualizar suas cotações
-pela brapi. Após persistir as cotações disponíveis, os dashboards são
-recalculados para que patrimônio, valor atual e distância do strike usem os
-dados mais recentes.
-
-Para opções ABERTA/EXECUTADA, o serviço tenta obter também a última cotação
-EOD da série. Quando disponível e a natureza é VENDA, o contexto da IA recebe
-custo estimado de recompra, ganho estimado de recompra e percentual do prêmio
-capturado. Cotação indisponível nunca deve ser inventada.
-
-A semântica existente de opções é preservada: EXECUTADA continua significando
-opção registrada/ativa no domínio. Exercício/atribuição da ação-base só é
-tratado como confirmado quando ValorExecucao > 0.
-
-Integração de mercado:
-
-- `Investimentos.Api/AssistenteIa/MercadoBrapiService.cs`;
-- `BRAPI_TOKEN` opcional, porém necessário para cobertura ampla;
-- opções fora do sandbox dependem do acesso contratado na brapi.
-
-Entrega:
-
-- relatório completo permanece persistido no sistema;
-- Telegram continua opcional por compatibilidade;
-- WhatsApp Cloud API passa a ser suportado por template aprovado;
-- sem credenciais de mensageria, a geração/persistência do relatório continua
-  funcionando.
