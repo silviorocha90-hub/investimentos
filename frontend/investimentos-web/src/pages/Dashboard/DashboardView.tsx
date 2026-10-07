@@ -927,45 +927,80 @@ export function DashboardView({
 
   const evolucaoCarteiraTotal =
     useMemo(() => {
-      const totaisPorData =
-        new Map<string, number>()
+      const datas = Array.from(
+        new Set(
+          seriesEvolucao.flatMap(
+            (serie) =>
+              serie.pontos.map(
+                (ponto) =>
+                  normalizarDataEvolucao(
+                    ponto.data,
+                  ),
+              ),
+          ),
+        ),
+      ).sort((a, b) =>
+        a.localeCompare(b),
+      )
 
-      seriesEvolucao.forEach(
-        (serie) => {
-          serie.pontos.forEach(
-            (ponto) => {
-              const data =
-                normalizarDataEvolucao(
-                  ponto.data,
-                )
-
-              totaisPorData.set(
-                data,
-                (totaisPorData.get(
-                  data,
-                ) ?? 0) +
+      const pontosPorInvestidor =
+        seriesEvolucao.map(
+          (serie) => ({
+            pontos: serie.pontos
+              .map((ponto) => ({
+                data:
+                  normalizarDataEvolucao(
+                    ponto.data,
+                  ),
+                carteira:
                   ponto.carteira,
-              )
+              }))
+              .sort((a, b) =>
+                a.data.localeCompare(
+                  b.data,
+                ),
+              ),
+            ultimoValor: 0,
+            indice: 0,
+          }),
+        )
+
+      const pontos = datas.map(
+        (data) => {
+          let carteira = 0
+
+          pontosPorInvestidor.forEach(
+            (serie) => {
+              while (
+                serie.indice <
+                  serie.pontos.length &&
+                serie.pontos[
+                  serie.indice
+                ].data <= data
+              ) {
+                serie.ultimoValor =
+                  serie.pontos[
+                    serie.indice
+                  ].carteira
+                serie.indice += 1
+              }
+
+              carteira +=
+                serie.ultimoValor
             },
           )
+
+          return {
+            data,
+            carteira,
+          }
         },
       )
 
       return [
         {
           investidor: 'Carteira',
-          pontos: Array.from(
-            totaisPorData.entries(),
-          )
-            .sort(([a], [b]) =>
-              a.localeCompare(b),
-            )
-            .map(
-              ([data, carteira]) => ({
-                data,
-                carteira,
-              }),
-            ),
+          pontos,
         },
       ]
     }, [seriesEvolucao])
