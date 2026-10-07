@@ -1219,11 +1219,8 @@ function App() {
           <span className="sidebar-usuario">
             {usuario?.nome ?? 'Aportiva'}
           </span>
-
           <small className="sidebar-perfil">
-            {usuario?.perfil === 'Admin'
-              ? 'Administrador'
-              : 'Investidor'}
+            {usuario?.perfil === 'Admin' ? 'Administrador' : 'Investidor'}
           </small>
         </div>
       </aside>
