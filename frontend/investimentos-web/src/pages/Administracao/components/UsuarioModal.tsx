@@ -15,6 +15,7 @@ import {
   nomesPermissoes,
   permissoesSistema,
   permissoesVisualizacao,
+  permissoesInvestidor,
 } from '../../../types/usuario'
 
 import type {
@@ -519,7 +520,7 @@ export function UsuarioModal({
                         </span>
                       </header>
                       <div className="user-investor-permissions">
-                        {permissoesVisualizacao.map((permissao) => {
+                        {permissoesInvestidor.map((permissao) => {
                           const selecionada =
                             acesso?.permissoes.includes(permissao) ?? false
                           return (
