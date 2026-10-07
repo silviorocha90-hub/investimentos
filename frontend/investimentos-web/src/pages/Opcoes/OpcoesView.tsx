@@ -515,11 +515,15 @@ export function OpcoesView({
       setErroOpcao(null)
 
       const investidor =
-        obterInvestidor()
+        investidores.find(
+          (item) =>
+            item.id ===
+            novaOpcao.investidorId,
+        )
 
       if (!investidor) {
         setErroOpcao(
-          'Investidor não selecionado.',
+          'Selecione o investidor.',
         )
 
         return
@@ -1189,6 +1193,9 @@ export function OpcoesView({
       modalInclusaoAberto ? (
         <OpcaoModal
           modo="novo"
+          investidores={
+            investidores
+          }
           salvando={
             salvando
           }
