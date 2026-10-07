@@ -565,3 +565,35 @@
 .auth-login-mark i:nth-child(1) { height: 20px; }
 .auth-login-mark i:nth-child(2) { height: 31px; }
 .auth-login-mark i:nth-child(3) { height: 43px; }
+
+
+/* Aportiva — assinatura visual principal */
+.auth-brand-logo-only {
+  width: 100%;
+  padding: 0 0 22px;
+  border-bottom: 1px solid rgba(99, 230, 200, 0.16);
+}
+
+.auth-login-panel .auth-brand-logo-only .auth-login-mark {
+  width: min(100%, 460px);
+  height: auto;
+  max-height: 310px;
+  padding: 0;
+  border-radius: 0;
+  object-fit: contain;
+  filter: drop-shadow(0 20px 42px rgba(99, 230, 200, 0.2));
+  box-shadow: none;
+}
+
+.auth-showcase-brand .auth-showcase-mark {
+  width: 118px;
+  height: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 10px 24px rgba(99, 230, 200, 0.18));
+}
+
+@media (max-width: 520px) {
+  .auth-login-panel .auth-brand-logo-only .auth-login-mark {
+    width: min(100%, 360px);
+  }
+}
