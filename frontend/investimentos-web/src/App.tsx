@@ -1275,7 +1275,9 @@ function App() {
               investidores
             }
             dashboardConsolidado={
-              dashboard
+              usuario?.perfil === 'Admin'
+                ? dashboard
+                : null
             }
             carteiras={
               carteirasPorInvestidor
@@ -1292,6 +1294,9 @@ function App() {
                 ? dashboardSnapshot
                     .timelinePorPessoa
                 : {}
+            }
+            permitirTodos={
+              usuario?.perfil === 'Admin'
             }
             saldosDisponiveis={
               usuario?.perfil ===
@@ -1317,7 +1322,12 @@ function App() {
               carteirasPorInvestidor
             }
             dashboardConsolidado={
-              dashboard
+              usuario?.perfil === 'Admin'
+                ? dashboard
+                : null
+            }
+            permitirTodos={
+              usuario?.perfil === 'Admin'
             }
           />
         ) : null}
@@ -1343,6 +1353,9 @@ function App() {
               setInvestidorSelecionado
             }
             modo="consulta"
+            permitirTodos={
+              usuario?.perfil === 'Admin'
+            }
           />
         ) : null}
 
@@ -1362,13 +1375,16 @@ function App() {
               setInvestidorSelecionado
             }
             modo="consulta"
+            permitirTodos={
+              usuario?.perfil === 'Admin'
+            }
           />
         ) : null}
 
         {telaAtual ===
           'assistente-ia' &&
         permissaoNoInvestidor(
-          'Dashboard',
+          'AssistenteIa',
         ) ? (
           <AssistenteIaView
             podeGerar={usuario?.perfil === 'Admin'}
