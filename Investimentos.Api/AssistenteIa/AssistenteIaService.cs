@@ -35,11 +35,34 @@ public sealed class AssistenteIaService
     }
 
     public async Task<IReadOnlyList<RelatorioDiarioIa>> ListarAsync(
+        Guid usuarioId,
+        bool administrador,
         CancellationToken cancellationToken)
     {
+        if (administrador)
+        {
+            return await _context.RelatoriosDiariosIa
+                .AsNoTracking()
+                .Where(x => x.Escopo == "TODOS")
+                .OrderByDescending(x => x.DataReferencia)
+                .Take(90)
+                .ToListAsync(cancellationToken);
+        }
+
+        var investidoresIds = await _context.Usuarios
+            .AsNoTracking()
+            .Where(x => x.Id == usuarioId)
+            .SelectMany(x => x.Investidores)
+            .Select(x => x.InvestidorId)
+            .Distinct()
+            .ToArrayAsync(cancellationToken);
+
         return await _context.RelatoriosDiariosIa
             .AsNoTracking()
-            .Where(x => x.Escopo == "TODOS")
+            .Where(x =>
+                x.Escopo == "INVESTIDOR" &&
+                x.InvestidorId.HasValue &&
+                investidoresIds.Contains(x.InvestidorId.Value))
             .OrderByDescending(x => x.DataReferencia)
             .Take(90)
             .ToListAsync(cancellationToken);
