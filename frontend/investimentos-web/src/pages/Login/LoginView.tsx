@@ -75,14 +75,14 @@ export function LoginView({
       <section className="auth-card auth-card-login">
         <aside className="auth-showcase">
           <div className="auth-showcase-brand">
-            <span className="auth-showcase-mark">
-              <i />
-              <i />
-              <i />
-            </span>
+            <img
+              className="auth-showcase-mark"
+              src="/aportiva-logo.svg"
+              alt="Aportiva"
+            />
 
             <div>
-              <strong>Investimentos</strong>
+              <strong>Aportiva</strong>
               <span>Gestão da carteira</span>
             </div>
           </div>
@@ -134,15 +134,15 @@ export function LoginView({
 
         <div className="auth-login-panel">
           <div className="auth-brand auth-brand-login">
-            <span className="auth-login-mark" aria-hidden="true">
-              <i />
-              <i />
-              <i />
-            </span>
+            <img
+              className="auth-login-mark"
+              src="/aportiva-logo.svg"
+              alt="Aportiva"
+            />
 
             <div>
               <h1>
-                Investimentos
+                Aportiva
               </h1>
 
               <p>
