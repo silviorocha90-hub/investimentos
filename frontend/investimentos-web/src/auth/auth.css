@@ -612,3 +612,120 @@
   display: block;
   object-fit: contain;
 }
+
+
+/* Login Aportiva — composição aprovada */
+.auth-page {
+  background:
+    radial-gradient(circle at 72% 58%, rgba(28, 220, 164, 0.22), transparent 28%),
+    radial-gradient(circle at 20% 15%, rgba(22, 139, 115, 0.16), transparent 32%),
+    linear-gradient(135deg, #020a0c 0%, #031712 48%, #064a36 100%);
+}
+
+.aportiva-login.auth-card-login {
+  width: min(1180px, 94vw);
+  min-height: 680px;
+  grid-template-columns: minmax(390px, 0.8fr) minmax(520px, 1.2fr);
+  align-items: center;
+  overflow: hidden;
+  border: 1px solid rgba(99, 230, 200, 0.18);
+  background:
+    linear-gradient(145deg, rgba(2, 18, 18, 0.88), rgba(3, 35, 28, 0.76));
+  box-shadow: 0 36px 100px rgba(0, 0, 0, 0.46);
+}
+
+.aportiva-login .auth-login-panel {
+  margin: 48px;
+  padding: 38px;
+  border: 1px solid rgba(99, 230, 200, 0.28);
+  border-radius: 24px;
+  background: rgba(2, 24, 22, 0.68);
+  box-shadow: 0 22px 70px rgba(0, 0, 0, 0.28);
+  backdrop-filter: blur(20px);
+}
+
+.aportiva-login-heading {
+  padding-top: 0 !important;
+  text-align: center;
+}
+
+.aportiva-login-heading h2 {
+  margin-top: 18px;
+  font-size: 2rem;
+}
+
+.aportiva-login-heading p {
+  font-size: 0.9rem;
+}
+
+.aportiva-login .auth-form input {
+  border-color: rgba(99, 230, 200, 0.3);
+  background: rgba(3, 24, 28, 0.72);
+}
+
+.aportiva-login .auth-primary {
+  background: linear-gradient(135deg, #63e6c8, #39c7a6);
+  color: #031512;
+  font-size: 1rem;
+}
+
+.aportiva-login-hero {
+  position: relative;
+  min-height: 680px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background:
+    linear-gradient(90deg, rgba(2, 15, 16, 0.12), rgba(0, 83, 58, 0.12));
+}
+
+.aportiva-login-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(155deg, transparent 55%, rgba(99, 230, 200, 0.12) 55.2%, transparent 56%),
+    repeating-linear-gradient(90deg, transparent 0 54px, rgba(99, 230, 200, 0.025) 55px 56px);
+  opacity: 0.8;
+}
+
+.aportiva-login-hero::after {
+  content: '';
+  position: absolute;
+  width: 520px;
+  height: 520px;
+  right: -90px;
+  bottom: -210px;
+  border-radius: 50%;
+  background: rgba(26, 222, 163, 0.18);
+  filter: blur(70px);
+}
+
+.aportiva-login-hero img {
+  position: relative;
+  z-index: 1;
+  width: min(92%, 650px);
+  height: auto;
+  filter: drop-shadow(0 24px 52px rgba(25, 224, 166, 0.2));
+}
+
+@media (max-width: 900px) {
+  .aportiva-login.auth-card-login {
+    width: min(520px, 94vw);
+    min-height: auto;
+    grid-template-columns: 1fr;
+  }
+
+  .aportiva-login .auth-login-panel {
+    margin: 22px;
+  }
+
+  .aportiva-login-hero {
+    min-height: 300px;
+    order: -1;
+  }
+
+  .aportiva-login-hero img {
+    width: min(86%, 420px);
+  }
+}
