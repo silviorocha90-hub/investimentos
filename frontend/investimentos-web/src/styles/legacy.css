@@ -994,12 +994,21 @@ a {
   grid-column: span 1;
 }
 
+.dashboard-grid .dashboard-evolution-panel:nth-last-child(2),
+.dashboard-grid .dashboard-evolution-panel:last-child {
+  grid-column: auto;
+  width: calc(50% - 7px);
+}
+
 .dashboard-grid .dashboard-evolution-panel:nth-last-child(2) {
-  grid-column: 1 / 2;
+  grid-column: 1 / -1;
+  justify-self: start;
 }
 
 .dashboard-grid .dashboard-evolution-panel:last-child {
-  grid-column: 2 / 4;
+  grid-column: 1 / -1;
+  justify-self: end;
+  margin-top: calc(-100% - 14px);
 }
 
 .content-grid {
