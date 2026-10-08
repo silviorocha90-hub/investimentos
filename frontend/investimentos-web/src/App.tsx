@@ -331,6 +331,10 @@ function App() {
     )
   }
 
+  const podeVerDadosDeOutrosInvestidores =
+    usuario?.perfil === 'Admin' ||
+    (usuario?.investidoresIds?.length ?? 0) > 1
+
   function telaPermitida(
     tela: Tela,
   ) {
@@ -1354,7 +1358,7 @@ function App() {
               apiDisponivel
             }
             erro={erro}
-            somenteEvolucao={false}
+            somenteEvolucao={!podeVerDadosDeOutrosInvestidores}
           />
         ) : null}
 
