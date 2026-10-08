@@ -174,18 +174,15 @@ namespace Investimentos.Application.Usuarios.Administracao
             }
             else
             {
-                var permissoesVisualizacao =
-                    new[]
-                    {
-                        PermissaoSistema.Dashboard,
-                        PermissaoSistema.Carteira,
-                        PermissaoSistema.Ativos,
-                        PermissaoSistema.Opcoes,
-                        PermissaoSistema.Proventos
-                    };
+                var permissoesPermitidas =
+                    permissoes
+                        .Where(x =>
+                            x != PermissaoSistema.Administracao)
+                        .Distinct()
+                        .ToArray();
 
                 usuario.DefinirPermissoes(
-                    permissoesVisualizacao);
+                    permissoesPermitidas);
 
                 var acessos = (acessosInvestidores ??
                     Array.Empty<AcessoInvestidorDto>())
@@ -203,7 +200,7 @@ namespace Investimentos.Application.Usuarios.Administracao
                     acessos.Length > 0
                         ? acessos
                         : idsComAcesso.SelectMany(id =>
-                            permissoesVisualizacao.Select(
+                            permissoesPermitidas.Select(
                                 permissao => (id, permissao))));
             }
 

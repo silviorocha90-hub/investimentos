@@ -404,9 +404,9 @@ export function UsuarioModal({
                   </strong>
 
                   <span>
-                    Usuários possuem acesso
-                    a todas as telas de
-                    visualização.
+                    Selecione as telas que
+                    este usuário poderá
+                    acessar.
                   </span>
                 </div>
               </header>
@@ -437,7 +437,7 @@ export function UsuarioModal({
                           checked={
                             selecionada
                           }
-                          disabled
+                          disabled={salvando}
                           onChange={() =>
                             alternarPermissao(
                               permissao,
