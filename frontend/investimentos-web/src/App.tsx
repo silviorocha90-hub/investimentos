@@ -802,7 +802,26 @@ function App() {
               : null,
           )
 
-          setEvolucao([])
+          const evolucoesPermitidas =
+            await Promise.all(
+              investidoresPainel.map(
+                (investidor) =>
+                  obterEvolucaoConsolidada(
+                    investidor.id,
+                  ),
+              ),
+            )
+
+          if (
+            controller.signal
+              .aborted
+          ) {
+            return
+          }
+
+          setEvolucao(
+            evolucoesPermitidas.flat(),
+          )
           setPerformance(null)
 
           return
@@ -1335,6 +1354,10 @@ function App() {
               apiDisponivel
             }
             erro={erro}
+            somenteEvolucao={
+              usuario?.perfil !==
+              'Admin'
+            }
           />
         ) : null}
 
