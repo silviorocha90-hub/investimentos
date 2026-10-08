@@ -79,6 +79,12 @@ namespace Investimentos.Infrastructure.Identity
                 throw new ArgumentException(
                     "A senha deve possuir pelo menos um número.");
             }
+
+            if (!senha.Any(c => !char.IsLetterOrDigit(c)))
+            {
+                throw new ArgumentException(
+                    "A senha deve possuir pelo menos um caractere especial.");
+            }
         }
     }
 }
