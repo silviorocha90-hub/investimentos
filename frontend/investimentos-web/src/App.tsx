@@ -120,6 +120,14 @@ const menuPrincipal:
     },
   ]
 
+const menuAssistenteIa:
+  ConfiguracaoMenu = {
+    tela: 'assistente-ia',
+    permissao: 'AssistenteIa',
+    titulo: 'Assistente IA',
+    icone: '✦',
+  }
+
 const menuAdministracao:
   ConfiguracaoMenu = {
     tela: 'administracao',
@@ -276,6 +284,7 @@ function App() {
     useMemo(() => {
       const configuracoes = [
         ...menuPrincipal,
+        menuAssistenteIa,
         menuAdministracao,
       ]
 
@@ -340,6 +349,7 @@ function App() {
   ) {
     const configuracao = [
       ...menuPrincipal,
+      menuAssistenteIa,
       menuAdministracao,
     ].find(
       (item) =>
