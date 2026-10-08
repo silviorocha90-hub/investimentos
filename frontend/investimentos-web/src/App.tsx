@@ -54,6 +54,7 @@ import {
 } from './pages/AssistenteIa/AssistenteIaView'
 
 import { AnalisesView } from './pages/Analises/AnalisesView'
+import { AlterarSenhaModal } from './pages/AlterarSenha/AlterarSenhaModal'
 
 import type {
   Dashboard,
@@ -206,6 +207,8 @@ function App() {
     setInvestidorSelecionado,
   ] =
     useState('')
+
+  const [alterandoSenha, setAlterandoSenha] = useState(false)
 
   const [
     valoresOcultos,
@@ -1284,6 +1287,7 @@ function App() {
 
       <main className="main">
         <div className="privacy-toolbar">
+          <button type="button" className="privacy-toggle" title="Alterar senha" onClick={() => setAlterandoSenha(true)}>♙ Alterar senha</button>
           <button
             className={`privacy-toggle ${
               valoresOcultos
@@ -1322,6 +1326,8 @@ function App() {
             </span>
           </button>
         </div>
+
+        {alterandoSenha ? <AlterarSenhaModal onClose={() => setAlterandoSenha(false)} /> : null}
 
         {telaAtual ===
           'painel' &&
