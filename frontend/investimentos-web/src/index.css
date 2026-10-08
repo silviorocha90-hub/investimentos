@@ -6,6 +6,7 @@
 
 html {
   font-family: 'Manrope', 'Segoe UI', sans-serif;
+  font-size: 11.04px;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
