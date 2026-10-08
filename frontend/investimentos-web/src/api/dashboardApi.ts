@@ -21,7 +21,7 @@ export async function obterDashboard(
 ): Promise<Dashboard> {
     const response = await fetch(
         `${API_URL}/api/dashboard/${investidorId}`,
-        { cache: 'no-store' },
+        { cache: 'no-store', credentials: 'include' },
     )
 
     if (!response.ok) {
@@ -36,7 +36,7 @@ export async function obterDashboard(
 export async function obterDashboardConsolidado(): Promise<Dashboard> {
     const response = await fetch(
         `${API_URL}/api/dashboard`,
-        { cache: 'no-store' },
+        { cache: 'no-store', credentials: 'include' },
     )
 
     if (!response.ok) {
@@ -53,7 +53,7 @@ export async function obterDashboardPorInvestidor(
 ): Promise<Dashboard> {
     const response = await fetch(
         `${API_URL}/api/dashboard/${investidorId}`,
-        { cache: 'no-store' },
+        { cache: 'no-store', credentials: 'include' },
     )
 
     if (!response.ok) {
@@ -74,7 +74,7 @@ export async function obterEvolucaoConsolidada(
 
     const response = await fetch(
         `${API_URL}/api/dashboard/evolucao${query}`,
-        { cache: 'no-store' },
+        { cache: 'no-store', credentials: 'include' },
     )
 
     if (!response.ok) {
@@ -91,7 +91,7 @@ export async function obterOperacoes(
 ): Promise<OperacaoCarteira[]> {
     const response = await fetch(
         `${API_URL}/api/operacoes/${investidorId}`,
-        { cache: 'no-store' },
+        { cache: 'no-store', credentials: 'include' },
     )
 
     if (!response.ok) {
@@ -114,6 +114,7 @@ export async function atualizarOperacao(
         `${API_URL}/api/operacoes/${id}`,
         {
             method: 'PUT',
+            credentials: 'include',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 data: operacao.data,
@@ -151,6 +152,7 @@ export async function criarOperacao(
         `${API_URL}/api/operacoes`,
         {
             method: 'POST',
+            credentials: 'include',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 data,
@@ -178,6 +180,7 @@ export async function excluirOperacao(id: string): Promise<void> {
         `${API_URL}/api/operacoes/${id}`,
         {
             method: 'DELETE',
+            credentials: 'include',
         },
     )
 
@@ -196,7 +199,7 @@ export async function obterPerformance(
 
     const response = await fetch(
         `${API_URL}/api/performance${query}`,
-        { cache: 'no-store' },
+        { cache: 'no-store', credentials: 'include' },
     )
 
     if (!response.ok) {
