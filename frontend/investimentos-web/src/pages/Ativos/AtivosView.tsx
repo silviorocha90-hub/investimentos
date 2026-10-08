@@ -207,10 +207,15 @@ export function AtivosView({
           {ativos.map((item) => {
             const tipo = item.tipoAtivoCodigo.trim().toUpperCase()
             const ticker = item.ticker.trim().toUpperCase()
+            const ehFmpEletrobras =
+              ticker.includes('FMP') &&
+              ticker.includes('ELETROBRAS')
+
             const exibirDesempenho =
               tipo !== 'PREVIDENCIA' &&
               tipo !== 'CDB' &&
-              !ticker.includes('CDB')
+              !ticker.includes('CDB') &&
+              !ehFmpEletrobras
 
             const yieldProventos =
               item.yieldProventos ?? 0
