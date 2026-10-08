@@ -449,47 +449,6 @@ export function UsuarioModal({
               </div>
             </header>
 
-            <label className="user-profile-field">
-              <span>
-                Investidor
-              </span>
-
-              <select
-                value={
-                  acessoSelecionado
-                    ?.investidorId ?? ''
-                }
-                disabled={salvando}
-                onChange={(event) =>
-                  selecionarInvestidor(
-                    event.target.value,
-                  )
-                }
-              >
-                <option value="">
-                  Selecione o investidor
-                </option>
-
-                {investidores.map(
-                  (investidor) => (
-                    <option
-                      key={investidor.id}
-                      value={investidor.id}
-                    >
-                      {investidor.nome}
-                    </option>
-                  ),
-                )}
-              </select>
-
-              <small>
-                Usuários comuns acessam
-                somente os dados deste
-                investidor. A visão de
-                todos os investidores é
-                exclusiva do administrador.
-              </small>
-            </label>
 
             {acessoSelecionado ? (
               <div className="user-permission-grid">
