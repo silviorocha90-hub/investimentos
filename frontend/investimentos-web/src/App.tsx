@@ -1354,10 +1354,7 @@ function App() {
               apiDisponivel
             }
             erro={erro}
-            somenteEvolucao={
-              usuario?.perfil !==
-              'Admin'
-            }
+            somenteEvolucao={false}
           />
         ) : null}
 
