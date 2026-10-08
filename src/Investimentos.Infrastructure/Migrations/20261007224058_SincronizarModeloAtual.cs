@@ -22,12 +22,8 @@ namespace Investimentos.Infrastructure.Migrations
             migrationBuilder.Sql(
                 "IF COL_LENGTH('Investidor', 'WhatsApp') IS NOT NULL ALTER TABLE [Investidor] DROP COLUMN [WhatsApp];");
 
-            migrationBuilder.AddColumn<string>(
-                name: "TelegramChatId",
-                table: "Usuario",
-                type: "nvarchar(30)",
-                maxLength: 30,
-                nullable: true);
+            migrationBuilder.Sql(
+                "IF COL_LENGTH('Usuario', 'TelegramChatId') IS NULL ALTER TABLE [Usuario] ADD [TelegramChatId] nvarchar(30) NULL;");
         }
 
         /// <inheritdoc />
