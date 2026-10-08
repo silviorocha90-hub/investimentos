@@ -383,7 +383,7 @@ function MultiTrendChart({
   series: readonly EvolucaoInvestidor[]
 }) {
   const width = 760
-  const height = 70
+  const height = 60
 
   const paddingLeft = 56
   const paddingTop = 12
