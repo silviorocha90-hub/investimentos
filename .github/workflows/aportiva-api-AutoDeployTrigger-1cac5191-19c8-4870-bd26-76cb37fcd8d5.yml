@@ -69,6 +69,14 @@ jobs:
           --resource-group rg-aportiva-prod
           --image aportivacr.azurecr.io/aportiva-api:${{ github.sha }}
 
+      - name: Ensure single API replica for cookie sessions
+        run: >
+          az containerapp update
+          --name aportiva-api
+          --resource-group rg-aportiva-prod
+          --min-replicas 1
+          --max-replicas 1
+
       - name: Ensure external ingress on port 8080
         run: >
           az containerapp ingress enable
