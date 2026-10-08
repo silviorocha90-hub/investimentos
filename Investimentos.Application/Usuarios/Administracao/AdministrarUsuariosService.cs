@@ -324,9 +324,9 @@ namespace Investimentos.Application.Usuarios.Administracao
 
                 usuario.InvestidoresPermissoes
                     .GroupBy(x => x.InvestidorId)
-                    .Select(x => new AcessoInvestidorDto(
+                    .Select(x => new AcessoInvestidorAdministracaoDto(
                         x.Key,
-                        x.Select(p => p.Permissao).Distinct().ToArray()))
+                        x.Select(p => p.Permissao.ToString()).Distinct().ToArray()))
                     .ToArray());
         }
 
@@ -377,7 +377,11 @@ namespace Investimentos.Application.Usuarios.Administracao
         DateTime? UltimoLogin,
         IReadOnlyCollection<string> Permissoes,
         IReadOnlyCollection<Guid> InvestidoresIds,
-        IReadOnlyCollection<AcessoInvestidorDto> AcessosInvestidores);
+        IReadOnlyCollection<AcessoInvestidorAdministracaoDto> AcessosInvestidores);
+
+    public record AcessoInvestidorAdministracaoDto(
+        Guid InvestidorId,
+        IReadOnlyCollection<string> Permissoes);
 
     public record AcessoInvestidorDto(
         Guid InvestidorId,

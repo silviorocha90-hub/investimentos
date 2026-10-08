@@ -216,13 +216,21 @@ namespace Investimentos.Api.Endpoints
                 request.AcessosInvestidores?
                     .Select(x => new AcessoInvestidorDto(
                         x.InvestidorId,
-                        (x.Permissoes ?? Array.Empty<int>())
-                            .Select(p => (PermissaoSistema)p)
+                        (x.Permissoes ?? Array.Empty<string>())
+                            .Select(p =>
+                                Enum.TryParse<PermissaoSistema>(
+                                    p,
+                                    true,
+                                    out var permissao)
+                                    ? permissao
+                                    : (PermissaoSistema?)null)
                             .Where(p =>
-                                Enum.IsDefined(p) &&
-                                p != PermissaoSistema.Administracao &&
-                                p != PermissaoSistema.Operacoes &&
-                                p != PermissaoSistema.AssistenteIa)
+                                p.HasValue &&
+                                Enum.IsDefined(p.Value) &&
+                                p.Value != PermissaoSistema.Administracao &&
+                                p.Value != PermissaoSistema.Operacoes &&
+                                p.Value != PermissaoSistema.AssistenteIa)
+                            .Select(p => p!.Value)
                             .ToArray()))
                     .ToArray(),
                 request.TelegramChatId,
@@ -290,5 +298,5 @@ namespace Investimentos.Api.Endpoints
 
     public record AcessoInvestidorRequest(
         Guid InvestidorId,
-        IReadOnlyCollection<int>? Permissoes);
+        IReadOnlyCollection<string>? Permissoes);
 }

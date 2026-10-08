@@ -200,10 +200,8 @@ export function UsuariosTab({
         usuario.perfil,
 
       permissoes:
-        usuario.perfil === 'Usuario'
-          ? [...permissoesVisualizacao]
-          : usuario.permissoes as
-              PermissaoSistema[],
+        usuario.permissoes as
+          PermissaoSistema[],
 
       investidoresIds: [
         ...usuario
