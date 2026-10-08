@@ -42,25 +42,8 @@ namespace Investimentos.Api.Endpoints
         private static async Task<IResult> CadastrarAsync(
             CadastroRequest request,
             AutenticacaoService service,
-            IConfiguration configuration,
             CancellationToken cancellationToken)
         {
-            var cadastroPublicoHabilitado =
-                configuration.GetValue<bool>(
-                    "CadastroPublico:Habilitado");
-
-            if (!cadastroPublicoHabilitado)
-            {
-                return Results.Json(
-                    new
-                    {
-                        detail =
-                            "Novos cadastros estão temporariamente indisponíveis. A Aportiva está em fase de testes com acesso restrito."
-                    },
-                    statusCode:
-                        StatusCodes.Status403Forbidden);
-            }
-
             try
             {
                 var id =
