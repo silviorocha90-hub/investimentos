@@ -39,3 +39,70 @@
 .carteira-page .empty-state{flex:1;min-height:110px;display:grid;place-items:center}
 @media(max-width:1100px){.carteira-kpis,.carteira-result-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.carteira-positions-table{font-size:.62rem}.carteira-positions-table th{font-size:.51rem}}
 @media(max-width:760px){.carteira-kpis,.carteira-result-metrics{grid-template-columns:1fr}.carteira-page .portfolio-positions{height:340px;max-height:340px}.carteira-page .portfolio-other-investments{max-height:300px}.carteira-positions-table th,.carteira-positions-table td{padding-left:2px;padding-right:2px}}
+
+
+/* iOS/Android: tabela da Carteira legível sem alterar o desktop */
+@media (max-width: 820px) {
+  html.mobile-device .carteira-page .portfolio-positions {
+    height: auto;
+    max-height: none;
+  }
+
+  html.mobile-device .carteira-page .portfolio-positions .table-wrap {
+    flex: none;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto !important;
+    overflow-y: visible;
+    scrollbar-gutter: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  html.mobile-device .carteira-positions-table {
+    width: 940px;
+    max-width: none;
+    min-width: 940px;
+    table-layout: fixed;
+    font-size: .72rem;
+  }
+
+  html.mobile-device .carteira-positions-table th {
+    font-size: .62rem;
+    line-height: 1.2;
+  }
+
+  html.mobile-device .carteira-positions-table th,
+  html.mobile-device .carteira-positions-table td {
+    padding: 10px 7px;
+    overflow: visible;
+    text-overflow: clip;
+  }
+
+  html.mobile-device .carteira-positions-table th:nth-child(1),
+  html.mobile-device .carteira-positions-table td:nth-child(1) { width: 80px; }
+  html.mobile-device .carteira-positions-table th:nth-child(2),
+  html.mobile-device .carteira-positions-table td:nth-child(2) { width: 110px; }
+  html.mobile-device .carteira-positions-table th:nth-child(3),
+  html.mobile-device .carteira-positions-table td:nth-child(3) { width: 90px; }
+  html.mobile-device .carteira-positions-table th:nth-child(4),
+  html.mobile-device .carteira-positions-table td:nth-child(4) { width: 105px; }
+  html.mobile-device .carteira-positions-table th:nth-child(5),
+  html.mobile-device .carteira-positions-table td:nth-child(5) { width: 105px; }
+  html.mobile-device .carteira-positions-table th:nth-child(6),
+  html.mobile-device .carteira-positions-table td:nth-child(6) { width: 115px; }
+  html.mobile-device .carteira-positions-table th:nth-child(7),
+  html.mobile-device .carteira-positions-table td:nth-child(7) { width: 115px; }
+  html.mobile-device .carteira-positions-table th:nth-child(8),
+  html.mobile-device .carteira-positions-table td:nth-child(8) { width: 115px; }
+  html.mobile-device .carteira-positions-table th:nth-child(9),
+  html.mobile-device .carteira-positions-table td:nth-child(9) { width: 105px; }
+
+  html.mobile-device .carteira-positions-table td {
+    white-space: nowrap;
+  }
+
+  html.mobile-device .carteira-positions-table .ticker {
+    overflow: visible;
+    text-overflow: clip;
+  }
+}
