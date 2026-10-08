@@ -3182,6 +3182,7 @@ a {
  * O menu vira uma barra compacta horizontal e todo o conteúdo usa a viewport.
  */
 @media (max-width: 820px) {
+  html.mobile-device {
   html, body, #root { width: 100%; min-width: 0; max-width: 100%; overflow-x: clip; }
   .shell { display: block; width: 100%; min-width: 0; }
   .sidebar {
@@ -3257,9 +3258,11 @@ a {
   .table-wrap { width: 100%; max-width: 100%; overflow-x: auto !important; -webkit-overflow-scrolling: touch; }
   .carteira-positions-table { min-width: 760px; }
   .options-table, .proventos-table { min-width: 720px; }
+  }
 }
 
 @media (max-width: 560px) {
+  html.mobile-device {
   .main { padding: 7px; }
   .hero-summary { grid-template-columns: 1fr !important; }
   .summary-card { height: auto; min-height: 128px; padding: 14px 15px; }
@@ -3275,4 +3278,5 @@ a {
   .dashboard-evolution-panel { overflow: hidden; }
   .trend-chart-svg { width: 100%; height: auto; }
   .portfolio-metrics, .dashboard-kpis, .carteira-kpis, .ativos-kpis { grid-template-columns: 1fr !important; }
+  }
 }
