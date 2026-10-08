@@ -188,7 +188,7 @@ export function OperacaoModal({
               type="number"
               placeholder="0,00"
               min="0"
-              step="0.01"
+              step="0.0001"
               value={
                 form.precoUnitario
               }
