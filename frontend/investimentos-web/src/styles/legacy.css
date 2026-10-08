@@ -3166,3 +3166,9 @@ a {
   font-weight: 600;
   opacity: 0.78;
 }
+
+
+/* Responsividade global: desktop compacto, tablet e celular */
+@media(max-width:1100px){.sidebar{width:220px;padding-left:12px;padding-right:12px}.main{width:calc(100% - 220px);margin-left:220px}.marca-icone{width:180px}.portfolio-metrics,.dashboard-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.admin-main-tabs{overflow-x:auto;flex-wrap:nowrap}}
+@media(max-width:820px){.shell{display:block}.sidebar{position:sticky;top:0;z-index:50;width:100%;height:auto;max-height:none;padding:8px 10px;display:block;border-right:0;border-bottom:1px solid var(--border)}.marca{display:none}.menu{padding:0;display:flex;flex-direction:row;gap:6px;overflow-x:auto;scrollbar-width:thin}.menu-item{width:auto;min-width:max-content;padding:9px 11px;border-radius:11px}.menu-separator,.sidebar-rodape{display:none}.main{width:100%;margin-left:0;padding:10px}.privacy-toolbar{position:static!important}.portfolio-toolbar{border-radius:16px}.dashboard-grid,.ativos-grid,.carteira-result-metrics,.portfolio-secondary-metrics{grid-template-columns:1fr!important}}
+@media(max-width:560px){.main{padding:8px}.menu-item{padding:8px 9px}.menu-icone{width:18px}.portfolio-metrics,.dashboard-kpis,.carteira-kpis,.ativos-kpis{grid-template-columns:1fr!important}.portfolio-toolbar{padding:10px}.investor-select-label,.portfolio-view .investor-select-label{width:100%;min-width:0}.admin-main-tabs{gap:6px}.admin-main-tabs button{min-width:max-content}.modal-card,.user-access-modal{max-width:calc(100vw - 16px)!important}.user-details-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}.user-card-actions{flex-wrap:wrap}.table-wrap{overflow-x:auto!important}.carteira-positions-table{min-width:760px}.options-table,.proventos-table{min-width:720px}}
