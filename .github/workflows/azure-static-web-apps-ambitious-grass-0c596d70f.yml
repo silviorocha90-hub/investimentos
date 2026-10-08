@@ -32,7 +32,7 @@ jobs:
           output_location: "dist"
           app_build_command: "npm run build"
         env:
-          VITE_API_URL: "https://aportiva-api.livelybeach-22ee0130.brazilsouth.azurecontainerapps.io"
+          VITE_API_URL: "https://api.aportiva.com.br"
 
   close_pull_request_job:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
