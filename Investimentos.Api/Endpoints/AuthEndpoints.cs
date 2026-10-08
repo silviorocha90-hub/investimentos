@@ -121,7 +121,7 @@ namespace Investimentos.Api.Endpoints
                     AllowRefresh = true,
                     ExpiresUtc =
                         DateTimeOffset.UtcNow
-                            .AddHours(8)
+                            .AddDays(3650)
                 });
 
             return Results.Ok(
