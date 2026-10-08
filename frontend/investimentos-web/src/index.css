@@ -24,3 +24,35 @@ select,
 textarea {
   font: inherit;
 }
+
+/*
+ * Escala tipográfica global
+ * -------------------------
+ * 0.69rem é a referência visual da coluna "Custo Total".
+ * Textos funcionais, dados, tabelas, formulários, menus, badges,
+ * legendas e controles usam a mesma medida em todas as telas.
+ * Títulos e valores de destaque preservam sua hierarquia visual.
+ */
+body,
+button,
+input,
+select,
+textarea,
+table,
+th,
+td,
+label,
+small,
+p,
+span {
+  font-size: 0.69rem;
+}
+
+table th,
+table td,
+input,
+select,
+textarea,
+button {
+  font-size: 0.69rem !important;
+}
