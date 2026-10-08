@@ -3169,6 +3169,78 @@ a {
 
 
 /* Responsividade global: desktop compacto, tablet e celular */
-@media(max-width:1100px){.sidebar{width:220px;padding-left:12px;padding-right:12px}.main{width:calc(100% - 220px);margin-left:220px}.marca-icone{width:180px}.portfolio-metrics,.dashboard-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.admin-main-tabs{overflow-x:auto;flex-wrap:nowrap}}
-@media(max-width:820px){.shell{display:block}.sidebar{position:sticky;top:0;z-index:50;width:100%;height:auto;max-height:none;padding:8px 10px;display:block;border-right:0;border-bottom:1px solid var(--border)}.marca{display:none}.menu{padding:0;display:flex;flex-direction:row;gap:6px;overflow-x:auto;scrollbar-width:thin}.menu-item{width:auto;min-width:max-content;padding:9px 11px;border-radius:11px}.menu-separator,.sidebar-rodape{display:none}.main{width:100%;margin-left:0;padding:10px}.privacy-toolbar{position:static!important}.portfolio-toolbar{border-radius:16px}.dashboard-grid,.ativos-grid,.carteira-result-metrics,.portfolio-secondary-metrics{grid-template-columns:1fr!important}}
-@media(max-width:560px){.main{padding:8px}.menu-item{padding:8px 9px}.menu-icone{width:18px}.portfolio-metrics,.dashboard-kpis,.carteira-kpis,.ativos-kpis{grid-template-columns:1fr!important}.portfolio-toolbar{padding:10px}.investor-select-label,.portfolio-view .investor-select-label{width:100%;min-width:0}.admin-main-tabs{gap:6px}.admin-main-tabs button{min-width:max-content}.modal-card,.user-access-modal{max-width:calc(100vw - 16px)!important}.user-details-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}.user-card-actions{flex-wrap:wrap}.table-wrap{overflow-x:auto!important}.carteira-positions-table{min-width:760px}.options-table,.proventos-table{min-width:720px}}
+@media (max-width: 1100px) {
+  .sidebar { width: 220px; padding-left: 12px; padding-right: 12px; }
+  .main { width: calc(100% - 220px); margin-left: 220px; }
+  .marca-icone { width: 180px; }
+  .portfolio-metrics, .dashboard-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .admin-main-tabs { overflow-x: auto; flex-wrap: nowrap; }
+}
+
+@media (max-width: 820px) {
+  html, body, #root { width: 100%; max-width: 100%; overflow-x: hidden; }
+  .shell { display: block; width: 100%; min-width: 0; }
+  .sidebar {
+    position: relative; inset: auto; z-index: 10;
+    width: 100%; height: auto; min-height: 0; padding: 8px 10px;
+    display: block; border-right: 0; border-bottom: 1px solid var(--border);
+    box-shadow: none;
+  }
+  .marca, .sidebar-rodape { display: none; }
+  .menu {
+    width: 100%; padding: 0; display: flex; flex-direction: row; gap: 6px;
+    overflow-x: auto; overflow-y: hidden; scrollbar-width: thin;
+    -webkit-overflow-scrolling: touch;
+  }
+  .menu-item { flex: 0 0 auto; width: auto; min-width: max-content; padding: 9px 11px; border-radius: 11px; }
+  .menu-separator { display: none; }
+  .main { width: 100%; max-width: 100%; margin-left: 0; padding: 10px; overflow: hidden; }
+  .main > * { min-width: 0; max-width: 100%; }
+  .privacy-toolbar { position: static !important; max-width: 100%; }
+  .portfolio-toolbar { border-radius: 16px; }
+  .hero, .hero-summary, .dashboard-grid, .dashboard-evolution-grid,
+  .ativos-grid, .carteira-result-metrics, .portfolio-secondary-metrics {
+    width: 100%; min-width: 0; max-width: 100%;
+  }
+  .hero-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .hero-summary .summary-card:nth-child(n) { grid-column: auto; grid-row: auto; }
+  .dashboard-grid { grid-template-columns: 1fr !important; }
+  .dashboard-grid > *, .dashboard-evolution-grid, .dashboard-evolution-panel { min-width: 0; max-width: 100%; }
+  .dashboard-evolution-grid { grid-template-columns: 1fr !important; }
+  .distribution-panel { overflow: hidden; }
+  .trend-chart, .trend-chart svg { max-width: 100%; }
+}
+
+@media (max-width: 560px) {
+  .main { padding: 8px; }
+  .menu-item { padding: 8px 9px; }
+  .menu-icone { width: 18px; }
+  .hero { padding: 6px; border-radius: 18px; }
+  .hero-summary { grid-template-columns: 1fr; gap: 8px; }
+  .summary-card {
+    width: 100%; height: auto; min-height: 132px; padding: 14px 16px; border-radius: 16px;
+  }
+  .summary-card-accent { padding: 14px 16px; }
+  .summary-card strong { font-size: 1rem; }
+  .patrimonio-gauge { max-width: 260px; margin-left: auto; margin-right: auto; }
+  .dashboard-grid { margin-top: 4px; gap: 8px; }
+  .dashboard-grid .panel { width: 100%; min-width: 0; padding: 12px; border-radius: 16px; overflow: hidden; }
+  .portfolio-flow-grid { grid-template-columns: 1fr; }
+  .portfolio-flow-card { grid-template-columns: 30px minmax(0, 1fr); padding: 10px; }
+  .portfolio-return-result { flex-wrap: wrap; }
+  .distribution-chart, .distribution-chart-content, .distribution-legend { min-width: 0; max-width: 100%; }
+  .dashboard-evolution-grid { gap: 8px; }
+  .dashboard-evolution-panel { overflow: hidden; }
+  .trend-chart-svg { width: 100%; height: auto; }
+  .portfolio-metrics, .dashboard-kpis, .carteira-kpis, .ativos-kpis { grid-template-columns: 1fr !important; }
+  .portfolio-toolbar { padding: 10px; }
+  .investor-select-label, .portfolio-view .investor-select-label { width: 100%; min-width: 0; }
+  .admin-main-tabs { gap: 6px; }
+  .admin-main-tabs button { min-width: max-content; }
+  .modal-card, .user-access-modal { width: calc(100vw - 16px) !important; max-width: calc(100vw - 16px) !important; }
+  .user-details-grid { grid-template-columns: 1fr !important; }
+  .user-card-actions { flex-wrap: wrap; }
+  .table-wrap { width: 100%; max-width: 100%; overflow-x: auto !important; -webkit-overflow-scrolling: touch; }
+  .carteira-positions-table { min-width: 760px; }
+  .options-table, .proventos-table { min-width: 720px; }
+}
