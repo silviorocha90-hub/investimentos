@@ -29,7 +29,21 @@ namespace Investimentos.Infrastructure
                 InvestimentosDbContext>(
                 options =>
                     options.UseSqlServer(
-                        connectionString));
+                        connectionString,
+                        sqlServerOptions =>
+                        {
+                            /*
+                             * Azure SQL pode encerrar conexões ociosas ou
+                             * apresentar falhas transitórias de rede.
+                             *
+                             * O retry do provider evita que uma falha curta
+                             * seja exposta ao usuário no login/consultas.
+                             */
+                            sqlServerOptions.EnableRetryOnFailure(
+                                maxRetryCount: 5,
+                                maxRetryDelay: TimeSpan.FromSeconds(10),
+                                errorNumbersToAdd: null);
+                        }));
 
             services.AddScoped<
                 IInvestidorRepository,
