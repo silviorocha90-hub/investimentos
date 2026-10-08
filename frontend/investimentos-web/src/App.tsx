@@ -944,6 +944,9 @@ function App() {
         'Carteira',
       ) ||
       possuiPermissao(
+        'Analises',
+      ) ||
+      possuiPermissao(
         'Opcoes',
       ) ||
       possuiPermissao(
