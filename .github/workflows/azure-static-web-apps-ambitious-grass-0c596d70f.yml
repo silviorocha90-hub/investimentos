@@ -15,24 +15,43 @@ jobs:
     runs-on: ubuntu-latest
     name: Build and Deploy Job
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: true
           lfs: false
 
-      - name: Build And Deploy
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/investimentos-web/package-lock.json
+
+      - name: Install and build frontend
+        working-directory: frontend/investimentos-web
+        env:
+          VITE_API_URL: "https://api.aportiva.com.br"
+        run: |
+          npm ci
+          npm run build
+          test -f dist/index.html
+          test -d dist/assets
+          if grep -q '/src/main.tsx' dist/index.html; then
+            echo 'ERROR: development index.html found in production build'
+            exit 1
+          fi
+
+      - name: Deploy compiled frontend
         id: builddeploy
         uses: Azure/static-web-apps-deploy@v1
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_AMBITIOUS_GRASS_0C596D70F }}
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           action: "upload"
-          app_location: "./frontend/investimentos-web"
+          app_location: "./frontend/investimentos-web/dist"
           api_location: ""
-          output_location: "dist"
-          app_build_command: "npm run build"
-        env:
-          VITE_API_URL: "https://api.aportiva.com.br"
+          output_location: ""
+          skip_app_build: true
 
   close_pull_request_job:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
