@@ -1153,12 +1153,13 @@ app.MapGet(
                 return Results.Forbid();
             }
 
+            // Para a evolução, o vínculo com a carteira é a
+            // barreira de segurança. A permissão de Painel controla
+            // a exibição da tela no frontend, enquanto o backend
+            // impede qualquer acesso a investidores não vinculados.
             var possuiAcesso =
                 usuario.Investidores.Any(x =>
-                    x.InvestidorId == investidorId.Value) &&
-                usuario.InvestidoresPermissoes.Any(x =>
-                    x.InvestidorId == investidorId.Value &&
-                    x.Permissao == PermissaoSistema.Dashboard);
+                    x.InvestidorId == investidorId.Value);
 
             if (!possuiAcesso)
             {
