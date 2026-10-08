@@ -52,11 +52,21 @@ namespace Investimentos.Infrastructure.Persistence.Repositories
 
         public async Task<IReadOnlyList<EvolucaoInvestidorDto>>
             ListarEvolucaoAsync(
+                Guid? investidorId = null,
                 CancellationToken cancellationToken = default)
         {
-            var registros = await _context.HistoricosPatrimonio
+            var query = _context.HistoricosPatrimonio
                 .AsNoTracking()
                 .Include(x => x.Investidor)
+                .AsQueryable();
+
+            if (investidorId.HasValue)
+            {
+                query = query.Where(x =>
+                    x.InvestidorId == investidorId.Value);
+            }
+
+            var registros = await query
                 .OrderBy(x => x.Investidor.Nome)
                 .ThenBy(x => x.DataReferencia)
                 .Select(x => new
