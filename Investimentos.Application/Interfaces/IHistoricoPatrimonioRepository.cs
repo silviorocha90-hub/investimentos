@@ -14,6 +14,7 @@ namespace Investimentos.Application.Interfaces
 
         Task<IReadOnlyList<EvolucaoInvestidorDto>>
             ListarEvolucaoAsync(
+                Guid? investidorId = null,
                 CancellationToken cancellationToken = default);
 
         Task<HistoricoPatrimonio?> ObterPorIdAsync(
