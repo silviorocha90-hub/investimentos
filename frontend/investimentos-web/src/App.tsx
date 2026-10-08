@@ -724,6 +724,7 @@ function App() {
     ) {
       setDashboard(null)
       setEvolucao([])
+      setPerformance(null)
       setCarteirasPainel([])
 
       return
@@ -736,9 +737,78 @@ function App() {
       try {
         setErro(null)
 
-        // Performance é independente do carregamento principal.
-        // Ela pode ser mais custosa porque reconcilia histórico, fluxos e
-        // patrimônio atual; não deve segurar todos os demais cards do Painel.
+        const investidoresPainel =
+          investidoresPorPermissao(
+            'Dashboard',
+          )
+
+        /*
+         * Somente o administrador consulta os endpoints consolidados,
+         * que abrangem todos os investidores. Usuários comuns montam
+         * o Painel exclusivamente com os investidores autorizados.
+         */
+        if (
+          usuario?.perfil !==
+          'Admin'
+        ) {
+          const resultados =
+            await Promise.allSettled(
+              investidoresPainel.map(
+                async (
+                  investidor,
+                ) => ({
+                  nome:
+                    investidor.nome,
+
+                  dashboard:
+                    await obterDashboardPorInvestidor(
+                      investidor.id,
+                    ),
+                }),
+              ),
+            )
+
+          if (
+            controller.signal
+              .aborted
+          ) {
+            return
+          }
+
+          const carteirasPermitidas =
+            resultados.flatMap(
+              (resultado) =>
+                resultado.status ===
+                'fulfilled'
+                  ? [resultado.value]
+                  : [],
+            )
+
+          setCarteirasPainel(
+            carteirasPermitidas,
+          )
+
+          /*
+           * Para um único investidor, o próprio dashboard individual
+           * alimenta os cards principais. Com mais de um investidor,
+           * evitamos expor o consolidado global; as carteiras autorizadas
+           * continuam disponíveis no Painel sem dados de terceiros.
+           */
+          setDashboard(
+            carteirasPermitidas.length ===
+              1
+              ? carteirasPermitidas[0]
+                  .dashboard
+              : null,
+          )
+
+          setEvolucao([])
+          setPerformance(null)
+
+          return
+        }
+
+        // Performance consolidada é exclusiva do administrador.
         const performancePromise =
           obterPerformance()
             .then((dadosPerformance) => {
@@ -790,22 +860,11 @@ function App() {
 
         const carteirasComSucesso =
           resultadosCarteiras.flatMap(
-            (resultado) => {
-              if (
-                resultado.status ===
-                'fulfilled'
-              ) {
-                return [
-                  resultado.value,
-                ]
-              }
-
-              console.error(
-                resultado.reason,
-              )
-
-              return []
-            },
+            (resultado) =>
+              resultado.status ===
+              'fulfilled'
+                ? [resultado.value]
+                : [],
           )
 
         setDashboard(
@@ -820,7 +879,6 @@ function App() {
           carteirasComSucesso,
         )
 
-        // Evita warning de Promise intencionalmente disparada em paralelo.
         void performancePromise
       } catch (error) {
         console.error(error)
