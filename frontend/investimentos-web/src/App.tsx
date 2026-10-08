@@ -91,52 +91,27 @@ interface ConfiguracaoMenu {
 
 const menuPrincipal:
   ConfiguracaoMenu[] = [
-    {
-      tela: 'painel',
-      permissao: 'Dashboard',
-      titulo: 'Painel',
-      icone: '▣',
-    },
-    {
-      tela: 'carteira',
-      permissao: 'Carteira',
-      titulo: 'Carteira',
-      icone: '◫',
-    },
-    {
-      tela: 'ativos',
-      permissao: 'Ativos',
-      titulo: 'Ativos',
-      icone: '◈',
-    },
-    {
-      tela: 'opcoes',
-      permissao: 'Opcoes',
-      titulo: 'Opções',
-      icone: '◌',
-    },
-    {
-      tela: 'proventos',
-      permissao: 'Proventos',
-      titulo: 'Proventos',
-      icone: '
+    { tela: 'painel', permissao: 'Dashboard', titulo: 'Painel', icone: '▣' },
+    { tela: 'carteira', permissao: 'Carteira', titulo: 'Carteira', icone: '◫' },
+    { tela: 'ativos', permissao: 'Ativos', titulo: 'Ativos', icone: '◈' },
+    { tela: 'opcoes', permissao: 'Opcoes', titulo: 'Opções', icone: '◌' },
+    { tela: 'proventos', permissao: 'Proventos', titulo: 'Proventos', icone: '$' },
+    { tela: 'analises', permissao: 'Analises', titulo: 'Análises', icone: '⌁' },
   ]
 
-const menuAssistenteIa:
-  ConfiguracaoMenu = {
-    tela: 'assistente-ia',
-    permissao: 'AssistenteIa',
-    titulo: 'Assistente IA',
-    icone: '✦',
-  }
+const menuAssistenteIa: ConfiguracaoMenu = {
+  tela: 'assistente-ia',
+  permissao: 'AssistenteIa',
+  titulo: 'Assistente IA',
+  icone: '✦',
+}
 
-const menuAdministracao:
-  ConfiguracaoMenu = {
-    tela: 'administracao',
-    permissao: 'Administracao',
-    titulo: 'Administração',
-    icone: '⚙',
-  }
+const menuAdministracao: ConfiguracaoMenu = {
+  tela: 'administracao',
+  permissao: 'Administracao',
+  titulo: 'Administração',
+  icone: '⚙',
+}
 
 function App() {
   const {
