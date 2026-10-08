@@ -61,7 +61,7 @@ builder.Services
                 SameSiteMode.None;
 
             options.ExpireTimeSpan =
-                TimeSpan.FromHours(8);
+                TimeSpan.FromDays(3650);
 
             options.SlidingExpiration =
                 true;
