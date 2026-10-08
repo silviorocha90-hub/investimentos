@@ -3,6 +3,7 @@ import {
 } from '../../../utils/formatters'
 
 interface OpcoesFiltrosProps {
+  exibirTicker?: boolean
   tickers: readonly string[]
   vencimentos: readonly string[]
 
@@ -36,6 +37,7 @@ interface OpcoesFiltrosProps {
 }
 
 export function OpcoesFiltros({
+  exibirTicker = true,
   tickers,
   vencimentos,
   ticker,
@@ -59,6 +61,7 @@ export function OpcoesFiltros({
       </div>
 
       <div className="options-filters">
+        {exibirTicker ? (
         <label>
           <span>
             Ticker
@@ -87,9 +90,7 @@ export function OpcoesFiltros({
               ),
             )}
           </select>
-        </label>
-
-        <label>
+        </label>\n        ) : null}\n\n        <label>
           <span>
             Tipo
           </span>
