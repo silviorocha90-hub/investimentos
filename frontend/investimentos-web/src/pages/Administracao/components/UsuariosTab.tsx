@@ -850,7 +850,7 @@ export function UsuariosTab({
                           </button>
                           <button
                             type="button"
-                            className="user-secondary-action"
+                            className="user-secondary-action user-danger-action"
                             disabled={processando}
                             onClick={() =>
                               void reenviarRelatorio(usuario)
@@ -938,7 +938,7 @@ export function UsuariosTab({
                               </button>
                               <button
                                 type="button"
-                                className="user-secondary-action"
+                                className="user-secondary-action user-danger-action"
                                 disabled={processando}
                                 onClick={() =>
                                   void reenviarRelatorio(usuario)
