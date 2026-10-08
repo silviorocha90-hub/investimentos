@@ -66,7 +66,6 @@ interface UsuarioModalProps {
 
 export function UsuarioModal({
   usuario,
-  investidores,
   formulario,
   setFormulario,
   salvando,
@@ -77,43 +76,6 @@ export function UsuarioModal({
   const pendente =
     usuario.status ===
     'Pendente'
-
-  function selecionarInvestidor(
-    investidorId: string,
-  ) {
-    setFormulario((atual) => {
-      const acessoAtual =
-        atual.acessosInvestidores.find(
-          (item) =>
-            item.investidorId ===
-            investidorId,
-        )
-
-      const permissoes =
-        acessoAtual?.permissoes ??
-        atual.permissoes
-
-      return {
-        ...atual,
-        investidoresIds:
-          investidorId
-            ? [investidorId]
-            : [],
-        acessosInvestidores:
-          investidorId
-            ? [{
-                investidorId,
-                permissoes: [
-                  ...permissoes,
-                ],
-              }]
-            : [],
-        permissoes: [
-          ...permissoes,
-        ],
-      }
-    })
-  }
 
   function alternarAcessoInvestidor(
     investidorId: string,
