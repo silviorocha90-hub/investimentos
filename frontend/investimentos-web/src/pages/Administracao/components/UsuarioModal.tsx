@@ -78,30 +78,41 @@ export function UsuarioModal({
     usuario.status ===
     'Pendente'
 
-  function alternarPermissao(
-    permissao:
-      PermissaoSistema,
+  function selecionarInvestidor(
+    investidorId: string,
   ) {
-    setFormulario(
-      (atual) => ({
-        ...atual,
+    setFormulario((atual) => {
+      const acessoAtual =
+        atual.acessosInvestidores.find(
+          (item) =>
+            item.investidorId ===
+            investidorId,
+        )
 
-        permissoes:
-          atual.permissoes
-            .includes(permissao)
-            ? atual.permissoes
-                .filter(
-                  (item) =>
-                    item !==
-                    permissao,
-                )
-            : [
-                ...atual
-                  .permissoes,
-                permissao,
-              ],
-      }),
-    )
+      const permissoes =
+        acessoAtual?.permissoes ??
+        atual.permissoes
+
+      return {
+        ...atual,
+        investidoresIds:
+          investidorId
+            ? [investidorId]
+            : [],
+        acessosInvestidores:
+          investidorId
+            ? [{
+                investidorId,
+                permissoes: [
+                  ...permissoes,
+                ],
+              }]
+            : [],
+        permissoes: [
+          ...permissoes,
+        ],
+      }
+    })
   }
 
   function alternarAcessoInvestidor(
@@ -109,41 +120,60 @@ export function UsuarioModal({
     permissao: PermissaoSistema,
   ) {
     setFormulario((atual) => {
-      const existente = atual.acessosInvestidores.find(
-        (item) => item.investidorId === investidorId,
-      )
-      const permissoes = existente?.permissoes ?? []
-      const novas = permissoes.includes(permissao)
-        ? permissoes.filter((item) => item !== permissao)
-        : [...permissoes, permissao]
-      const demais = atual.acessosInvestidores.filter(
-        (item) => item.investidorId !== investidorId,
-      )
-      const acessosInvestidores = novas.length > 0
-        ? [...demais, { investidorId, permissoes: novas }]
-        : demais
+      const acesso =
+        atual.acessosInvestidores.find(
+          (item) =>
+            item.investidorId ===
+            investidorId,
+        )
+
+      const permissoesAtuais =
+        acesso?.permissoes ??
+        atual.permissoes
+
+      const permissoes =
+        permissoesAtuais.includes(
+          permissao,
+        )
+          ? permissoesAtuais.filter(
+              (item) =>
+                item !== permissao,
+            )
+          : [
+              ...permissoesAtuais,
+              permissao,
+            ]
 
       return {
         ...atual,
-        acessosInvestidores,
-        investidoresIds: acessosInvestidores.map(
-          (item) => item.investidorId,
-        ),
+        permissoes,
+        investidoresIds: [
+          investidorId,
+        ],
+        acessosInvestidores: [
+          {
+            investidorId,
+            permissoes,
+          },
+        ],
       }
     })
   }
 
+  const acessoSelecionado =
+    formulario
+      .acessosInvestidores[0]
+
   const semPermissoes =
     formulario.perfil ===
       'Usuario' &&
-    formulario.permissoes
-      .length === 0
+    (acessoSelecionado
+      ?.permissoes.length ?? 0) === 0
 
   const semInvestidores =
     formulario.perfil ===
       'Usuario' &&
-    formulario.acessosInvestidores
-      .length === 0
+    !acessoSelecionado
 
   const formularioIncompleto =
     semPermissoes ||
@@ -295,8 +325,16 @@ export function UsuarioModal({
                       perfil ===
                       'Admin'
                         ? []
+                        : atual.investidoresIds
+                            .slice(0, 1),
+
+                    acessosInvestidores:
+                      perfil ===
+                      'Admin'
+                        ? []
                         : atual
-                            .investidoresIds,
+                            .acessosInvestidores
+                            .slice(0, 1),
                   }),
                 )
               }}
@@ -391,31 +429,74 @@ export function UsuarioModal({
 
         {formulario.perfil ===
         'Usuario' ? (
-          <>
-            <section className="user-modal-section">
-              <header>
-                <div className="user-modal-step">
-                  2
-                </div>
+          <section className="user-modal-section">
+            <header>
+              <div className="user-modal-step">
+                3
+              </div>
 
-                <div>
-                  <strong>
-                    Telas permitidas
-                  </strong>
+              <div>
+                <strong>
+                  Acesso do investidor
+                </strong>
 
-                  <span>
-                    Selecione as telas que
-                    este usuário poderá
-                    acessar.
-                  </span>
-                </div>
-              </header>
+                <span>
+                  Vincule este usuário a
+                  um único investidor e
+                  defina somente o que
+                  ele poderá consultar.
+                </span>
+              </div>
+            </header>
 
+            <label className="user-profile-field">
+              <span>
+                Investidor
+              </span>
+
+              <select
+                value={
+                  acessoSelecionado
+                    ?.investidorId ?? ''
+                }
+                disabled={salvando}
+                onChange={(event) =>
+                  selecionarInvestidor(
+                    event.target.value,
+                  )
+                }
+              >
+                <option value="">
+                  Selecione o investidor
+                </option>
+
+                {investidores.map(
+                  (investidor) => (
+                    <option
+                      key={investidor.id}
+                      value={investidor.id}
+                    >
+                      {investidor.nome}
+                    </option>
+                  ),
+                )}
+              </select>
+
+              <small>
+                Usuários comuns acessam
+                somente os dados deste
+                investidor. A visão de
+                todos os investidores é
+                exclusiva do administrador.
+              </small>
+            </label>
+
+            {acessoSelecionado ? (
               <div className="user-permission-grid">
-                {permissoesVisualizacao.map(
+                {permissoesInvestidor.map(
                   (permissao) => {
                     const selecionada =
-                      formulario
+                      acessoSelecionado
                         .permissoes
                         .includes(
                           permissao,
@@ -423,9 +504,7 @@ export function UsuarioModal({
 
                     return (
                       <label
-                        key={
-                          permissao
-                        }
+                        key={permissao}
                         className={
                           selecionada
                             ? 'user-permission-option selected'
@@ -434,12 +513,12 @@ export function UsuarioModal({
                       >
                         <input
                           type="checkbox"
-                          checked={
-                            selecionada
-                          }
+                          checked={selecionada}
                           disabled={salvando}
                           onChange={() =>
-                            alternarPermissao(
+                            alternarAcessoInvestidor(
+                              acessoSelecionado
+                                .investidorId,
                               permissao,
                             )
                           }
@@ -453,110 +532,27 @@ export function UsuarioModal({
                               ]
                             }
                           </strong>
-
-                          <span>
-                            {permissao ===
-                            'Dashboard'
-                              ? 'Visão geral da carteira'
-                              : permissao ===
-                                  'Carteira'
-                                ? 'Posições e patrimônio'
-                                : permissao ===
-                                    'Operacoes'
-                                  ? 'Compras e vendas'
-                                  : permissao ===
-                                      'Opcoes'
-                                    ? 'Operações com opções'
-                                    : permissao ===
-                                        'Proventos'
-                                      ? 'Dividendos e rendimentos'
-                                      : 'Cadastros e configurações'}
-                          </span>
                         </div>
                       </label>
                     )
                   },
                 )}
               </div>
+            ) : null}
 
-              {semPermissoes ? (
-                <small className="user-validation-message">
-                  Selecione pelo menos
-                  uma tela.
-                </small>
-              ) : null}
-            </section>
-
-            <section className="user-modal-section">
-              <header>
-                <div className="user-modal-step">
-                  3
-                </div>
-
-                <div>
-                  <strong>
-                    Investidores
-                  </strong>
-
-                  <span>
-                    Escolha quais
-                    carteiras poderão
-                    ser consultadas.
-                  </span>
-                </div>
-              </header>
-
-              <div className="user-investor-access-list">
-                {investidores.map((investidor) => {
-                  const acesso = formulario.acessosInvestidores.find(
-                    (item) => item.investidorId === investidor.id,
-                  )
-                  return (
-                    <article className="user-investor-access-card" key={investidor.id}>
-                      <header>
-                        <strong>{investidor.nome}</strong>
-                        <span>
-                          {acesso?.permissoes.length ?? 0} tela(s) liberada(s)
-                        </span>
-                      </header>
-                      <div className="user-investor-permissions">
-                        {permissoesInvestidor.map((permissao) => {
-                          const selecionada =
-                            acesso?.permissoes.includes(permissao) ?? false
-                          return (
-                            <label
-                              key={permissao}
-                              className={selecionada ? 'selected' : ''}
-                            >
-                              <input
-                                type="checkbox"
-                                checked={selecionada}
-                                disabled={salvando}
-                                onChange={() =>
-                                  alternarAcessoInvestidor(
-                                    investidor.id,
-                                    permissao,
-                                  )
-                                }
-                              />
-                              <span>{nomesPermissoes[permissao]}</span>
-                            </label>
-                          )
-                        })}
-                      </div>
-                    </article>
-                  )
-                })}
-              </div>
-
-              {semInvestidores ? (
-                <small className="user-validation-message">
-                  Selecione pelo menos
-                  um investidor.
-                </small>
-              ) : null}
-            </section>
-          </>
+            {semInvestidores ? (
+              <small className="user-validation-message">
+                Selecione o investidor
+                deste usuário.
+              </small>
+            ) : semPermissoes ? (
+              <small className="user-validation-message">
+                Libere pelo menos uma
+                tela para o investidor
+                selecionado.
+              </small>
+            ) : null}
+          </section>
         ) : (
           <section className="user-admin-access-info">
             <div>

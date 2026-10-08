@@ -846,11 +846,11 @@ export function UsuariosTab({
                             disabled={processando}
                             onClick={() => abrirAcessos(usuario)}
                           >
-                            Configurar relatório IA
+                            Gerenciar usuário
                           </button>
                           <button
                             type="button"
-                            className="user-secondary-action"
+                            className="user-secondary-action user-danger-action"
                             disabled={processando}
                             onClick={() =>
                               void reenviarRelatorio(usuario)
@@ -930,24 +930,15 @@ export function UsuariosTab({
 
                               <button
                                 type="button"
-                                className="user-secondary-action"
-                                disabled={processando}
-                                onClick={() => abrirAcessos(usuario)}
-                              >
-                                Gerenciar acesso
-                              </button>
-
-                              <button
-                                type="button"
                                 className="user-primary-action"
                                 disabled={processando}
                                 onClick={() => abrirAcessos(usuario)}
                               >
-                                Configurar relatório IA
+                                Gerenciar usuário
                               </button>
                               <button
                                 type="button"
-                                className="user-secondary-action"
+                                className="user-secondary-action user-danger-action"
                                 disabled={processando}
                                 onClick={() =>
                                   void reenviarRelatorio(usuario)
@@ -975,7 +966,7 @@ export function UsuariosTab({
                                   )
                                 }
                               >
-                                Gerenciar acesso
+                                Gerenciar usuário
                               </button>
 
                               <button

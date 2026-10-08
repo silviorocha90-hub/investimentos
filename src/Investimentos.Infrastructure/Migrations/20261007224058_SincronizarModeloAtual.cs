@@ -10,28 +10,20 @@ namespace Investimentos.Infrastructure.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropColumn(
-                name: "WhatsApp",
-                table: "Usuario");
+            migrationBuilder.Sql(
+                "IF COL_LENGTH('Usuario', 'WhatsApp') IS NOT NULL ALTER TABLE [Usuario] DROP COLUMN [WhatsApp];");
 
-            migrationBuilder.DropColumn(
-                name: "FrequenciaRelatorioIa",
-                table: "Investidor");
+            migrationBuilder.Sql(
+                "IF COL_LENGTH('Investidor', 'FrequenciaRelatorioIa') IS NOT NULL ALTER TABLE [Investidor] DROP COLUMN [FrequenciaRelatorioIa];");
 
-            migrationBuilder.DropColumn(
-                name: "ReceberRelatorioIa",
-                table: "Investidor");
+            migrationBuilder.Sql(
+                "IF COL_LENGTH('Investidor', 'ReceberRelatorioIa') IS NOT NULL ALTER TABLE [Investidor] DROP COLUMN [ReceberRelatorioIa];");
 
-            migrationBuilder.DropColumn(
-                name: "WhatsApp",
-                table: "Investidor");
+            migrationBuilder.Sql(
+                "IF COL_LENGTH('Investidor', 'WhatsApp') IS NOT NULL ALTER TABLE [Investidor] DROP COLUMN [WhatsApp];");
 
-            migrationBuilder.AddColumn<string>(
-                name: "TelegramChatId",
-                table: "Usuario",
-                type: "nvarchar(30)",
-                maxLength: 30,
-                nullable: true);
+            migrationBuilder.Sql(
+                "IF COL_LENGTH('Usuario', 'TelegramChatId') IS NULL ALTER TABLE [Usuario] ADD [TelegramChatId] nvarchar(30) NULL;");
         }
 
         /// <inheritdoc />

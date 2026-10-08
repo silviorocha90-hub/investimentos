@@ -9,6 +9,7 @@
         Proventos = 5,
         Administracao = 6,
         Ativos = 7,
-        AssistenteIa = 8
+        AssistenteIa = 8,
+        Analises = 9
     }
 }

@@ -341,6 +341,46 @@ namespace Investimentos.Application.Dashboard
                     patrimonioEstimado,
                     resultadoCarteira);
 
+            /*
+             * DISTRIBUIÇÃO POR TIPO
+             *
+             * O dashboard individual deve fornecer a mesma
+             * informação de alocação usada pelo consolidado.
+             */
+            var valoresPorTipo =
+                posicoes
+                    .Where(x =>
+                        x.Quantidade > 0 &&
+                        x.ValorAtual > 0)
+                    .GroupBy(x => new
+                    {
+                        x.TipoAtivoCodigo,
+                        x.TipoAtivoNome
+                    })
+                    .Select(grupo => new
+                    {
+                        Codigo = grupo.Key.TipoAtivoCodigo,
+                        Nome = grupo.Key.TipoAtivoNome,
+                        Valor = grupo.Sum(x => x.ValorAtual)
+                    })
+                    .OrderByDescending(x => x.Valor)
+                    .ToList();
+
+            var totalDistribuicao =
+                valoresPorTipo.Sum(x => x.Valor);
+
+            var distribuicaoPorTipo =
+                valoresPorTipo
+                    .Select(x =>
+                        new DistribuicaoTipoAtivoDto(
+                            x.Codigo,
+                            x.Nome,
+                            x.Valor,
+                            totalDistribuicao > 0
+                                ? x.Valor / totalDistribuicao * 100
+                                : 0))
+                    .ToList();
+
             var quantidadeAtivos =
                 posicoes.Count(x =>
                     x.Quantidade > 0 &&
@@ -365,7 +405,7 @@ namespace Investimentos.Application.Dashboard
                 caixaDisponivel,
                 null,
                 descontosFiscais,
-                null,
+                distribuicaoPorTipo,
                 valorizacaoAtivos,
                 proventosBrutos,
                 irProventos,

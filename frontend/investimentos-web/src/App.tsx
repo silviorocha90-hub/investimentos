@@ -53,6 +53,8 @@ import {
   AssistenteIaView,
 } from './pages/AssistenteIa/AssistenteIaView'
 
+import { AnalisesView } from './pages/Analises/AnalisesView'
+
 import type {
   Dashboard,
   EvolucaoInvestidor,
@@ -77,6 +79,7 @@ type Tela =
   | 'opcoes'
   | 'proventos'
   | 'assistente-ia'
+  | 'analises'
   | 'administracao'
 
 interface ConfiguracaoMenu {
@@ -88,45 +91,21 @@ interface ConfiguracaoMenu {
 
 const menuPrincipal:
   ConfiguracaoMenu[] = [
-    {
-      tela: 'painel',
-      permissao: 'Dashboard',
-      titulo: 'Painel',
-      icone: '▣',
-    },
-    {
-      tela: 'carteira',
-      permissao: 'Carteira',
-      titulo: 'Carteira',
-      icone: '◫',
-    },
-    {
-      tela: 'ativos',
-      permissao: 'Ativos',
-      titulo: 'Ativos',
-      icone: '◈',
-    },
-    {
-      tela: 'opcoes',
-      permissao: 'Opcoes',
-      titulo: 'Opções',
-      icone: '◌',
-    },
-    {
-      tela: 'proventos',
-      permissao: 'Proventos',
-      titulo: 'Proventos',
-      icone: '$',
-    },
+    { tela: 'painel', permissao: 'Dashboard', titulo: 'Painel', icone: '▣' },
+    { tela: 'carteira', permissao: 'Carteira', titulo: 'Carteira', icone: '◫' },
+    { tela: 'ativos', permissao: 'Ativos', titulo: 'Ativos', icone: '◈' },
+    { tela: 'opcoes', permissao: 'Opcoes', titulo: 'Opções', icone: '◌' },
+    { tela: 'proventos', permissao: 'Proventos', titulo: 'Proventos', icone: '$' },
+    { tela: 'analises', permissao: 'Analises', titulo: 'Análises', icone: '⌁' },
   ]
 
-const menuAdministracao:
-  ConfiguracaoMenu = {
-    tela: 'administracao',
-    permissao: 'Administracao',
-    titulo: 'Administração',
-    icone: '⚙',
-  }
+const menuAssistenteIa: ConfiguracaoMenu = {
+  tela: 'assistente-ia', permissao: 'AssistenteIa', titulo: 'Assistente IA', icone: '✦',
+}
+
+const menuAdministracao: ConfiguracaoMenu = {
+  tela: 'administracao', permissao: 'Administracao', titulo: 'Administração', icone: '⚙',
+}
 
 function App() {
   const {
@@ -276,6 +255,7 @@ function App() {
     useMemo(() => {
       const configuracoes = [
         ...menuPrincipal,
+        menuAssistenteIa,
         menuAdministracao,
       ]
 
@@ -340,6 +320,7 @@ function App() {
   ) {
     const configuracao = [
       ...menuPrincipal,
+      menuAssistenteIa,
       menuAdministracao,
     ].find(
       (item) =>
@@ -390,6 +371,9 @@ function App() {
       ) ||
       possuiPermissao(
         'Ativos',
+      ) ||
+      possuiPermissao(
+        'Analises',
       ) ||
       possuiPermissao(
         'Opcoes',
@@ -960,6 +944,9 @@ function App() {
         'Carteira',
       ) ||
       possuiPermissao(
+        'Analises',
+      ) ||
+      possuiPermissao(
         'Opcoes',
       ) ||
       possuiPermissao(
@@ -1475,6 +1462,13 @@ function App() {
             permitirTodos={
               usuario?.perfil === 'Admin'
             }
+          />
+        ) : null}
+
+        {telaAtual === 'analises' && permissaoNoInvestidor('Analises') ? (
+          <AnalisesView
+            investidores={investidoresPorPermissao('Analises')}
+            carteiras={carteirasPorInvestidor}
           />
         ) : null}
 
