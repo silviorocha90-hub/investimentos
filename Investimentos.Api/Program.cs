@@ -26,6 +26,7 @@ using Investimentos.Application.Proventos.ConsultarProventos;
 using Investimentos.Application.Usuarios.Administracao;
 using Investimentos.Application.Usuarios.Autenticacao;
 using Investimentos.Domain.Entities;
+using Investimentos.Domain.Usuarios;
 using Investimentos.Infrastructure;
 using Investimentos.Infrastructure.Persistence;
 using Investimentos.Infrastructure.Persistence.Repositories;
@@ -1120,22 +1121,65 @@ app.MapGet(
     "/api/dashboard/evolucao",
     async (
         Guid? investidorId,
+        ClaimsPrincipal principal,
+        IUsuarioRepository usuarioRepository,
         IAdministracaoRepository administracaoRepository,
         IHistoricoPatrimonioRepository repository,
         CancellationToken cancellationToken) =>
     {
+        var idClaim = principal.FindFirstValue(
+            ClaimTypes.NameIdentifier);
+
+        if (!Guid.TryParse(idClaim, out var usuarioId))
+        {
+            return Results.Unauthorized();
+        }
+
+        var usuario = await usuarioRepository.ObterPorIdAsync(
+            usuarioId,
+            cancellationToken);
+
+        if (usuario is null)
+        {
+            return Results.Unauthorized();
+        }
+
+        Guid? filtroInvestidor = investidorId;
+
+        if (usuario.Perfil != PerfilUsuario.Admin)
+        {
+            if (!investidorId.HasValue)
+            {
+                return Results.Forbid();
+            }
+
+            var possuiAcesso =
+                usuario.Investidores.Any(x =>
+                    x.InvestidorId == investidorId.Value) &&
+                usuario.InvestidoresPermissoes.Any(x =>
+                    x.InvestidorId == investidorId.Value &&
+                    x.Permissao == PermissaoSistema.Dashboard);
+
+            if (!possuiAcesso)
+            {
+                return Results.Forbid();
+            }
+
+            filtroInvestidor = investidorId.Value;
+        }
+
         /*
          * A evolução deve refletir sempre a competência
          * patrimonial corrente. ObterAsync sincroniza a
-         * fotografia mensal de cada investidor antes da
-         * leitura do histórico usado pelo gráfico.
+         * fotografia mensal antes da leitura do histórico.
+         * Usuários comuns nunca recebem o consolidado global.
          */
         await administracaoRepository.ObterAsync(
             cancellationToken);
 
         var resultado =
             await repository.ListarEvolucaoAsync(
-                investidorId,
+                filtroInvestidor,
                 cancellationToken);
 
         return Results.Ok(resultado);
