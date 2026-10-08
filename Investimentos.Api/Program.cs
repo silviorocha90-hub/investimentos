@@ -26,6 +26,7 @@ using Investimentos.Application.Proventos.ConsultarProventos;
 using Investimentos.Application.Usuarios.Administracao;
 using Investimentos.Application.Usuarios.Autenticacao;
 using Investimentos.Domain.Entities;
+using Investimentos.Domain.Usuarios;
 using Investimentos.Infrastructure;
 using Investimentos.Infrastructure.Persistence;
 using Investimentos.Infrastructure.Persistence.Repositories;
