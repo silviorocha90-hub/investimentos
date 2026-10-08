@@ -1119,6 +1119,7 @@ app.MapDelete(
 app.MapGet(
     "/api/dashboard/evolucao",
     async (
+        Guid? investidorId,
         IAdministracaoRepository administracaoRepository,
         IHistoricoPatrimonioRepository repository,
         CancellationToken cancellationToken) =>
@@ -1134,6 +1135,7 @@ app.MapGet(
 
         var resultado =
             await repository.ListarEvolucaoAsync(
+                investidorId,
                 cancellationToken);
 
         return Results.Ok(resultado);
