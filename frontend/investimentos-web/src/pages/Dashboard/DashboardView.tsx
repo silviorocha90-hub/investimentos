@@ -1276,7 +1276,13 @@ export function DashboardView({
         </article>
 
 
-        <div className="dashboard-evolution-grid">
+        <div
+          className={
+            somenteEvolucao
+              ? 'dashboard-evolution-grid dashboard-evolution-grid-single'
+              : 'dashboard-evolution-grid'
+          }
+        >
           {!somenteEvolucao ? (
             <article className="panel dashboard-evolution-panel">
               <SectionTitle

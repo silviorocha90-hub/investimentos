@@ -991,6 +991,10 @@ a {
   min-width: 0;
 }
 
+.dashboard-evolution-grid-single {
+  grid-template-columns: minmax(0, 1fr);
+}
+
 .dashboard-evolution-panel {
   width: 100%;
   min-width: 0;
