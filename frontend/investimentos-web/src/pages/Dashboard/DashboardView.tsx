@@ -1007,43 +1007,6 @@ export function DashboardView({
       ]
     }, [seriesEvolucao])
 
-  if (somenteEvolucao) {
-    return (
-      <>
-        {erro ? (
-          <div className="info-banner">
-            {erro}
-          </div>
-        ) : null}
-
-        <section className="dashboard-grid">
-          <div className="dashboard-evolution-grid">
-            <article className="panel dashboard-evolution-panel">
-              <SectionTitle
-                title="Evolução da Carteira"
-              />
-
-              {evolucaoCarteiraTotal[0]
-                .pontos.length > 0 ? (
-                <MultiTrendChart
-                  series={
-                    evolucaoCarteiraTotal
-                  }
-                />
-              ) : (
-                <div className="empty-state">
-                  <strong>
-                    Evolução indisponível
-                    no banco
-                  </strong>
-                </div>
-              )}
-            </article>
-          </div>
-        </section>
-      </>
-    )
-  }
 
   return (
     <>
@@ -1314,27 +1277,29 @@ export function DashboardView({
 
 
         <div className="dashboard-evolution-grid">
-          <article className="panel dashboard-evolution-panel">
-            <SectionTitle
-              title="Evolução por Investidor"
-            />
-
-            {seriesEvolucao.length >
-            0 ? (
-              <MultiTrendChart
-                series={
-                  seriesEvolucao
-                }
+          {!somenteEvolucao ? (
+            <article className="panel dashboard-evolution-panel">
+              <SectionTitle
+                title="Evolução por Investidor"
               />
-            ) : (
-              <div className="empty-state">
-                <strong>
-                  Evolução indisponível
-                  no banco
-                </strong>
-              </div>
-            )}
-          </article>
+
+              {seriesEvolucao.length >
+              0 ? (
+                <MultiTrendChart
+                  series={
+                    seriesEvolucao
+                  }
+                />
+              ) : (
+                <div className="empty-state">
+                  <strong>
+                    Evolução indisponível
+                    no banco
+                  </strong>
+                </div>
+              )}
+            </article>
+          ) : null}
 
           <article className="panel dashboard-evolution-panel">
             <SectionTitle
