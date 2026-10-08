@@ -65,9 +65,15 @@ export async function obterDashboardPorInvestidor(
     return response.json()
 }
 
-export async function obterEvolucaoConsolidada(): Promise<EvolucaoInvestidor[]> {
+export async function obterEvolucaoConsolidada(
+    investidorId?: string,
+): Promise<EvolucaoInvestidor[]> {
+    const query = investidorId
+        ? `?investidorId=${encodeURIComponent(investidorId)}`
+        : ''
+
     const response = await fetch(
-        `${API_URL}/api/dashboard/evolucao`,
+        `${API_URL}/api/dashboard/evolucao${query}`,
         { cache: 'no-store' },
     )
 
