@@ -50,26 +50,25 @@ public sealed class AssistenteIaWorker : BackgroundService
             return;
 
         var agora = ObterAgoraSaoPaulo();
-        // Atualização diária fixa às 19h, horário de São Paulo.
-        if (agora.Hour < 19 || _ultimaAtualizacaoLocal == agora.Date)
+        // Preços: uma atualização diária. Envio: retentativas independentes
+        // a cada ciclo de 15 minutos enquanto houver destinatários pendentes.
+        if (agora.Hour < 19)
             return;
 
         using var scope = _scopeFactory.CreateScope();
         var service = scope.ServiceProvider
             .GetRequiredService<AssistenteIaService>();
 
-        // Sexta-feira: atualizar antes de gerar e distribuir o relatório.
-        // Se já existe relatório do dia, evita consultar o mercado novamente.
-        var sexta = agora.DayOfWeek == DayOfWeek.Friday;
-        var mercado = await service.AtualizarMercadoSemanalAsync(
-            agora, cancellationToken);
-
-        _ultimaAtualizacaoLocal = agora.Date;
-
-        if (sexta)
+        AtualizacaoMercadoResultado? mercado = null;
+        if (_ultimaAtualizacaoLocal != agora.Date)
         {
-            // Hoje, após o horário, regenera uma vez o relatório atualizado
-            // e libera o reenvio a todos os destinatários habilitados.
+            mercado = await service.AtualizarMercadoSemanalAsync(
+                agora, cancellationToken);
+            _ultimaAtualizacaoLocal = agora.Date;
+        }
+
+        if (agora.DayOfWeek == DayOfWeek.Friday)
+        {
             await service.ForcarRelatorioDeHojeAsync(
                 agora, cancellationToken);
             await service.ProcessarEnviosAsync(
