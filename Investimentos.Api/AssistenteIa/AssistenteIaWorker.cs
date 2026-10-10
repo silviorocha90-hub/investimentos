@@ -70,9 +70,13 @@ public sealed class AssistenteIaWorker : BackgroundService
                 .GetRequiredService<
                     AssistenteIaService>();
 
+        // Atualiza as cotações antes de gerar e distribuir o relatório.
+        // A mesma coleta é reutilizada pela IA, evitando consulta duplicada.
+        var mercado = await service.AtualizarMercadoSemanalAsync(
+            agora, cancellationToken);
+
         await service.ProcessarEnviosAsync(
-            agora,
-            cancellationToken);
+            agora, cancellationToken, mercado);
     }
 
     public static bool GeracaoHabilitada(
