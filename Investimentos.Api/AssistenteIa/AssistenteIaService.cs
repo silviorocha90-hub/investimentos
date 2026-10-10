@@ -134,6 +134,35 @@ public sealed class AssistenteIaService
         return atualizado;
     }
 
+    // Disparo extraordinário solicitado para 09/10/2026.
+    // O marcador no relatório persistido impede reexecução em cada ciclo do worker.
+    public async Task ForcarRelatorioDeHojeAsync(
+        DateTime dataLocal,
+        CancellationToken cancellationToken)
+    {
+        if (dataLocal.Date != new DateTime(2026, 10, 9))
+            return;
+
+        var existente = await ObterHojeAsync(dataLocal, cancellationToken);
+        if (existente?.Modelo.Contains("REENVIO_20261009",
+                StringComparison.Ordinal) == true)
+            return;
+
+        // Libera apenas os destinatários habilitados para receber novamente.
+        // Fazemos isso antes de regenerar: se a geração falhar, uma tentativa
+        // posterior ainda poderá concluir o processo.
+        var destinatarios = await _context.Usuarios
+            .Where(x => x.Status == StatusUsuario.Ativo &&
+                        x.ReceberRelatorioIa)
+            .ToListAsync(cancellationToken);
+
+        foreach (var destinatario in destinatarios)
+            destinatario.RegistrarEnvioRelatorioIa(dataLocal.Date.AddDays(-1));
+
+        await _context.SaveChangesAsync(cancellationToken);
+        await GerarAsync(dataLocal, true, cancellationToken);
+    }
+
     public async Task ProcessarEnviosAsync(
         DateTime dataLocal,
         CancellationToken cancellationToken,
@@ -679,10 +708,16 @@ public sealed class AssistenteIaService
         if (existente is not null)
             _context.RelatoriosDiariosIa.Remove(existente);
 
+        var modeloPersistido = substituir &&
+            escopo == "TODOS" &&
+            data == new DateTime(2026, 10, 9)
+                ? modelo + "/REENVIO_20261009"
+                : modelo;
+
         var relatorio = new RelatorioDiarioIa(
             data,
             conteudo,
-            modelo,
+            modeloPersistido,
             escopo,
             investidorId);
 
