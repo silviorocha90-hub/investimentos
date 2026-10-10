@@ -10,6 +10,7 @@ import {
   type RelatorioIa,
 } from '../../api/assistenteIaApi'
 
+import { RelatorioFormatado } from './RelatorioFormatado'
 import './AssistenteIa.css'
 
 interface AssistenteIaViewProps {
@@ -261,7 +262,7 @@ export function AssistenteIaView({
             </div>
 
             <div className="assistant-content">
-              {selecionado.conteudo}
+              <RelatorioFormatado conteudo={selecionado.conteudo} />
             </div>
           </article>
         </div>
