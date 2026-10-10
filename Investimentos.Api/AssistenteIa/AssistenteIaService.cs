@@ -98,6 +98,19 @@ public sealed class AssistenteIaService
         DateTime dataLocal,
         CancellationToken cancellationToken)
     {
+        // Uma consulta à OpenAI por sexta-feira: somente o consolidado administrativo.
+        // Os resumos individuais são calculados a partir do dashboard já existente,
+        // sem reenviar dados particulares ou consumir outras respostas da IA.
+        if (dataLocal.DayOfWeek != DayOfWeek.Friday)
+            return;
+
+        var existeDestinatario = await _context.Usuarios
+            .AsNoTracking()
+            .AnyAsync(x => x.Status == StatusUsuario.Ativo &&
+                           x.ReceberRelatorioIa, cancellationToken);
+        if (!existeDestinatario)
+            return;
+
         var relatorioAdmin = await ObterHojeAsync(dataLocal, cancellationToken)
             ?? await GerarAsync(dataLocal, false, cancellationToken);
 
@@ -113,7 +126,7 @@ public sealed class AssistenteIaService
             if (!DeveEnviar(
                     dataLocal.Date,
                     administrador.UltimoEnvioRelatorioIa,
-                    administrador.FrequenciaRelatorioIa))
+                    "SEMANAL"))
                 continue;
 
             try
@@ -149,7 +162,7 @@ public sealed class AssistenteIaService
             if (!DeveEnviar(
                     dataLocal.Date,
                     usuario.UltimoEnvioRelatorioIa,
-                    usuario.FrequenciaRelatorioIa))
+                    "SEMANAL"))
                 continue;
 
             var investidoresIds = usuario.Investidores
@@ -160,41 +173,142 @@ public sealed class AssistenteIaService
             if (investidoresIds.Length == 0)
                 continue;
 
-            var todosEnviados = true;
-
-            foreach (var investidorId in investidoresIds)
+            var resumos = new List<RelatorioDiarioIa>();
+            try
             {
-                try
+                foreach (var id in investidoresIds)
                 {
-                    var relatorio = await GerarRelatorioAsync(
-                        dataLocal,
-                        false,
-                        investidorId,
-                        "INVESTIDOR",
-                        cancellationToken);
-
-                    await EnviarRelatorioAsync(
-                        relatorio,
-                        usuario,
-                        cancellationToken);
+                    var relatorio = await GerarResumoInvestidorAsync(
+                        dataLocal, id, cancellationToken);
+                    resumos.Add(relatorio);
                 }
-                catch (Exception ex)
-                {
-                    todosEnviados = false;
-                    _logger.LogError(
-                        ex,
-                        "Falha ao gerar/enviar relatório IA do investidor {InvestidorId} para o usuário {UsuarioId}.",
-                        investidorId,
-                        usuario.Id);
-                }
-            }
 
-            if (todosEnviados)
-            {
+                // Um e-mail por usuário, mesmo quando possui várias carteiras.
+                var conteudoAgrupado = string.Join(
+                    "\n\n---\n\n",
+                    resumos.Select(x => x.Conteudo));
+                var envio = new RelatorioDiarioIa(
+                    dataLocal.Date, conteudoAgrupado,
+                    "Resumo automático (sem chamada à OpenAI)",
+                    "INVESTIDOR");
+                await EnviarRelatorioAsync(envio, usuario, cancellationToken);
                 usuario.RegistrarEnvioRelatorioIa(dataLocal);
                 await _context.SaveChangesAsync(cancellationToken);
             }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "Falha ao enviar resumo semanal ao usuário {UsuarioId}.",
+                    usuario.Id);
+            }
         }
+    }
+
+    private async Task<RelatorioDiarioIa> GerarResumoInvestidorAsync(
+        DateTime dataLocal,
+        Guid investidorId,
+        CancellationToken cancellationToken)
+    {
+        var data = dataLocal.Date;
+        var salvo = await _context.RelatoriosDiariosIa
+            .FirstOrDefaultAsync(x =>
+                x.DataReferencia == data &&
+                x.Escopo == "INVESTIDOR" &&
+                x.InvestidorId == investidorId, cancellationToken);
+
+        if (salvo is not null)
+            return salvo;
+
+        var investidor = await _context.Investidores
+            .AsNoTracking()
+            .Where(x => x.Id == investidorId)
+            .Select(x => new { x.Nome })
+            .FirstOrDefaultAsync(cancellationToken)
+            ?? throw new InvalidOperationException("Investidor não encontrado.");
+
+        var dashboard = await _dashboardHandler.HandleAsync(
+            investidorId, cancellationToken);
+        var cultura = System.Globalization.CultureInfo.GetCultureInfo("pt-BR");
+        string Dinheiro(decimal numero) => numero.ToString("C2", cultura);
+        string Numero(decimal numero) => numero.ToString("N2", cultura);
+        string Percentual(decimal numero) => numero.ToString("+0.00;-0.00;0.00", cultura) + "%";
+        static string Celula(string valor) => valor.Replace("|", "/").Replace("\n", " ");
+
+        var posicoes = dashboard.Posicoes
+            .Where(x => x.Quantidade > 0)
+            .OrderBy(x => x.Ticker)
+            .ToList();
+
+        var resultadoNaoRealizado = posicoes
+            .Where(x => x.PrecoAtual.HasValue)
+            .Sum(x => x.Valorizacao);
+
+        var linhas = new List<string>
+        {
+            $"# Resumo semanal Aportiva — {data:dd/MM/yyyy}",
+            $"## Carteira de {Celula(investidor.Nome)}",
+            "",
+            $"**Patrimônio estimado:** {Dinheiro(dashboard.PatrimonioEstimado)}",
+            $"**Caixa informado:** {Dinheiro(dashboard.CaixaDisponivel)}",
+            $"**Posições cadastradas:** {posicoes.Count}",
+            $"**Resultado não realizado com cotação disponível:** {Dinheiro(resultadoNaoRealizado)}",
+            "",
+            "## Seus investimentos",
+            "| Ativo | Qtd. | PM | Cotação | Valor atual | Resultado R$ | Resultado % |",
+            "|---|---:|---:|---:|---:|---:|---:|"
+        };
+
+        foreach (var posicao in posicoes)
+        {
+            var custo = posicao.Quantidade * posicao.PrecoMedio;
+            var temCotacao = posicao.PrecoAtual.HasValue;
+            var valorAtual = temCotacao || posicao.ValorAtual > 0
+                ? Dinheiro(posicao.ValorAtual) : "n/d";
+            var resultado = temCotacao
+                ? Dinheiro(posicao.Valorizacao) : "n/d";
+            var retorno = temCotacao && custo > 0
+                ? Percentual(posicao.Valorizacao / custo * 100m) : "n/d";
+            linhas.Add(
+                $"| {Celula(posicao.Ticker)} | {Numero(posicao.Quantidade)} | " +
+                $"{Dinheiro(posicao.PrecoMedio)} | " +
+                $"{(temCotacao ? Dinheiro(posicao.PrecoAtual!.Value) : "n/d")} | " +
+                $"{valorAtual} | {resultado} | {retorno} |");
+        }
+
+        var opcoes = dashboard.Opcoes
+            .Where(x => x.Situacao == "ABERTA")
+            .OrderBy(x => x.Vencimento)
+            .ToList();
+        linhas.Add("");
+        linhas.Add("## Opções abertas");
+        if (opcoes.Count == 0)
+            linhas.Add("Nenhuma opção aberta registrada.");
+        else
+        {
+            linhas.Add("| Opção | Ativo | Tipo | Operação | Quantidade | Strike | Vencimento |");
+            linhas.Add("|---|---|---|---|---:|---:|---|");
+            foreach (var opcao in opcoes)
+                linhas.Add(
+                    $"| {Celula(opcao.TickerOpcao)} | {Celula(opcao.TickerAtivo)} | " +
+                    $"{opcao.TipoOpcao} | {opcao.Natureza} | " +
+                    $"{Numero(opcao.Quantidade)} | {Dinheiro(opcao.Strike)} | " +
+                    $"{opcao.Vencimento:dd/MM/yyyy} |");
+        }
+
+        linhas.Add("");
+        linhas.Add("**Observação:** Os valores são estimativas com base nos dados do sistema.");
+        linhas.Add("Resultado não realizado não inclui necessariamente proventos, custos e operações passadas.");
+        linhas.Add("Cotações podem estar desatualizadas; ativos sem cotação mostram n/d.");
+        linhas.Add("Consulte a Aportiva para operações e detalhes adicionais.");
+
+        var relatorio = new RelatorioDiarioIa(
+            data, string.Join("\n", linhas),
+            "Resumo automático (sem chamada à OpenAI)",
+            "INVESTIDOR", investidorId);
+        _context.RelatoriosDiariosIa.Add(relatorio);
+        await _context.SaveChangesAsync(cancellationToken);
+        return relatorio;
     }
 
     public async Task<int> ReenviarRelatorioAsync(
