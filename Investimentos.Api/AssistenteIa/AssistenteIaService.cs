@@ -901,8 +901,12 @@ Quando não houver novidade relevante, diga explicitamente.
             throw new InvalidOperationException(
                 "EMAIL_FROM não configurado.");
 
+        var primeiroNome = nome.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() ?? "Investidor";
+        var tipoRelatorio = relatorio.Escopo == "TODOS"
+            ? "Relatório consolidado"
+            : "Resumo da sua carteira";
         var assunto =
-            $"Relatório de investimentos — {relatorio.DataReferencia:dd/MM/yyyy}";
+            $"Aportiva | {tipoRelatorio} de {primeiroNome} — {relatorio.DataReferencia:dd/MM/yyyy}";
         var texto =
             $"Olá, {nome}.\n\n" +
             relatorio.Conteudo +
