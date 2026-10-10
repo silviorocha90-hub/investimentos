@@ -6,6 +6,7 @@ public sealed class AssistenteIaWorker : BackgroundService
     private readonly IConfiguration _configuration;
     private readonly IHostEnvironment _environment;
     private readonly ILogger<AssistenteIaWorker> _logger;
+    private DateTime? _ultimaAtualizacaoLocal;
 
     public AssistenteIaWorker(
         IServiceScopeFactory scopeFactory,
@@ -48,39 +49,31 @@ public sealed class AssistenteIaWorker : BackgroundService
         if (!GeracaoHabilitada(_configuration, _environment))
             return;
 
-        var hora =
-            int.TryParse(
-                _configuration["ASSISTENTE_IA_HORA"],
-                out var configurada)
-                ? Math.Clamp(configurada, 0, 23)
-                : 19;
-
-        var agora =
-            ObterAgoraSaoPaulo();
-
-        // O envio automático acontece exclusivamente às sextas-feiras.
-        if (agora.DayOfWeek != DayOfWeek.Friday || agora.Hour < hora)
+        var agora = ObterAgoraSaoPaulo();
+        // Atualização diária fixa às 19h, horário de São Paulo.
+        if (agora.Hour < 19 || _ultimaAtualizacaoLocal == agora.Date)
             return;
 
-        using var scope =
-            _scopeFactory.CreateScope();
+        using var scope = _scopeFactory.CreateScope();
+        var service = scope.ServiceProvider
+            .GetRequiredService<AssistenteIaService>();
 
-        var service =
-            scope.ServiceProvider
-                .GetRequiredService<
-                    AssistenteIaService>();
+        // Sexta-feira: atualizar antes de gerar e distribuir o relatório.
+        // Se já existe relatório do dia, evita consultar o mercado novamente.
+        var sexta = agora.DayOfWeek == DayOfWeek.Friday;
+        var relatorioExistente = sexta
+            ? await service.ObterHojeAsync(agora, cancellationToken)
+            : null;
 
-        // Atualiza as cotações antes de gerar e distribuir o relatório.
-        // A mesma coleta é reutilizada pela IA, evitando consulta duplicada.
-        // Em novas verificações da mesma sexta-feira, não consulta novamente
-        // o provedor de preços quando a análise da semana já está salva.
-        var existente = await service.ObterHojeAsync(agora, cancellationToken);
-        var mercado = existente is null
+        var mercado = relatorioExistente is null
             ? await service.AtualizarMercadoSemanalAsync(agora, cancellationToken)
             : null;
 
-        await service.ProcessarEnviosAsync(
-            agora, cancellationToken, mercado);
+        _ultimaAtualizacaoLocal = agora.Date;
+
+        if (sexta)
+            await service.ProcessarEnviosAsync(
+                agora, cancellationToken, mercado);
     }
 
     public static bool GeracaoHabilitada(
