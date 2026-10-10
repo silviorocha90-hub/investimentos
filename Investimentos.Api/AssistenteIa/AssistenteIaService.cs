@@ -94,9 +94,50 @@ public sealed class AssistenteIaService
             cancellationToken);
     }
 
-    public async Task ProcessarEnviosAsync(
+    // Agente de atualização semanal: consulta ativos e opções uma única vez
+    // antes da análise, sem utilizar a API da OpenAI.
+    public async Task<AtualizacaoMercadoResultado> AtualizarMercadoSemanalAsync(
         DateTime dataLocal,
         CancellationToken cancellationToken)
+    {
+        var investidores = await _context.Investidores
+            .AsNoTracking()
+            .Select(x => x.Id)
+            .ToListAsync(cancellationToken);
+
+        var tickers = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var opcoes = new Dictionary<string, OpcaoMercadoConsulta>(
+            StringComparer.OrdinalIgnoreCase);
+
+        foreach (var id in investidores)
+        {
+            var dashboard = await _dashboardHandler.HandleAsync(
+                id, cancellationToken);
+            foreach (var posicao in dashboard.Posicoes.Where(x => x.Quantidade > 0))
+                tickers.Add(posicao.Ticker);
+
+            foreach (var opcao in dashboard.Opcoes
+                .Where(x => x.Situacao == "ABERTA" || x.Situacao == "EXECUTADA"))
+            {
+                tickers.Add(opcao.TickerAtivo);
+                opcoes[opcao.TickerOpcao] = new OpcaoMercadoConsulta(
+                    opcao.TickerOpcao, opcao.Vencimento, opcao.Strike);
+            }
+        }
+
+        var atualizado = await _mercadoBrapiService.AtualizarAsync(
+            tickers, opcoes.Values, dataLocal, cancellationToken);
+
+        _logger.LogInformation(
+            "Atualização semanal do mercado: {Ativos} ativos e {Opcoes} opções com preço disponível.",
+            atualizado.Ativos.Count, atualizado.Opcoes.Count);
+        return atualizado;
+    }
+
+    public async Task ProcessarEnviosAsync(
+        DateTime dataLocal,
+        CancellationToken cancellationToken,
+        AtualizacaoMercadoResultado? mercadoAtualizado = null)
     {
         // Uma consulta à OpenAI por sexta-feira: somente o consolidado administrativo.
         // Os resumos individuais são calculados a partir do dashboard já existente,
@@ -112,7 +153,8 @@ public sealed class AssistenteIaService
             return;
 
         var relatorioAdmin = await ObterHojeAsync(dataLocal, cancellationToken)
-            ?? await GerarAsync(dataLocal, false, cancellationToken);
+            ?? await GerarRelatorioAsync(
+                dataLocal, false, null, "TODOS", cancellationToken, mercadoAtualizado);
 
         var administradores = await _context.Usuarios
             .Where(x =>
@@ -411,7 +453,8 @@ public sealed class AssistenteIaService
         bool substituir,
         Guid? investidorId,
         string escopo,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        AtualizacaoMercadoResultado? mercadoAtualizado = null)
     {
         var data = dataLocal.Date;
         var existente = await _context.RelatoriosDiariosIa
@@ -479,7 +522,7 @@ public sealed class AssistenteIaService
             }
         }
 
-        var mercado = await _mercadoBrapiService.AtualizarAsync(
+        var mercado = mercadoAtualizado ?? await _mercadoBrapiService.AtualizarAsync(
             tickersAtivos,
             opcoesMercado.Values,
             dataLocal,
