@@ -36,6 +36,11 @@ namespace Investimentos.Api.Endpoints
                     ObterUsuarioAtualAsync)
                 .RequireAuthorization();
 
+            app.MapPost(
+                    "/api/auth/alterar-senha",
+                    AlterarSenhaAsync)
+                .RequireAuthorization();
+
             return app;
         }
 
@@ -126,6 +131,45 @@ namespace Investimentos.Api.Endpoints
 
             return Results.Ok(
                 CriarUsuarioAtual(usuario));
+        }
+
+        private static async Task<IResult> AlterarSenhaAsync(
+            AlterarSenhaRequest request,
+            ClaimsPrincipal principal,
+            IUsuarioRepository repository,
+            IPasswordService passwordService,
+            CancellationToken cancellationToken)
+        {
+            if (!Guid.TryParse(
+                principal.FindFirstValue(ClaimTypes.NameIdentifier),
+                out var usuarioId))
+                return Results.Unauthorized();
+
+            var usuario = await repository.ObterPorIdAsync(
+                usuarioId, cancellationToken);
+
+            if (usuario is null || usuario.Status != StatusUsuario.Ativo)
+                return Results.Unauthorized();
+
+            if (!passwordService.Verificar(usuario.SenhaHash, request.SenhaAtual))
+                return Results.BadRequest(new { detail = "Senha atual incorreta." });
+
+            if (request.NovaSenha != request.ConfirmacaoSenha)
+                return Results.BadRequest(new { detail = "A confirmação não corresponde à nova senha." });
+
+            if (passwordService.Verificar(usuario.SenhaHash, request.NovaSenha))
+                return Results.BadRequest(new { detail = "A nova senha deve ser diferente da atual." });
+
+            try
+            {
+                usuario.AlterarSenhaHash(passwordService.GerarHash(request.NovaSenha));
+                await repository.SalvarAlteracoesAsync(cancellationToken);
+                return Results.Ok(new { mensagem = "Senha alterada com sucesso." });
+            }
+            catch (ArgumentException ex)
+            {
+                return Results.BadRequest(new { detail = ex.Message });
+            }
         }
 
         private static async Task<IResult> LogoutAsync(
@@ -288,6 +332,11 @@ namespace Investimentos.Api.Endpoints
         string Nome,
         string Email,
         string Senha);
+
+    public record AlterarSenhaRequest(
+        string SenhaAtual,
+        string NovaSenha,
+        string ConfirmacaoSenha);
 
     public record LoginRequest(
         string Email,

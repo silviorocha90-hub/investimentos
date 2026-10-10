@@ -178,3 +178,22 @@ export async function cadastrar(
     'Cadastro realizado com sucesso.'
   )
 }
+export async function alterarSenha(
+  senhaAtual: string,
+  novaSenha: string,
+  confirmacaoSenha: string,
+): Promise<void> {
+  const response = await fetch(
+    `${apiUrl}/api/auth/alterar-senha`,
+    {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ senhaAtual, novaSenha, confirmacaoSenha }),
+    },
+  )
+
+  if (!response.ok) {
+    throw new Error(await lerErro(response))
+  }
+}
