@@ -61,13 +61,8 @@ public sealed class AssistenteIaWorker : BackgroundService
         // Sexta-feira: atualizar antes de gerar e distribuir o relatório.
         // Se já existe relatório do dia, evita consultar o mercado novamente.
         var sexta = agora.DayOfWeek == DayOfWeek.Friday;
-        var relatorioExistente = sexta
-            ? await service.ObterHojeAsync(agora, cancellationToken)
-            : null;
-
-        var mercado = relatorioExistente is null
-            ? await service.AtualizarMercadoSemanalAsync(agora, cancellationToken)
-            : null;
+        var mercado = await service.AtualizarMercadoSemanalAsync(
+            agora, cancellationToken);
 
         _ultimaAtualizacaoLocal = agora.Date;
 
