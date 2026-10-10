@@ -33,7 +33,7 @@ public sealed class AssistenteIaWorker : BackgroundService
             {
                 _logger.LogError(
                     ex,
-                    "Falha no Assistente IA diário.");
+                    "Falha no envio semanal do Assistente IA.");
             }
 
             await Task.Delay(
@@ -58,7 +58,8 @@ public sealed class AssistenteIaWorker : BackgroundService
         var agora =
             ObterAgoraSaoPaulo();
 
-        if (agora.Hour < hora)
+        // O envio automático acontece exclusivamente às sextas-feiras.
+        if (agora.DayOfWeek != DayOfWeek.Friday || agora.Hour < hora)
             return;
 
         using var scope =
