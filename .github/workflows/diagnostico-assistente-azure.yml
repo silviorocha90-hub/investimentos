@@ -1,6 +1,10 @@
 name: Diagnostico Assistente IA Azure
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/diagnostico-assistente-azure.yml'
 
 jobs:
   inspect:
