@@ -72,8 +72,12 @@ public sealed class AssistenteIaWorker : BackgroundService
 
         // Atualiza as cotações antes de gerar e distribuir o relatório.
         // A mesma coleta é reutilizada pela IA, evitando consulta duplicada.
-        var mercado = await service.AtualizarMercadoSemanalAsync(
-            agora, cancellationToken);
+        // Em novas verificações da mesma sexta-feira, não consulta novamente
+        // o provedor de preços quando a análise da semana já está salva.
+        var existente = await service.ObterHojeAsync(agora, cancellationToken);
+        var mercado = existente is null
+            ? await service.AtualizarMercadoSemanalAsync(agora, cancellationToken)
+            : null;
 
         await service.ProcessarEnviosAsync(
             agora, cancellationToken, mercado);
