@@ -4,15 +4,18 @@ public sealed class AssistenteIaWorker : BackgroundService
 {
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly IConfiguration _configuration;
+    private readonly IHostEnvironment _environment;
     private readonly ILogger<AssistenteIaWorker> _logger;
 
     public AssistenteIaWorker(
         IServiceScopeFactory scopeFactory,
         IConfiguration configuration,
+        IHostEnvironment environment,
         ILogger<AssistenteIaWorker> logger)
     {
         _scopeFactory = scopeFactory;
         _configuration = configuration;
+        _environment = environment;
         _logger = logger;
     }
 
@@ -42,10 +45,7 @@ public sealed class AssistenteIaWorker : BackgroundService
     private async Task ExecutarSeNecessarioAsync(
         CancellationToken cancellationToken)
     {
-        if (!bool.TryParse(
-                _configuration["ASSISTENTE_IA_ATIVO"],
-                out var ativo) ||
-            !ativo)
+        if (!GeracaoHabilitada(_configuration, _environment))
             return;
 
         var hora =
@@ -72,6 +72,16 @@ public sealed class AssistenteIaWorker : BackgroundService
         await service.ProcessarEnviosAsync(
             agora,
             cancellationToken);
+    }
+
+    public static bool GeracaoHabilitada(
+        IConfiguration configuration,
+        IHostEnvironment environment)
+    {
+        // Desenvolvimento nunca executa chamadas pagas, mesmo com flags herdadas.
+        return environment.IsProduction() &&
+            bool.TryParse(configuration["ASSISTENTE_IA_ATIVO"], out var ativo) &&
+            ativo;
     }
 
     public static DateTime ObterAgoraSaoPaulo()

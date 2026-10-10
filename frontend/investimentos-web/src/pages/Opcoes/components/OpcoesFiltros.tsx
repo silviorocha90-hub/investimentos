@@ -90,7 +90,10 @@ export function OpcoesFiltros({
               ),
             )}
           </select>
-        </label>\n        ) : null}\n\n        <label>
+        </label>
+        ) : null}
+
+        <label>
           <span>
             Tipo
           </span>

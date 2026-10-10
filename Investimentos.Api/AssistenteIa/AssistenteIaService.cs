@@ -553,6 +553,66 @@ principais movimentos, contexto do pregão e a relação desse contexto com as
 posições analisadas, sempre que os dados disponíveis permitirem.
 
 Organize o restante preferencialmente em:
+## Painel patrimonial completo — obrigatório
+Para TODAS as posições fornecidas, mesmo sem notícias, mostre uma tabela Markdown
+com Investidor (se escopo TODOS), Ticker, Quantidade, Preço médio (PM),
+Capital aplicado estimado (quantidade × PM), Cotação de referência,
+Valor de mercado, Resultado não realizado em R$ e em %, e Variação do dia
+quando disponível. Use uma linha para CADA posição, sem omissões ou "demais".
+Não invente valores ausentes. Quando a cotação atualizada existir, dê
+preferência a ela para cálculos de mercado; caso contrário, sinalize
+explicitamente a data/base do valor de mercado enviado. Resultado não realizado
+= valor de mercado - quantidade × PM; retorno = resultado / capital aplicado × 100,
+quando denominador > 0. Não chame esse resultado de rentabilidade total:
+dividendos, impostos, taxas e operações anteriores podem não estar refletidos.
+Mostre sinal + ou − e valores em reais, com duas casas decimais.
+Se o ativo não tiver PM ou valor confiável, escreva "n/d" e não estime.
+Trate PREVIDÊNCIA, caixa e cotas de fundos somente conforme os dados existentes;
+não atribua PM inexistente nem duplique caixa dentro do patrimônio.
+
+No escopo TODOS, faça obrigatoriamente:
+1. Tabela-resumo de TODOS os investidores com patrimônio, caixa,
+capital aplicado estimado nas posições e resultado não realizado, se calculável;
+2. Tabela consolidada por ticker, somando quantidades e valores e calculando
+PM consolidado ponderado pelas quantidades quando houver PM de todas as posições;
+3. Uma subseção para CADA investidor, com tabela integral dos respectivos ativos
+e subtotais. Nunca misture cotas de titularidades diferentes para fins de caixa,
+margem ou exercício de opções.
+No escopo INVESTIDOR, exiba só a tabela completa daquele investidor e
+seus próprios totais. Preserve rigorosamente o isolamento entre investidores.
+
+## Indicadores e tendências
+Quando os dados permitirem, apresente concentração por investidor/ativo,
+ganhadores e perdedores da carteira (em R$ e %), posição de caixa,
+exposição a FIIs, renda fixa, ações e previdência, distinguindo falta de
+classificação de exposição zero. Não invente retorno histórico.
+Descreva dados divergentes, com origem/data de cotação e uma indicação
+de confiabilidade (confirmado, estimado ou desatualizado).
+
+## Radar de opções em tabela — obrigatório
+Uma linha para cada opção aberta/executada presente nos dados, com investidor,
+ticker da opção, ativo-objeto, call/put, compra/venda, quantidade,
+strike, vencimento, prêmio recebido/pago, cotação de referência, distância
+ao strike (%), cobertura/capital necessário estimado e risco observado.
+Diferencie quantidade de contratos e quantidade efetiva de ações: não
+assuma multiplicador de contratos não fornecido. Para puts vendidas,
+mostre desembolso de exercício estimado apenas se a quantidade representar
+unidades do ativo. Compare liquidez por investidor, nunca usando caixa
+de terceiros para afirmar cobertura.
+Quando houver cotação da opção datada, rotule claramente a data e
+não trate recompra como executável a mercado sem verificação.
+
+## Layout editorial
+Comece com um resumo executivo visualmente escaneável: 4 a 6 métricas
+em tabela compacta e, em seguida, 3 a 5 alertas concretos e priorizados.
+Use títulos curtos, tabelas Markdown bem formadas, valores alinhados,
+símbolos positivos/negativos, resumos ao final de cada investidor e uma
+conclusão prática com próximos acompanhamentos. Não produza paredes
+de texto. Apresente contexto, números e interpretação separadamente.
+Mostre as fontes ao lado dos fatos noticiosos. Não confunda os dados
+internos do sistema com pesquisas públicas e evite excesso de notícias
+irrelevantes.
+
 ## O que mudou na carteira
 Use tabela Markdown por ativo quando houver dados suficientes. Mostre preço,
 variação e impacto estimado apenas quando for possível derivá-los dos dados.

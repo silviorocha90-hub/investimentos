@@ -1072,7 +1072,8 @@ export function OpcoesView({
             </select>
           </label>
 
-          {modoAdministracao ? (\n          <label className="options-ticker-search-label">
+          {modoAdministracao ? (
+          <label className="options-ticker-search-label">
             <span>
               Ticker
             </span>
@@ -1088,7 +1089,9 @@ export function OpcoesView({
                 )
               }
             />
-          </label>\n          ) : null}\n        </div>
+          </label>
+          ) : null}
+        </div>
       </article>
 
       {!modoAdministracao ? (
