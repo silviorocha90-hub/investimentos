@@ -51,7 +51,13 @@ public sealed class MercadoBrapiService
             new Dictionary<string, CotacaoOpcaoMercado>(
                 StringComparer.OrdinalIgnoreCase);
 
-        foreach (var opcao in opcoes
+        // A brapi exige plano Pro para opções fora do sandbox PETR.
+        // Não consultar endpoints pagos sem ativação explícita do operador.
+        var consultarOpcoes = bool.TryParse(
+            _configuration["BRAPI_OPCOES_HABILITADAS"], out var habilitadas) &&
+            habilitadas;
+
+        foreach (var opcao in (consultarOpcoes ? opcoes : Enumerable.Empty<OpcaoMercadoConsulta>())
                      .Where(x => !string.IsNullOrWhiteSpace(x.TickerOpcao))
                      .GroupBy(x => x.TickerOpcao, StringComparer.OrdinalIgnoreCase)
                      .Select(x => x.First()))
@@ -81,64 +87,60 @@ public sealed class MercadoBrapiService
         if (tickers.Count == 0)
             return resultado;
 
+        // O plano gratuito autoriza apenas um ticker por requisição.
+        // Tickers já foram deduplicados no método chamador.
         var client = CriarCliente();
-        var url =
-            "https://brapi.dev/api/v2/stocks/quote?symbols=" +
-            Uri.EscapeDataString(string.Join(",", tickers));
-
-        try
+        foreach (var ticker in tickers)
         {
-            using var response =
-                await client.GetAsync(url, cancellationToken);
-
-            if (!response.IsSuccessStatusCode)
+            var url = "https://brapi.dev/api/v2/stocks/quote?symbols=" +
+                Uri.EscapeDataString(ticker);
+            try
             {
-                _logger.LogWarning(
-                    "brapi não atualizou ativos. HTTP {Status}.",
-                    (int)response.StatusCode);
-                return resultado;
-            }
+                using var response = await client.GetAsync(url, cancellationToken);
+                if (!response.IsSuccessStatusCode)
+                {
+                    _logger.LogWarning(
+                        "brapi não retornou preço para {Ticker}. HTTP {Status}.",
+                        ticker, (int)response.StatusCode);
+                    continue;
+                }
 
-            await using var stream =
-                await response.Content.ReadAsStreamAsync(cancellationToken);
-            using var document =
-                await JsonDocument.ParseAsync(
-                    stream,
-                    cancellationToken: cancellationToken);
-
-            if (!document.RootElement.TryGetProperty("results", out var items))
-                return resultado;
-
-            foreach (var item in items.EnumerateArray())
-            {
-                var symbol =
-                    ObterString(item, "symbol") ??
-                    ObterString(item, "requestedSymbol");
-
-                JsonElement data = item;
-                if (item.TryGetProperty("data", out var dataElement) &&
-                    dataElement.ValueKind == JsonValueKind.Object)
-                    data = dataElement;
-
-                var preco = ObterDecimal(data, "regularMarketPrice");
-                if (string.IsNullOrWhiteSpace(symbol) ||
-                    !preco.HasValue ||
-                    preco.Value <= 0)
+                await using var stream = await response.Content
+                    .ReadAsStreamAsync(cancellationToken);
+                using var document = await JsonDocument.ParseAsync(
+                    stream, cancellationToken: cancellationToken);
+                if (!document.RootElement.TryGetProperty("results", out var items))
                     continue;
 
-                resultado[symbol] =
-                    new CotacaoAtivoMercado(
-                        symbol,
-                        preco.Value,
+                foreach (var item in items.EnumerateArray())
+                {
+                    var symbol = ObterString(item, "symbol") ??
+                        ObterString(item, "requestedSymbol");
+                    JsonElement data = item;
+                    if (item.TryGetProperty("data", out var nested) &&
+                        nested.ValueKind == JsonValueKind.Object)
+                        data = nested;
+
+                    var preco = ObterDecimal(data, "regularMarketPrice");
+                    if (string.IsNullOrWhiteSpace(symbol) ||
+                        !preco.HasValue || preco.Value <= 0)
+                        continue;
+
+                    resultado[symbol] = new CotacaoAtivoMercado(
+                        symbol, preco.Value,
                         ObterDecimal(data, "regularMarketChangePercent"),
                         DateTimeOffset.UtcNow);
+                }
             }
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(
-                ex,
-                "Falha ao consultar cotações de ativos na brapi.");
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex,
+                    "Falha ao consultar cotação de {Ticker} na brapi.", ticker);
+            }
         }
 
         return resultado;
