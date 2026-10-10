@@ -144,7 +144,7 @@ public sealed class AssistenteIaService
             return;
 
         var existente = await ObterHojeAsync(dataLocal, cancellationToken);
-        if (existente?.Modelo.Contains("REENVIO_20261009",
+        if (existente?.Modelo.Contains("MAIN_ATUALIZADA_20261009",
                 StringComparison.Ordinal) == true)
             return;
 
@@ -711,7 +711,7 @@ public sealed class AssistenteIaService
         var modeloPersistido = substituir &&
             escopo == "TODOS" &&
             data == new DateTime(2026, 10, 9)
-                ? modelo + "/REENVIO_20261009"
+                ? modelo + "/MAIN_ATUALIZADA_20261009"
                 : modelo;
 
         var relatorio = new RelatorioDiarioIa(
