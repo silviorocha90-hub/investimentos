@@ -1,0 +1,30 @@
+name: Diagnostico Assistente IA Azure
+on:
+  workflow_dispatch:
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Azure login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.APORTIVAAPI_AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.APORTIVAAPI_AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.APORTIVAAPI_AZURE_SUBSCRIPTION_ID }}
+
+      - name: Estado seguro da aplicacao
+        shell: bash
+        run: |
+          az containerapp show --name aportiva-api --resource-group rg-aportiva-prod --query '{revision:properties.latestReadyRevisionName,active:properties.runningStatus,image:properties.template.containers[0].image,min:properties.template.scale.minReplicas,max:properties.template.scale.maxReplicas}' -o json
+          az containerapp revision list --name aportiva-api --resource-group rg-aportiva-prod --query '[].{name:name,active:properties.active,runningState:properties.runningState,replicas:properties.replicas}' -o json
+          echo 'Configuracao presente (apenas nomes e flags, sem valores):'
+          az containerapp show --name aportiva-api --resource-group rg-aportiva-prod --query 'properties.template.containers[0].env[].name' -o tsv | grep -E '^(ASPNETCORE_ENVIRONMENT|DOTNET_ENVIRONMENT|ASSISTENTE_IA_ATIVO|RESEND_API_KEY|EMAIL_FROM|OPENAI_API_KEY|BRAPI_TOKEN)$' || true
+
+      - name: Logs recentes da API
+        shell: bash
+        run: |
+          az containerapp logs show --name aportiva-api --resource-group rg-aportiva-prod --type console --tail 200 2>&1 | grep -E -i 'Assistente|relat[oó]rio|OpenAI|Resend|Falha|Exception|error|worker|Starting|started|Application' | tail -100 || true
