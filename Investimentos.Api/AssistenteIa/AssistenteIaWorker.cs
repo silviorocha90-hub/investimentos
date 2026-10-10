@@ -67,8 +67,14 @@ public sealed class AssistenteIaWorker : BackgroundService
         _ultimaAtualizacaoLocal = agora.Date;
 
         if (sexta)
+        {
+            // Hoje, após o horário, regenera uma vez o relatório atualizado
+            // e libera o reenvio a todos os destinatários habilitados.
+            await service.ForcarRelatorioDeHojeAsync(
+                agora, cancellationToken);
             await service.ProcessarEnviosAsync(
                 agora, cancellationToken, mercado);
+        }
     }
 
     public static bool GeracaoHabilitada(
