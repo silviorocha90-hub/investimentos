@@ -376,16 +376,13 @@ export function UsuarioModal({
 
             <label className="user-profile-field">
               <span>Frequência do relatório</span>
-              <select
-                value={formulario.frequenciaRelatorioIa}
-                disabled={salvando || !formulario.receberRelatorioIa}
-                onChange={(event) => setFormulario((atual) => ({ ...atual, frequenciaRelatorioIa: event.target.value as FormularioUsuario['frequenciaRelatorioIa'] }))}
-              >
-                <option value="DIARIO">Diário</option>
-                <option value="SEMANAL">Semanal</option>
-                <option value="QUINZENAL">Quinzenal</option>
-                <option value="MENSAL">Mensal</option>
-              </select>
+              <input
+                type="text"
+                value="Semanal — sexta-feira, após 19h"
+                disabled
+                readOnly
+              />
+              <small>Uma única análise consolidada para o administrador; um resumo da própria carteira para cada investidor habilitado.</small>
             </label>
           </section>
 
