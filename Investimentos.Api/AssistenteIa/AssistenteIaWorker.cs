@@ -46,9 +46,6 @@ public sealed class AssistenteIaWorker : BackgroundService
     private async Task ExecutarSeNecessarioAsync(
         CancellationToken cancellationToken)
     {
-        if (!GeracaoHabilitada(_configuration, _environment))
-            return;
-
         var agora = ObterAgoraSaoPaulo();
         // Preços: uma atualização diária. Envio: retentativas independentes
         // a cada ciclo de 15 minutos enquanto houver destinatários pendentes.
@@ -67,7 +64,8 @@ public sealed class AssistenteIaWorker : BackgroundService
             _ultimaAtualizacaoLocal = agora.Date;
         }
 
-        if (agora.DayOfWeek == DayOfWeek.Friday)
+        if (agora.DayOfWeek == DayOfWeek.Friday &&
+            GeracaoHabilitada(_configuration, _environment))
         {
             await service.ForcarRelatorioDeHojeAsync(
                 agora, cancellationToken);
