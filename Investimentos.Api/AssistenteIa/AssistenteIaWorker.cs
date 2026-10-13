@@ -6,18 +6,21 @@ public sealed class AssistenteIaWorker : BackgroundService
     private readonly IConfiguration _configuration;
     private readonly IHostEnvironment _environment;
     private readonly ILogger<AssistenteIaWorker> _logger;
+    private readonly Investimentos.Api.ExceptionHandling.LogAplicacaoService _logs;
     private DateTime? _ultimaAtualizacaoLocal;
 
     public AssistenteIaWorker(
         IServiceScopeFactory scopeFactory,
         IConfiguration configuration,
         IHostEnvironment environment,
-        ILogger<AssistenteIaWorker> logger)
+        ILogger<AssistenteIaWorker> logger,
+        Investimentos.Api.ExceptionHandling.LogAplicacaoService logs)
     {
         _scopeFactory = scopeFactory;
         _configuration = configuration;
         _environment = environment;
         _logger = logger;
+        _logs = logs;
     }
 
     protected override async Task ExecuteAsync(
@@ -35,6 +38,7 @@ public sealed class AssistenteIaWorker : BackgroundService
                 _logger.LogError(
                     ex,
                     "Falha no envio semanal do Assistente IA.");
+                await _logs.RegistrarAsync("Assistente IA", "Worker automatico", ex);
             }
 
             await Task.Delay(
@@ -119,6 +123,7 @@ public sealed class GeracaoRelatorioBackground
 {
     private readonly IServiceScopeFactory _scopes;
     private readonly ILogger<GeracaoRelatorioBackground> _logger;
+    private readonly Investimentos.Api.ExceptionHandling.LogAplicacaoService _logs;
     private readonly object _sync = new();
     private Guid? _jobId;
     private string _estado = "ocioso";
@@ -126,10 +131,12 @@ public sealed class GeracaoRelatorioBackground
     private Guid? _relatorioId;
 
     public GeracaoRelatorioBackground(IServiceScopeFactory scopes,
-        ILogger<GeracaoRelatorioBackground> logger)
+        ILogger<GeracaoRelatorioBackground> logger,
+        Investimentos.Api.ExceptionHandling.LogAplicacaoService logs)
     {
         _scopes = scopes;
         _logger = logger;
+        _logs = logs;
     }
 
     private object StatusInterno() => new {
@@ -176,6 +183,7 @@ public sealed class GeracaoRelatorioBackground
         catch (Exception ex)
         {
             _logger.LogError(ex, "Geracao IA falhou: {JobId}", id);
+            await _logs.RegistrarAsync("Assistente IA", "Gerar relatorio", ex, id.ToString());
             lock (_sync)
             {
                 _erro = "Falha ao gerar relatorio. Codigo: " + id;
