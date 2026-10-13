@@ -113,3 +113,74 @@ public sealed class AssistenteIaWorker : BackgroundService
         return DateTime.UtcNow.AddHours(-3);
     }
 }
+
+
+public sealed class GeracaoRelatorioBackground
+{
+    private readonly IServiceScopeFactory _scopes;
+    private readonly ILogger<GeracaoRelatorioBackground> _logger;
+    private readonly object _sync = new();
+    private Guid? _jobId;
+    private string _estado = "ocioso";
+    private string? _erro;
+    private Guid? _relatorioId;
+
+    public GeracaoRelatorioBackground(IServiceScopeFactory scopes,
+        ILogger<GeracaoRelatorioBackground> logger)
+    {
+        _scopes = scopes;
+        _logger = logger;
+    }
+
+    private object StatusInterno() => new {
+        jobId = _jobId, estado = _estado,
+        erro = _erro, relatorioId = _relatorioId
+    };
+
+    public object Status()
+    {
+        lock (_sync) return StatusInterno();
+    }
+
+    public object Iniciar()
+    {
+        lock (_sync)
+        {
+            if (_estado == "executando") return StatusInterno();
+            _jobId = Guid.NewGuid();
+            _estado = "executando";
+            _erro = null;
+            _relatorioId = null;
+            var id = _jobId.Value;
+            _ = Task.Run(() => ExecutarAsync(id));
+            return StatusInterno();
+        }
+    }
+
+    private async Task ExecutarAsync(Guid id)
+    {
+        try
+        {
+            using var scope = _scopes.CreateScope();
+            var service = scope.ServiceProvider.GetRequiredService<AssistenteIaService>();
+            _logger.LogInformation("Geracao IA iniciada: {JobId}", id);
+            var relatorio = await service.GerarAsync(
+                AssistenteIaWorker.ObterAgoraSaoPaulo(), true, CancellationToken.None);
+            lock (_sync)
+            {
+                _relatorioId = relatorio.Id;
+                _estado = "concluido";
+            }
+            _logger.LogInformation("Geracao IA concluida: {JobId}, {RelatorioId}", id, relatorio.Id);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Geracao IA falhou: {JobId}", id);
+            lock (_sync)
+            {
+                _erro = "Falha ao gerar relatorio. Codigo: " + id;
+                _estado = "erro";
+            }
+        }
+    }
+}
