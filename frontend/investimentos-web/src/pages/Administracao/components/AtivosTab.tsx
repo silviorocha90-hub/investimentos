@@ -48,6 +48,9 @@ interface AtivosTabProps {
     ) => Promise<void>
 
   excluindo: boolean
+  atualizandoCotacoes: boolean
+  mensagemCotacoes: string | null
+  atualizarCotacoes: () => Promise<void>
 }
 
 function ehOutroInvestimento(
@@ -107,6 +110,9 @@ export function AtivosTab({
   abrirEditarAtivo,
   excluirAtivo,
   excluindo,
+  atualizandoCotacoes,
+  mensagemCotacoes,
+  atualizarCotacoes,
 }: AtivosTabProps) {
   const investidoresDisponiveis =
     useMemo(
@@ -450,15 +456,28 @@ export function AtivosTab({
           Ativos
         </strong>
 
-        <button
-          type="button"
-          className="admin-primary-button"
-          onClick={
-            abrirNovoAtivo
-          }
-        >
-          + Novo Ativo
-        </button>
+        <div className="admin-toolbar-actions">
+          <button
+            type="button"
+            className="admin-clear-button"
+            onClick={() => void atualizarCotacoes()}
+            disabled={atualizandoCotacoes}
+          >
+            {atualizandoCotacoes
+              ? 'Atualizando cotações...'
+              : 'Atualizar cotações'}
+          </button>
+
+          <button
+            type="button"
+            className="admin-primary-button"
+            onClick={
+              abrirNovoAtivo
+            }
+          >
+            + Novo Ativo
+          </button>
+        </div>
       </div>
 
       <div className="admin-asset-filters">
@@ -652,6 +671,12 @@ export function AtivosTab({
           Limpar filtros
         </button>
       </div>
+
+      {mensagemCotacoes ? (
+        <div className="admin-inline-info">
+          {mensagemCotacoes}
+        </div>
+      ) : null}
 
       {erro ? (
         <div className="admin-inline-error">
