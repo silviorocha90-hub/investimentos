@@ -5,7 +5,6 @@ import {
 } from 'react'
 
 import {
-  gerarRelatorioIa,
   listarRelatoriosIa,
   type RelatorioIa,
 } from '../../api/assistenteIaApi'
@@ -15,6 +14,8 @@ import './AssistenteIa.css'
 
 interface AssistenteIaViewProps {
   podeGerar?: boolean
+  gerando?: boolean
+  iniciarGeracao?: () => Promise<void>
 }
 
 function dataRelatorio(data: string) {
@@ -56,6 +57,8 @@ function horaGeracao(data: string) {
 
 export function AssistenteIaView({
   podeGerar = false,
+  gerando = false,
+  iniciarGeracao,
 }: AssistenteIaViewProps) {
   const [relatorios, setRelatorios] =
     useState<RelatorioIa[]>([])
@@ -63,8 +66,6 @@ export function AssistenteIaView({
     useState<string | null>(null)
   const [carregando, setCarregando] =
     useState(true)
-  const [gerando, setGerando] =
-    useState(false)
   const [erro, setErro] =
     useState<string | null>(null)
 
@@ -96,25 +97,6 @@ export function AssistenteIaView({
   useEffect(() => {
     void carregar()
   }, [])
-
-  async function gerarAgora() {
-    try {
-      setGerando(true)
-      setErro(null)
-      const novo =
-        await gerarRelatorioIa()
-      await carregar()
-      setSelecionadoId(novo.id)
-    } catch (error) {
-      setErro(
-        error instanceof Error
-          ? error.message
-          : 'Falha ao gerar análise.',
-      )
-    } finally {
-      setGerando(false)
-    }
-  }
 
   const selecionado = useMemo(
     () =>
@@ -148,11 +130,11 @@ export function AssistenteIaView({
             className="assistant-generate"
             disabled={gerando}
             onClick={() =>
-              void gerarAgora()
+              void iniciarGeracao?.()
             }
           >
             {gerando
-              ? 'Analisando...'
+              ? 'Gerando em segundo plano...'
               : 'Gerar análise agora'}
           </button>
         ) : null}
