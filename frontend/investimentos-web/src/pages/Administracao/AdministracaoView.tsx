@@ -78,6 +78,8 @@ import {
   IntegridadeTab,
 } from './components/IntegridadeTab'
 
+import { LogsAplicacaoTab } from './components/LogsAplicacaoTab'
+
 import './Administracao.css'
 
 type AbaAdministracao =
@@ -91,6 +93,7 @@ type AbaAdministracao =
   | 'parametros'
   | 'usuarios'
   | 'integridade'
+  | 'logs'
 
 type ModoModalAtivo =
   | 'novo'
@@ -1031,6 +1034,11 @@ export function AdministracaoView({
           Integridade
         </button>
 
+        <button type="button" className={aba === 'logs' ? 'active' : ''}
+          onClick={() => trocarAba('logs')}>
+          Logs
+        </button>
+
         <button
           type="button"
           className={
@@ -1065,6 +1073,8 @@ export function AdministracaoView({
           Usuários
         </button>
       </nav>
+
+      {aba === 'logs' ? <LogsAplicacaoTab /> : null}
 
       {aba ===
       'ativos' ? (

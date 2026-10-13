@@ -212,6 +212,24 @@ namespace Investimentos.Infrastructure.Migrations
                     b.ToTable("Investidor", (string)null);
                 });
 
+            modelBuilder.Entity("Investimentos.Domain.Entities.LogAplicacao", b =>
+                {
+                    b.Property<Guid>("Id").ValueGeneratedOnAdd().HasColumnType("uniqueidentifier");
+                    b.Property<DateTime>("DataUtc").HasColumnType("datetime2");
+                    b.Property<string>("Ambiente").IsRequired().HasMaxLength(40).HasColumnType("nvarchar(40)");
+                    b.Property<string>("Modulo").IsRequired().HasMaxLength(80).HasColumnType("nvarchar(80)");
+                    b.Property<string>("Operacao").IsRequired().HasMaxLength(120).HasColumnType("nvarchar(120)");
+                    b.Property<string>("Nivel").IsRequired().HasMaxLength(20).HasColumnType("nvarchar(20)");
+                    b.Property<string>("Mensagem").IsRequired().HasMaxLength(1500).HasColumnType("nvarchar(1500)");
+                    b.Property<string>("Detalhes").HasColumnType("nvarchar(max)");
+                    b.Property<string>("CorrelacaoId").HasMaxLength(100).HasColumnType("nvarchar(100)");
+                    b.HasKey("Id");
+                    b.HasIndex("DataUtc");
+                    b.HasIndex("CorrelacaoId");
+                    b.HasIndex("Modulo", "Nivel", "DataUtc");
+                    b.ToTable("LogsAplicacao", (string)null);
+                });
+
             modelBuilder.Entity("Investimentos.Domain.Entities.MetaAtivo", b =>
                 {
                     b.Property<Guid>("Id")
