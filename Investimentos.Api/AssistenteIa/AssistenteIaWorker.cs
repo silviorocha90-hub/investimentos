@@ -6,18 +6,21 @@ public sealed class AssistenteIaWorker : BackgroundService
     private readonly IConfiguration _configuration;
     private readonly IHostEnvironment _environment;
     private readonly ILogger<AssistenteIaWorker> _logger;
+    private readonly Investimentos.Api.ExceptionHandling.LogAplicacaoService _logs;
     private DateTime? _ultimaAtualizacaoLocal;
 
     public AssistenteIaWorker(
         IServiceScopeFactory scopeFactory,
         IConfiguration configuration,
         IHostEnvironment environment,
-        ILogger<AssistenteIaWorker> logger)
+        ILogger<AssistenteIaWorker> logger,
+        Investimentos.Api.ExceptionHandling.LogAplicacaoService logs)
     {
         _scopeFactory = scopeFactory;
         _configuration = configuration;
         _environment = environment;
         _logger = logger;
+        _logs = logs;
     }
 
     protected override async Task ExecuteAsync(
@@ -35,6 +38,7 @@ public sealed class AssistenteIaWorker : BackgroundService
                 _logger.LogError(
                     ex,
                     "Falha no envio semanal do Assistente IA.");
+                await _logs.RegistrarAsync("Assistente IA", "Worker automatico", ex);
             }
 
             await Task.Delay(
