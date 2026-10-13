@@ -22,8 +22,8 @@ public sealed class LogAplicacaoService
     private static string Limpar(string texto)
     {
         // Nunca persistir credenciais que apareçam no texto de exceções HTTP.
-        texto = Regex.Replace(texto, @"(?i)(Bearer\s+)[^\s,;\""']+", "$1[REDACTED]");
-        texto = Regex.Replace(texto, @"(?i)(api[_-]?key|token|password|secret)(\s*[:=]\s*)[^\s,;\""']+", "$1$2[REDACTED]");
+        texto = Regex.Replace(texto, @"(?i)(Bearer\s+)\S+", "$1[REDACTED]");
+        texto = Regex.Replace(texto, @"(?i)(api[_-]?key|token|password|secret)(\s*[:=]\s*)\S+", "$1$2[REDACTED]");
         return texto.Length > 12000 ? texto[..12000] : texto;
     }
 
