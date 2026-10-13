@@ -63,6 +63,8 @@ namespace Investimentos.Infrastructure.Persistence
         public DbSet<RelatorioDiarioIa> RelatoriosDiariosIa =>
             Set<RelatorioDiarioIa>();
 
+        public DbSet<LogAplicacao> LogsAplicacao => Set<LogAplicacao>();
+
         public DbSet<Usuario> Usuarios =>
             Set<Usuario>();
 
