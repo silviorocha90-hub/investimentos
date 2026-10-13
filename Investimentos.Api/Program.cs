@@ -126,6 +126,7 @@ builder.Services.AddScoped<IFiscalRepository, FiscalRepository>();
 
 builder.Services.AddScoped<AdministrarUsuariosService>();
 
+builder.Services.AddSingleton<LogAplicacaoService>();
 builder.Services.AddExceptionHandler<ApiExceptionHandler>();
 builder.Services.AddProblemDetails();
 
@@ -270,6 +271,18 @@ app.MapGet(
     {
         if (!principal.IsInRole("Admin")) return Results.Forbid();
         return Results.Ok(jobs.Status());
+    })
+    .RequireAuthorization();
+
+app.MapGet(
+    "/api/admin/logs",
+    async (ClaimsPrincipal principal, LogAplicacaoService logs,
+        string? modulo, string? nivel, string? correlacaoId, int? limite,
+        CancellationToken cancellationToken) =>
+    {
+        if (!principal.IsInRole("Admin")) return Results.Forbid();
+        return Results.Ok(await logs.ListarAsync(modulo, nivel, correlacaoId,
+            limite ?? 100, cancellationToken));
     })
     .RequireAuthorization();
 
