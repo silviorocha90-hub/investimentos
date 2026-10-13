@@ -90,6 +90,7 @@ builder.Services
 builder.Services.AddAuthorization();
 builder.Services.AddHttpClient();
 builder.Services.AddScoped<AssistenteIaService>();
+builder.Services.AddSingleton<GeracaoRelatorioBackground>();
 builder.Services.AddScoped<MercadoBrapiService>();
 builder.Services.AddHostedService<AssistenteIaWorker>();
 
@@ -256,31 +257,19 @@ app.MapGet(
 
 app.MapPost(
     "/api/assistente-ia/gerar",
-    async (
-        ClaimsPrincipal principal,
-        AssistenteIaService service,
-        CancellationToken cancellationToken) =>
+    (ClaimsPrincipal principal, GeracaoRelatorioBackground jobs) =>
     {
-        if (!principal.IsInRole("Admin"))
-            return Results.Forbid();
+        if (!principal.IsInRole("Admin")) return Results.Forbid();
+        return Results.Accepted("/api/assistente-ia/geracao-status", jobs.Iniciar());
+    })
+    .RequireAuthorization();
 
-        // A geração manual é uma ação explícita do administrador e deve
-        // funcionar em qualquer ambiente. A flag ASSISTENTE_IA_ATIVO continua
-        // protegendo somente a execução automática do worker.
-        var relatorio =
-            await service.GerarAsync(
-                AssistenteIaWorker.ObterAgoraSaoPaulo(),
-                true,
-                cancellationToken);
-
-        return Results.Ok(new
-        {
-            relatorio.Id,
-            relatorio.DataReferencia,
-            relatorio.DataGeracao,
-            relatorio.Conteudo,
-            relatorio.Modelo
-        });
+app.MapGet(
+    "/api/assistente-ia/geracao-status",
+    (ClaimsPrincipal principal, GeracaoRelatorioBackground jobs) =>
+    {
+        if (!principal.IsInRole("Admin")) return Results.Forbid();
+        return Results.Ok(jobs.Status());
     })
     .RequireAuthorization();
 
