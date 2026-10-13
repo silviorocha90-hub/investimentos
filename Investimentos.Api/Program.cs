@@ -285,6 +285,37 @@ app.MapPost(
     .RequireAuthorization();
 
 app.MapPost(
+    "/api/admin/atualizar-cotacoes",
+    async (
+        ClaimsPrincipal principal,
+        AssistenteIaService service,
+        ILogger<Program> logger,
+        CancellationToken cancellationToken) =>
+    {
+        if (!principal.IsInRole("Admin"))
+            return Results.Forbid();
+
+        logger.LogInformation(
+            "Atualização manual de cotações iniciada pelo administrador.");
+
+        var resultado = await service.AtualizarMercadoSemanalAsync(
+            AssistenteIaWorker.ObterAgoraSaoPaulo(),
+            cancellationToken);
+
+        logger.LogInformation(
+            "Atualização manual de cotações concluída. Ativos: {Ativos}; Opções: {Opcoes}.",
+            resultado.Ativos.Count, resultado.Opcoes.Count);
+
+        return Results.Ok(new
+        {
+            ativosAtualizados = resultado.Ativos.Count,
+            opcoesAtualizadas = resultado.Opcoes.Count,
+            dataAtualizacao = AssistenteIaWorker.ObterAgoraSaoPaulo()
+        });
+    })
+    .RequireAuthorization();
+
+app.MapPost(
     "/api/investidores",
     async (
         CadastrarInvestidorRequest request,
