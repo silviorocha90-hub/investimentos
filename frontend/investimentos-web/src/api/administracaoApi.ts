@@ -439,7 +439,7 @@ export async function atualizarCotacoesMercado():
   Promise<ResultadoAtualizacaoCotacoes> {
   const response = await fetch(
     `${apiUrl}/api/admin/atualizar-cotacoes`,
-    { method: 'POST' },
+    { method: 'POST', credentials: 'include' },
   )
 
   if (!response.ok) {
