@@ -51,22 +51,27 @@ export async function listarRelatoriosIa():
   return response.json()
 }
 
-export async function gerarRelatorioIa():
-  Promise<RelatorioIa> {
-  const response =
-    await fetch(
-      `${API_URL}/api/assistente-ia/gerar`,
-      {
-        method: 'POST',
-        credentials: 'include',
-      },
-    )
+export interface StatusGeracaoIa {
+  jobId: string | null
+  estado: 'ocioso' | 'executando' | 'concluido' | 'erro'
+  erro: string | null
+  relatorioId: string | null
+}
 
-  if (!response.ok) {
-    throw new Error(
-      await lerErro(response),
-    )
-  }
+export async function consultarGeracaoIa(): Promise<StatusGeracaoIa> {
+  const response = await fetch(
+    `${API_URL}/api/assistente-ia/geracao-status`,
+    { credentials: 'include', cache: 'no-store' },
+  )
+  if (!response.ok) throw new Error(await lerErro(response))
+  return response.json()
+}
 
+export async function gerarRelatorioIa(): Promise<StatusGeracaoIa> {
+  const response = await fetch(
+    `${API_URL}/api/assistente-ia/gerar`,
+    { method: 'POST', credentials: 'include' },
+  )
+  if (!response.ok) throw new Error(await lerErro(response))
   return response.json()
 }
