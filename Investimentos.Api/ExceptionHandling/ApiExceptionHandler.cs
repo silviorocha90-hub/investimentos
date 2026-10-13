@@ -7,11 +7,14 @@ namespace Investimentos.Api.ExceptionHandling
         : IExceptionHandler
     {
         private readonly ILogger<ApiExceptionHandler> _logger;
+        private readonly LogAplicacaoService _logs;
 
         public ApiExceptionHandler(
-            ILogger<ApiExceptionHandler> logger)
+            ILogger<ApiExceptionHandler> logger,
+            LogAplicacaoService logs)
         {
             _logger = logger;
+            _logs = logs;
         }
 
         public async ValueTask<bool> TryHandleAsync(
@@ -45,6 +48,9 @@ namespace Investimentos.Api.ExceptionHandling
                     exception,
                     "Requisição inválida.");
             }
+
+            await _logs.RegistrarAsync("API", httpContext.Request.Path,
+                exception, httpContext.TraceIdentifier, cancellationToken);
 
             var problemDetails =
                 new ProblemDetails
