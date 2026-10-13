@@ -259,18 +259,14 @@ app.MapPost(
     async (
         ClaimsPrincipal principal,
         AssistenteIaService service,
-        IConfiguration configuration,
-        IHostEnvironment environment,
         CancellationToken cancellationToken) =>
     {
         if (!principal.IsInRole("Admin"))
             return Results.Forbid();
 
-        if (!AssistenteIaWorker.GeracaoHabilitada(configuration, environment))
-            return Results.Problem(
-                "Geração IA desabilitada neste ambiente para evitar cobranças.",
-                statusCode: StatusCodes.Status403Forbidden);
-
+        // A geração manual é uma ação explícita do administrador e deve
+        // funcionar em qualquer ambiente. A flag ASSISTENTE_IA_ATIVO continua
+        // protegendo somente a execução automática do worker.
         var relatorio =
             await service.GerarAsync(
                 AssistenteIaWorker.ObterAgoraSaoPaulo(),
