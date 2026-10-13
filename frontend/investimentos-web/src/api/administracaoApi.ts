@@ -427,3 +427,24 @@ export async function verificarIntegridade():
 
   return response.json()
 }
+
+
+export interface ResultadoAtualizacaoCotacoes {
+  ativosAtualizados: number
+  opcoesAtualizadas: number
+  dataAtualizacao: string
+}
+
+export async function atualizarCotacoesMercado():
+  Promise<ResultadoAtualizacaoCotacoes> {
+  const response = await fetch(
+    `${apiUrl}/api/admin/atualizar-cotacoes`,
+    { method: 'POST' },
+  )
+
+  if (!response.ok) {
+    throw new Error(await lerErro(response))
+  }
+
+  return response.json()
+}

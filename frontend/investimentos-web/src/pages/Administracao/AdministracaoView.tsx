@@ -10,6 +10,7 @@ import type {
 
 import {
   atualizarAtivo,
+  atualizarCotacoesMercado,
   criarAtivo,
   excluirAtivo,
   obterAdministracao,
@@ -194,6 +195,16 @@ export function AdministracaoView({
     setSalvando,
   ] =
     useState(false)
+
+  const [
+    atualizandoCotacoes,
+    setAtualizandoCotacoes,
+  ] = useState(false)
+
+  const [
+    mensagemCotacoes,
+    setMensagemCotacoes,
+  ] = useState<string | null>(null)
 
   const [
     erro,
@@ -399,6 +410,31 @@ export function AdministracaoView({
     setErro(
       null,
     )
+  }
+
+  async function atualizarCotacoes() {
+    try {
+      setAtualizandoCotacoes(true)
+      setErro(null)
+      setMensagemCotacoes(null)
+
+      const resultado = await atualizarCotacoesMercado()
+
+      setMensagemCotacoes(
+        `Cotações atualizadas: ${resultado.ativosAtualizados} ativos e ${resultado.opcoesAtualizadas} opções.`,
+      )
+
+      await carregar()
+      await onDataChanged?.()
+    } catch (error) {
+      setErro(
+        error instanceof Error
+          ? error.message
+          : 'Não foi possível atualizar as cotações.',
+      )
+    } finally {
+      setAtualizandoCotacoes(false)
+    }
   }
 
   function abrirNovoAtivo() {
@@ -1074,6 +1110,15 @@ export function AdministracaoView({
           }
           excluindo={
             salvando
+          }
+          atualizandoCotacoes={
+            atualizandoCotacoes
+          }
+          mensagemCotacoes={
+            mensagemCotacoes
+          }
+          atualizarCotacoes={
+            atualizarCotacoes
           }
         />
       ) : null}
