@@ -53,6 +53,8 @@ import {
   AssistenteIaView,
 } from './pages/AssistenteIa/AssistenteIaView'
 
+import { consultarGeracaoIa, gerarRelatorioIa, type StatusGeracaoIa } from './api/assistenteIaApi'
+
 import { AnalisesView } from './pages/Analises/AnalisesView'
 import { AlterarSenhaModal } from './pages/AlterarSenha/AlterarSenhaModal'
 
@@ -209,6 +211,45 @@ function App() {
     useState('')
 
   const [alterandoSenha, setAlterandoSenha] = useState(false)
+  const [geracaoIa, setGeracaoIa] = useState<StatusGeracaoIa | null>(null)
+  const [popupIa, setPopupIa] = useState<string | null>(null)
+  const [jobNotificado, setJobNotificado] = useState<string | null>(null)
+
+  async function iniciarGeracaoIa() {
+    try {
+      const status = await gerarRelatorioIa()
+      setGeracaoIa(status)
+      setPopupIa('Análise iniciada. Você pode navegar enquanto o relatório é gerado.')
+    } catch (error) {
+      setPopupIa(error instanceof Error ? error.message : 'Falha ao iniciar análise.')
+    }
+  }
+
+  useEffect(() => {
+    if (usuario?.perfil !== 'Admin') return
+    let ativo = true
+    const consultar = async () => {
+      try {
+        const status = await consultarGeracaoIa()
+        if (!ativo) return
+        setGeracaoIa(status)
+        if (status.jobId && status.jobId !== jobNotificado &&
+          (status.estado === 'concluido' || status.estado === 'erro')) {
+          setJobNotificado(status.jobId)
+          setPopupIa(status.estado === 'concluido'
+            ? 'A análise foi concluída! Acesse o Assistente IA para consultar o relatório.'
+            : status.erro ?? 'Falha ao gerar análise.')
+        }
+      } catch (error) {
+        console.error('Falha ao consultar o estado da análise IA', error)
+      }
+    }
+    void consultar()
+    const timer = window.setInterval(() => void consultar(), 5000)
+    return () => { ativo = false; window.clearInterval(timer) }
+  }, [usuario?.perfil, jobNotificado])
+
+
 
   const [
     valoresOcultos,
@@ -1073,6 +1114,24 @@ function App() {
 
   return (
     <div className="shell">
+      {popupIa ? (
+        <div role="alertdialog" aria-live="polite" style={{
+          position: 'fixed', top: '22px', right: '22px', zIndex: 9999,
+          maxWidth: '390px', padding: '16px', borderRadius: '12px',
+          background: 'var(--panel)', border: '1px solid var(--border)',
+          boxShadow: '0 12px 36px rgba(0,0,0,.3)', color: 'var(--text)',
+        }}>
+          <strong>Assistente IA — Aportiva</strong>
+          <p>{popupIa}</p>
+          <button type="button" onClick={() => setPopupIa(null)}>Fechar</button>
+          {geracaoIa?.estado === 'concluido' ? (
+            <button type="button" onClick={() => {
+              setTelaAtual('assistente-ia')
+              setPopupIa(null)
+            }}>Ver análise</button>
+          ) : null}
+        </div>
+      ) : null}
       <aside className="sidebar">
         <div className="marca">
           <img
@@ -1485,6 +1544,8 @@ function App() {
         ) ? (
           <AssistenteIaView
             podeGerar={usuario?.perfil === 'Admin'}
+            gerando={geracaoIa?.estado === 'executando'}
+            iniciarGeracao={iniciarGeracaoIa}
           />
         ) : null}
 
