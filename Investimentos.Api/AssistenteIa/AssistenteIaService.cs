@@ -690,6 +690,10 @@ public sealed class AssistenteIaService
             Encoding.UTF8,
             "application/json");
 
+        _logger.LogInformation(
+            "Assistente IA iniciando chamada OpenAI. Modelo: {Modelo}; Escopo: {Escopo}; Investidores: {Investidores}; Ativos: {Ativos}; Opcoes: {Opcoes}.",
+            modelo, escopo, investidores.Count, tickersAtivos.Count, opcoesMercado.Count);
+
         using var response = await client.SendAsync(
             request,
             cancellationToken);
@@ -697,8 +701,17 @@ public sealed class AssistenteIaService
             cancellationToken);
 
         if (!response.IsSuccessStatusCode)
+        {
+            _logger.LogError(
+                "OpenAI falhou na geração do relatório. Status: {StatusCode}; Modelo: {Modelo}; Resposta: {Resposta}",
+                (int)response.StatusCode, modelo, json);
             throw new InvalidOperationException(
                 $"OpenAI retornou {(int)response.StatusCode}: {json}");
+        }
+
+        _logger.LogInformation(
+            "OpenAI concluiu a geração do relatório. Status: {StatusCode}; Modelo: {Modelo}.",
+            (int)response.StatusCode, modelo);
 
         var conteudo = ExtrairTexto(json);
         if (string.IsNullOrWhiteSpace(conteudo))
