@@ -13,17 +13,20 @@ public sealed class MercadoBrapiService
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly IConfiguration _configuration;
     private readonly ILogger<MercadoBrapiService> _logger;
+    private readonly Investimentos.Api.ExceptionHandling.LogAplicacaoService _logs;
 
     public MercadoBrapiService(
         InvestimentosDbContext context,
         IHttpClientFactory httpClientFactory,
         IConfiguration configuration,
-        ILogger<MercadoBrapiService> logger)
+        ILogger<MercadoBrapiService> logger,
+        Investimentos.Api.ExceptionHandling.LogAplicacaoService logs)
     {
         _context = context;
         _httpClientFactory = httpClientFactory;
         _configuration = configuration;
         _logger = logger;
+        _logs = logs;
     }
 
     public async Task<AtualizacaoMercadoResultado> AtualizarAsync(
@@ -102,6 +105,9 @@ public sealed class MercadoBrapiService
                     _logger.LogWarning(
                         "brapi não retornou preço para {Ticker}. HTTP {Status}.",
                         ticker, (int)response.StatusCode);
+                    await _logs.RegistrarAsync("Cotacoes", "Consultar " + ticker,
+                        new HttpRequestException("Brapi retornou HTTP " + (int)response.StatusCode),
+                        ticker, cancellationToken);
                     continue;
                 }
 
@@ -140,6 +146,8 @@ public sealed class MercadoBrapiService
             {
                 _logger.LogWarning(ex,
                     "Falha ao consultar cotação de {Ticker} na brapi.", ticker);
+                await _logs.RegistrarAsync("Cotacoes", "Consultar " + ticker, ex,
+                    ticker, cancellationToken);
             }
         }
 
