@@ -44,6 +44,27 @@ export function formatarDataCurta(
   )
 }
 
+
+export function formatarDataHora(
+  data: string,
+) {
+  const valor =
+    data.includes('T')
+      ? data
+      : `${data}T00:00:00`
+
+  return new Date(valor).toLocaleString(
+    'pt-BR',
+    {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    },
+  )
+}
+
 export function formatarNumeroInteiro(
   valor: number,
 ) {
