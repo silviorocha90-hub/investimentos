@@ -679,6 +679,10 @@ public sealed class AssistenteIaService
         });
 
         var client = _httpClientFactory.CreateClient();
+        // Relatórios consolidados com web_search podem ultrapassar o timeout
+        // padrão de 100 s do HttpClient. O limite maior vale somente para
+        // esta chamada à OpenAI; Resend, Brapi e Telegram permanecem inalterados.
+        client.Timeout = TimeSpan.FromMinutes(5);
         using var request = new HttpRequestMessage(
             HttpMethod.Post,
             "https://api.openai.com/v1/responses");
