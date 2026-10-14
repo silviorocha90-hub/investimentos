@@ -10,7 +10,7 @@ import type {
   AtivoAdministracao,
 } from '../../../types/administracao'
 import {
-  formatarDataCurta,
+  formatarDataHora,
   formatarMoeda,
 } from '../../../utils/formatters'
 
@@ -747,7 +747,7 @@ export function AtivosTab({
 
                     <td>
                       {ativo.dataCotacao
-                        ? formatarDataCurta(
+                        ? formatarDataHora(
                             ativo.dataCotacao,
                           )
                         : '—'}
