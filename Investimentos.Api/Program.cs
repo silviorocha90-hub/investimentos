@@ -257,6 +257,22 @@ app.MapGet(
     .RequireAuthorization();
 
 app.MapPost(
+    "/api/assistente-ia/relatorios/{id:guid}/reenviar",
+    async (Guid id, ClaimsPrincipal principal, AssistenteIaService service,
+        CancellationToken cancellationToken) =>
+    {
+        if (!principal.IsInRole("Admin")) return Results.Forbid();
+        try
+        {
+            var resultado = await service.ReenviarRelatorioAsync(id, cancellationToken);
+            return Results.Ok(new { enviados = resultado.Enviados,
+                falhas = resultado.Falhas, semRelatorio = resultado.SemRelatorio });
+        }
+        catch (KeyNotFoundException) { return Results.NotFound(); }
+    })
+    .RequireAuthorization();
+
+app.MapPost(
     "/api/assistente-ia/gerar",
     (ClaimsPrincipal principal, GeracaoRelatorioBackground jobs) =>
     {
