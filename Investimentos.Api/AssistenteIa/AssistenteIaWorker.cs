@@ -71,8 +71,7 @@ public sealed class AssistenteIaWorker : BackgroundService
         if (agora.DayOfWeek == DayOfWeek.Friday &&
             GeracaoHabilitada(_configuration, _environment))
         {
-            await service.ForcarRelatorioDeHojeAsync(
-                agora, cancellationToken);
+            // Único fluxo automático de IA/e-mail: sexta-feira.
             await service.ProcessarEnviosAsync(
                 agora, cancellationToken, mercado);
         }
@@ -170,9 +169,11 @@ public sealed class GeracaoRelatorioBackground
         {
             using var scope = _scopes.CreateScope();
             var service = scope.ServiceProvider.GetRequiredService<AssistenteIaService>();
-            _logger.LogInformation("Geracao IA iniciada: {JobId}", id);
-            var relatorio = await service.GerarAsync(
-                AssistenteIaWorker.ObterAgoraSaoPaulo(), true, CancellationToken.None);
+            _logger.LogInformation(
+                "Geracao IA MANUAL iniciada pelo Admin: {JobId}", id);
+            var relatorio = await service.GerarManualAdminAsync(
+                AssistenteIaWorker.ObterAgoraSaoPaulo(),
+                CancellationToken.None);
             lock (_sync)
             {
                 _relatorioId = relatorio.Id;
