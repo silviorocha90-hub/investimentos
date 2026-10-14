@@ -25,7 +25,11 @@
         public decimal PremioUnitario { get; private set; }
         public decimal Taxas { get; private set; }
 
-        // Cotacao indicativa de mercado; nao representa recompra efetiva.\n        public decimal? PrecoMercadoAtual { get; private set; }\n        public DateTime? DataAtualizacaoCotacao { get; private set; }\n\n        public decimal? PrecoRecompraUnitario { get; private set; }
+        // Cotacao indicativa de mercado; nao representa recompra efetiva.
+        public decimal? PrecoMercadoAtual { get; private set; }
+        public DateTime? DataAtualizacaoCotacao { get; private set; }
+
+        public decimal? PrecoRecompraUnitario { get; private set; }
         public decimal? ValorExecucao { get; private set; }
         public decimal? ResultadoInformado { get; private set; }
 
