@@ -38,6 +38,10 @@ public sealed class MercadoBrapiService
         var tickers = tickersAtivos
             .Where(x => !string.IsNullOrWhiteSpace(x))
             .Select(x => x.Trim().ToUpperInvariant())
+            // Instrumentos sem ticker de mercado não devem chegar à Brapi.
+            .Where(x => !x.Contains("FMP", StringComparison.OrdinalIgnoreCase) &&
+                        !x.Contains("ELETROBRAS", StringComparison.OrdinalIgnoreCase) &&
+                        !x.Contains(" ", StringComparison.Ordinal))
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToList();
 
