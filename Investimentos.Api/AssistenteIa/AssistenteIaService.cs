@@ -1130,7 +1130,7 @@ Quando não houver novidade relevante, diga explicitamente.
         var assunto =
             relatorio.Escopo == "TODOS"
                 ? $"Aportiva | {tipoRelatorio} — {relatorio.DataReferencia:dd/MM/yyyy}"
-                : $"Aportiva | {tipoRelatorio} de {primeiroNome}";
+                : $"Aportiva | {tipoRelatorio} de {primeiroNome} - {relatorio.DataReferencia:dd/MM/yyyy}";
         var texto =
             $"Olá, {nome}.\n\n" +
             relatorio.Conteudo +
