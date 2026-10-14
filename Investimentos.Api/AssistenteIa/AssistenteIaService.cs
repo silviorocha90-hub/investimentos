@@ -146,13 +146,25 @@ public sealed class AssistenteIaService
 
     public async Task<RelatorioDiarioIa> GerarEEnviarManualAdminAsync(
         DateTime dataLocal,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        Func<string, string, Task>? registrarEtapa = null)
     {
+        var cronometro = System.Diagnostics.Stopwatch.StartNew();
+        async Task Registrar(string etapa, string mensagem)
+        {
+            _logger.LogInformation("IA manual {Etapa}: {Mensagem}; {Segundos}s", etapa, mensagem, cronometro.Elapsed.TotalSeconds);
+            if (registrarEtapa is not null)
+                await registrarEtapa(etapa, $"{mensagem} ({cronometro.Elapsed.TotalSeconds:F1}s)");
+        }
+        await Registrar("Coleta e IA", "Iniciando preparacao e chamada OpenAI.");
         // Ação excepcional solicitada explicitamente por um Admin.
         // Não altera UltimoEnvioRelatorioIa: o envio manual não substitui
         // nem consome o relatório semanal automático da sexta-feira.
         var relatorioAdmin = await GerarRelatorioAsync(
             dataLocal, true, null, "TODOS", cancellationToken);
+
+        await Registrar("Relatorio gerado", "Analise IA gerada e persistida.");
+        await Registrar("Envio email", "Iniciando envio dos relatorios.");
 
         var administradores = await _context.Usuarios
             .Where(x => x.Perfil == PerfilUsuario.Admin &&
@@ -195,6 +207,7 @@ public sealed class AssistenteIaService
             await EnviarRelatorioAsync(envio, usuario, cancellationToken);
         }
 
+        await Registrar("Envio concluido", "Envio manual finalizado.");
         return relatorioAdmin;
     }
 
