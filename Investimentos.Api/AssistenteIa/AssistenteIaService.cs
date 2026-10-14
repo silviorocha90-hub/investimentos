@@ -97,6 +97,46 @@ public sealed class AssistenteIaService
 
     // Agente de atualização semanal: consulta ativos e opções uma única vez
     // antes da análise, sem utilizar a API da OpenAI.
+    private static readonly SemaphoreSlim TravaCotacoes = new(1, 1);
+
+    // Registro persistente compartilhado por execucoes manuais e automaticas.
+    public async Task<AtualizacaoMercadoResultado?> AtualizarMercadoUmaVezAoDiaAsync(
+        DateTime dataLocal, string origem, CancellationToken cancellationToken)
+    {
+        await TravaCotacoes.WaitAsync(cancellationToken);
+        try
+        {
+            var dia = dataLocal.Date.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
+            var chave = "Cotacoes-" + dia;
+            var executada = await _context.LogsAplicacao.AsNoTracking().AnyAsync(x =>
+                x.Modulo == "Cotacoes" && x.Operacao == "Atualizacao diaria" &&
+                x.Nivel == "INFO" && x.CorrelacaoId == chave,
+                cancellationToken);
+            if (executada)
+            {
+                _logger.LogInformation("Cotacoes ja atualizadas em {Dia}; origem {Origem} ignorada.", dia, origem);
+                return null;
+            }
+
+            var resultado = await AtualizarMercadoSemanalAsync(dataLocal, cancellationToken);
+            _context.LogsAplicacao.Add(new LogAplicacao
+            {
+                Ambiente = _configuration["ASPNETCORE_ENVIRONMENT"] ?? "Production",
+                Modulo = "Cotacoes",
+                Operacao = "Atualizacao diaria",
+                Nivel = "INFO",
+                Mensagem = "Atualizacao concluida via " + origem,
+                CorrelacaoId = chave
+            });
+            await _context.SaveChangesAsync(cancellationToken);
+            return resultado;
+        }
+        finally
+        {
+            TravaCotacoes.Release();
+        }
+    }
+
     public async Task<AtualizacaoMercadoResultado> AtualizarMercadoSemanalAsync(
         DateTime dataLocal,
         CancellationToken cancellationToken)
@@ -618,11 +658,11 @@ public sealed class AssistenteIaService
             }
         }
 
-        var mercado = mercadoAtualizado ?? await _mercadoBrapiService.AtualizarAsync(
-            tickersAtivos,
-            opcoesMercado.Values,
-            dataLocal,
-            cancellationToken);
+        var mercado = mercadoAtualizado ??
+            await AtualizarMercadoUmaVezAoDiaAsync(dataLocal, "relatorio IA", cancellationToken) ??
+            new AtualizacaoMercadoResultado(
+                new Dictionary<string, CotacaoAtivoMercado>(StringComparer.OrdinalIgnoreCase),
+                new Dictionary<string, CotacaoOpcaoMercado>(StringComparer.OrdinalIgnoreCase));
 
         var carteiras = new List<object>();
 
