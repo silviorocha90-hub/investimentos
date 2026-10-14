@@ -658,11 +658,11 @@ public sealed class AssistenteIaService
             }
         }
 
-        var mercado = mercadoAtualizado ?? await _mercadoBrapiService.AtualizarAsync(
-            tickersAtivos,
-            opcoesMercado.Values,
-            dataLocal,
-            cancellationToken);
+        var mercado = mercadoAtualizado ??
+            await AtualizarMercadoUmaVezAoDiaAsync(dataLocal, "relatorio IA", cancellationToken) ??
+            new AtualizacaoMercadoResultado(
+                new Dictionary<string, CotacaoAtivoMercado>(StringComparer.OrdinalIgnoreCase),
+                new Dictionary<string, CotacaoOpcaoMercado>(StringComparer.OrdinalIgnoreCase));
 
         var carteiras = new List<object>();
 
