@@ -348,6 +348,9 @@ namespace Investimentos.Infrastructure.Migrations
                     b.Property<DateTime?>("DataFinalizacao")
                         .HasColumnType("datetime2");
 
+                    b.Property<DateTime?>("DataAtualizacaoCotacao")
+                        .HasColumnType("datetime2");
+
                     b.Property<DateTime>("DataOperacao")
                         .HasColumnType("datetime2");
 
@@ -358,6 +361,10 @@ namespace Investimentos.Infrastructure.Migrations
                         .IsRequired()
                         .HasMaxLength(10)
                         .HasColumnType("nvarchar(10)");
+
+                    b.Property<decimal?>("PrecoMercadoAtual")
+                        .HasPrecision(18, 8)
+                        .HasColumnType("decimal(18,8)");
 
                     b.Property<decimal?>("PrecoRecompraUnitario")
                         .HasPrecision(18, 8)
