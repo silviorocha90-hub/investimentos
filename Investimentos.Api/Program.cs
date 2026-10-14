@@ -328,7 +328,8 @@ app.MapPost(
         {
             ativosAtualizados = resultado?.Ativos.Count ?? 0,
             opcoesAtualizadas = resultado?.Opcoes.Count ?? 0,
-            jaAtualizadoHoje = resultado is null,\n            dataAtualizacao = AssistenteIaWorker.ObterAgoraSaoPaulo()
+            jaAtualizadoHoje = resultado is null,
+            dataAtualizacao = AssistenteIaWorker.ObterAgoraSaoPaulo()
         });
     })
     .RequireAuthorization();
