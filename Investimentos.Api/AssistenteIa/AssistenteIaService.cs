@@ -115,12 +115,13 @@ public sealed class AssistenteIaService
             var dashboard = await _dashboardHandler.HandleAsync(
                 id, cancellationToken);
 
-            // Somente ações e FIIs com posição líquida positiva.
-            // PREVIDENCIA, FMP, ETF, renda fixa e posições zeradas não são consultados.
+            // Somente ações, FIIs e ETFs com posição líquida positiva.
+            // PREVIDENCIA, FMP, renda fixa e posições zeradas não são consultados.
             foreach (var posicao in dashboard.Posicoes.Where(x =>
                 x.Quantidade > 0 &&
                 (string.Equals(x.TipoAtivoCodigo, "ACAO", StringComparison.OrdinalIgnoreCase) ||
-                 string.Equals(x.TipoAtivoCodigo, "FII", StringComparison.OrdinalIgnoreCase))))
+                 string.Equals(x.TipoAtivoCodigo, "FII", StringComparison.OrdinalIgnoreCase) ||
+                 string.Equals(x.TipoAtivoCodigo, "ETF", StringComparison.OrdinalIgnoreCase))))
             {
                 tickers.Add(posicao.Ticker);
             }
