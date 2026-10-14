@@ -170,8 +170,8 @@ public sealed class GeracaoRelatorioBackground
             using var scope = _scopes.CreateScope();
             var service = scope.ServiceProvider.GetRequiredService<AssistenteIaService>();
             _logger.LogInformation(
-                "Geracao IA MANUAL iniciada pelo Admin: {JobId}", id);
-            var relatorio = await service.GerarManualAdminAsync(
+                "Geracao e ENVIO IA MANUAL iniciados pelo Admin: {JobId}", id);
+            var relatorio = await service.GerarEEnviarManualAdminAsync(
                 AssistenteIaWorker.ObterAgoraSaoPaulo(),
                 CancellationToken.None);
             lock (_sync)

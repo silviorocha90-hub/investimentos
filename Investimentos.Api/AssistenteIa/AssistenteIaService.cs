@@ -114,13 +114,21 @@ public sealed class AssistenteIaService
         {
             var dashboard = await _dashboardHandler.HandleAsync(
                 id, cancellationToken);
-            foreach (var posicao in dashboard.Posicoes.Where(x => x.Quantidade > 0))
-                tickers.Add(posicao.Ticker);
 
-            foreach (var opcao in dashboard.Opcoes
-                .Where(x => x.Situacao == "ABERTA" || x.Situacao == "EXECUTADA"))
+            // Somente ações e FIIs com posição líquida positiva.
+            // PREVIDENCIA, FMP, ETF, renda fixa e posições zeradas não são consultados.
+            foreach (var posicao in dashboard.Posicoes.Where(x =>
+                x.Quantidade > 0 &&
+                (string.Equals(x.TipoAtivoCodigo, "ACAO", StringComparison.OrdinalIgnoreCase) ||
+                 string.Equals(x.TipoAtivoCodigo, "FII", StringComparison.OrdinalIgnoreCase))))
             {
-                tickers.Add(opcao.TickerAtivo);
+                tickers.Add(posicao.Ticker);
+            }
+
+            // Opções entram separadamente e somente enquanto estiverem abertas.
+            foreach (var opcao in dashboard.Opcoes.Where(x =>
+                string.Equals(x.Situacao, "ABERTA", StringComparison.OrdinalIgnoreCase)))
+            {
                 opcoes[opcao.TickerOpcao] = new OpcaoMercadoConsulta(
                     opcao.TickerOpcao, opcao.Vencimento, opcao.Strike);
             }
@@ -130,9 +138,63 @@ public sealed class AssistenteIaService
             tickers, opcoes.Values, dataLocal, cancellationToken);
 
         _logger.LogInformation(
-            "Atualização semanal do mercado: {Ativos} ativos e {Opcoes} opções com preço disponível.",
+            "Atualização de mercado filtrada: {Ativos} ações/FIIs com posição > 0 e {Opcoes} opções abertas.",
             atualizado.Ativos.Count, atualizado.Opcoes.Count);
         return atualizado;
+    }
+
+    public async Task<RelatorioDiarioIa> GerarEEnviarManualAdminAsync(
+        DateTime dataLocal,
+        CancellationToken cancellationToken)
+    {
+        // Ação excepcional solicitada explicitamente por um Admin.
+        // Não altera UltimoEnvioRelatorioIa: o envio manual não substitui
+        // nem consome o relatório semanal automático da sexta-feira.
+        var relatorioAdmin = await GerarRelatorioAsync(
+            dataLocal, true, null, "TODOS", cancellationToken);
+
+        var administradores = await _context.Usuarios
+            .Where(x => x.Perfil == PerfilUsuario.Admin &&
+                        x.Status == StatusUsuario.Ativo &&
+                        x.ReceberRelatorioIa)
+            .ToListAsync(cancellationToken);
+
+        foreach (var administrador in administradores)
+            await EnviarRelatorioAsync(relatorioAdmin, administrador, cancellationToken);
+
+        var usuarios = await _context.Usuarios
+            .Where(x => x.Perfil == PerfilUsuario.Usuario &&
+                        x.Status == StatusUsuario.Ativo &&
+                        x.ReceberRelatorioIa)
+            .Include(x => x.Investidores)
+            .OrderBy(x => x.Nome)
+            .ToListAsync(cancellationToken);
+
+        foreach (var usuario in usuarios)
+        {
+            var investidoresIds = usuario.Investidores
+                .Select(x => x.InvestidorId)
+                .Distinct()
+                .ToArray();
+
+            if (investidoresIds.Length == 0)
+                continue;
+
+            var resumos = new List<RelatorioDiarioIa>();
+            foreach (var investidorId in investidoresIds)
+                resumos.Add(await GerarResumoInvestidorAsync(
+                    dataLocal, investidorId, cancellationToken));
+
+            var conteudoAgrupado = string.Join(
+                "\n\n---\n\n", resumos.Select(x => x.Conteudo));
+            var envio = new RelatorioDiarioIa(
+                dataLocal.Date, conteudoAgrupado,
+                "Resumo manual solicitado pelo Admin (sem chamada adicional à OpenAI)",
+                "INVESTIDOR");
+            await EnviarRelatorioAsync(envio, usuario, cancellationToken);
+        }
+
+        return relatorioAdmin;
     }
 
     public async Task ProcessarEnviosAsync(
