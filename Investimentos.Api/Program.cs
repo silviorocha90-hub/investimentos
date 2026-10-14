@@ -300,19 +300,19 @@ app.MapPost(
         logger.LogInformation(
             "Atualização manual de cotações iniciada pelo administrador.");
 
-        var resultado = await service.AtualizarMercadoSemanalAsync(
-            AssistenteIaWorker.ObterAgoraSaoPaulo(),
+        var resultado = await service.AtualizarMercadoUmaVezAoDiaAsync(
+            AssistenteIaWorker.ObterAgoraSaoPaulo(), "manual",
             cancellationToken);
 
         logger.LogInformation(
             "Atualização manual de cotações concluída. Ativos: {Ativos}; Opções: {Opcoes}.",
-            resultado.Ativos.Count, resultado.Opcoes.Count);
+            resultado?.Ativos.Count ?? 0, resultado?.Opcoes.Count ?? 0);
 
         return Results.Ok(new
         {
-            ativosAtualizados = resultado.Ativos.Count,
-            opcoesAtualizadas = resultado.Opcoes.Count,
-            dataAtualizacao = AssistenteIaWorker.ObterAgoraSaoPaulo()
+            ativosAtualizados = resultado?.Ativos.Count ?? 0,
+            opcoesAtualizadas = resultado?.Opcoes.Count ?? 0,
+            jaAtualizadoHoje = resultado is null,\n            dataAtualizacao = AssistenteIaWorker.ObterAgoraSaoPaulo()
         });
     })
     .RequireAuthorization();
