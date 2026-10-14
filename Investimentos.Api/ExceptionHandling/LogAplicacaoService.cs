@@ -52,6 +52,30 @@ public sealed class LogAplicacaoService
         }
     }
 
+    public async Task RegistrarEtapaAsync(string operacao, string mensagem,
+        string correlacaoId, CancellationToken ct = default)
+    {
+        try
+        {
+            using var scope = _scopes.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<InvestimentosDbContext>();
+            db.LogsAplicacao.Add(new LogAplicacao
+            {
+                Ambiente = _environment.EnvironmentName,
+                Modulo = "Assistente IA",
+                Operacao = operacao,
+                Nivel = "INFO",
+                Mensagem = Limpar(mensagem),
+                CorrelacaoId = correlacaoId
+            });
+            await db.SaveChangesAsync(ct);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Falha ao registrar etapa IA {Operacao}.", operacao);
+        }
+    }
+
     public async Task<IReadOnlyList<LogAplicacao>> ListarAsync(
         string? modulo, string? nivel, string? correlacaoId, int limite,
         CancellationToken ct)
