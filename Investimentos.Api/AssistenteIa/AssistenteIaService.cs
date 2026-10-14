@@ -172,8 +172,27 @@ public sealed class AssistenteIaService
                         x.ReceberRelatorioIa)
             .ToListAsync(cancellationToken);
 
+        var enviosComErro = 0;
+        async Task EnviarComTratamentoAsync(RelatorioDiarioIa relatorio, Usuario destinatario)
+        {
+            try
+            {
+                await EnviarRelatorioAsync(relatorio, destinatario, cancellationToken);
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                enviosComErro++;
+                _logger.LogError(ex, "Relatorio IA salvo, mas envio falhou para usuario {UsuarioId}.", destinatario.Id);
+                await Registrar("Falha envio email", $"Falha para usuario {destinatario.Id}: {ex.Message}");
+            }
+        }
+
         foreach (var administrador in administradores)
-            await EnviarRelatorioAsync(relatorioAdmin, administrador, cancellationToken);
+            await EnviarComTratamentoAsync(relatorioAdmin, administrador);
 
         var usuarios = await _context.Usuarios
             .Where(x => x.Perfil == PerfilUsuario.Usuario &&
@@ -204,10 +223,10 @@ public sealed class AssistenteIaService
                 dataLocal.Date, conteudoAgrupado,
                 "Resumo manual solicitado pelo Admin (sem chamada adicional à OpenAI)",
                 "INVESTIDOR");
-            await EnviarRelatorioAsync(envio, usuario, cancellationToken);
+            await EnviarComTratamentoAsync(envio, usuario);
         }
 
-        await Registrar("Envio concluido", "Envio manual finalizado.");
+        await Registrar("Envio concluido", $"Envio manual finalizado com {enviosComErro} falha(s); relatorio salvo.");
         return relatorioAdmin;
     }
 
