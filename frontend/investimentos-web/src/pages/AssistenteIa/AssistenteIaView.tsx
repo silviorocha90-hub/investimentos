@@ -5,7 +5,7 @@ import {
 } from 'react'
 
 import {
-  listarRelatoriosIa,
+  listarRelatoriosIa,\n  reenviarRelatorioIa,
   type RelatorioIa,
 } from '../../api/assistenteIaApi'
 
@@ -64,10 +64,24 @@ export function AssistenteIaView({
     useState<RelatorioIa[]>([])
   const [selecionadoId, setSelecionadoId] =
     useState<string | null>(null)
-  const [carregando, setCarregando] =
+  const [reenviando, setReenviando] = useState(false)\n  const [mensagemReenvio, setMensagemReenvio] = useState<string | null>(null)\n  const [carregando, setCarregando] =
     useState(true)
   const [erro, setErro] =
     useState<string | null>(null)
+
+  async function reenviar(id: string) {
+    if (!window.confirm('Reenviar por e-mail o relatório salvo para administradores e investidores vinculados?')) return
+    setReenviando(true)
+    setMensagemReenvio(null)
+    try {
+      const resultado = await reenviarRelatorioIa(id)
+      setMensagemReenvio(`Reenvio concluído: ${resultado.enviados} enviados, ${resultado.falhas} falhas e ${resultado.semRelatorio} sem relatório individual salvo.`)
+    } catch (error) {
+      setMensagemReenvio(error instanceof Error ? error.message : 'Falha ao reenviar relatório.')
+    } finally {
+      setReenviando(false)
+    }
+  }
 
   async function carregar() {
     try {
@@ -235,6 +249,12 @@ export function AssistenteIaView({
                 </p>
               </div>
 
+              {podeGerar ? (
+                <button type="button" className="assistant-generate"
+                  disabled={reenviando} onClick={() => void reenviar(selecionado.id)}>
+                  {reenviando ? 'Reenviando...' : 'Reenviar e-mails'}
+                </button>
+              ) : null}
               <div className="assistant-report-status">
                 <span>✓ Gerada</span>
                 <small>
@@ -243,6 +263,7 @@ export function AssistenteIaView({
               </div>
             </div>
 
+            {mensagemReenvio ? <p role="status">{mensagemReenvio}</p> : null}
             <div className="assistant-content">
               <RelatorioFormatado conteudo={selecionado.conteudo} />
             </div>
