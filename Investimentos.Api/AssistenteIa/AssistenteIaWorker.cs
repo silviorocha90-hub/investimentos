@@ -165,25 +165,30 @@ public sealed class GeracaoRelatorioBackground
 
     private async Task ExecutarAsync(Guid id)
     {
+        var inicio = System.Diagnostics.Stopwatch.StartNew();
+        using var limite = new CancellationTokenSource(TimeSpan.FromMinutes(12));
         try
         {
             using var scope = _scopes.CreateScope();
             var service = scope.ServiceProvider.GetRequiredService<AssistenteIaService>();
             _logger.LogInformation(
                 "Geracao e ENVIO IA MANUAL iniciados pelo Admin: {JobId}", id);
+            await _logs.RegistrarEtapaAsync("Iniciar geracao", "Geracao manual iniciada.", id.ToString());
             var relatorio = await service.GerarEEnviarManualAdminAsync(
                 AssistenteIaWorker.ObterAgoraSaoPaulo(),
-                CancellationToken.None);
+                limite.Token, (etapa, mensagem) =>
+                    _logs.RegistrarEtapaAsync(etapa, mensagem, id.ToString()));
             lock (_sync)
             {
                 _relatorioId = relatorio.Id;
                 _estado = "concluido";
             }
-            _logger.LogInformation("Geracao IA concluida: {JobId}, {RelatorioId}", id, relatorio.Id);
+            await _logs.RegistrarEtapaAsync("Concluir geracao", $"Relatorio {relatorio.Id} concluido em {inicio.Elapsed.TotalSeconds:F1}s.", id.ToString());
+            _logger.LogInformation("Geracao IA concluida: {JobId}, {RelatorioId}; Duracao: {Segundos}s", id, relatorio.Id, inicio.Elapsed.TotalSeconds);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Geracao IA falhou: {JobId}", id);
+            _logger.LogError(ex, "Geracao IA falhou: {JobId} apos {Segundos}s", id, inicio.Elapsed.TotalSeconds);
             await _logs.RegistrarAsync("Assistente IA", "Gerar relatorio", ex, id.ToString());
             lock (_sync)
             {
