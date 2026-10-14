@@ -169,7 +169,8 @@ public sealed class MercadoBrapiService
                 x => x.Ticker.Codigo,
                 StringComparer.OrdinalIgnoreCase);
 
-        var data = dataLocal.Date;
+        // Preserve the time of the successful quote refresh, not just its calendar day.
+        var data = dataLocal;
 
         foreach (var item in cotacoes.Values)
         {
