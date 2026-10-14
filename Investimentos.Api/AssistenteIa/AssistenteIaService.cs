@@ -1124,11 +1124,9 @@ Quando não houver novidade relevante, diga explicitamente.
                 "EMAIL_FROM não configurado.");
 
         var primeiroNome = nome.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() ?? "Investidor";
-        var tipoRelatorio = relatorio.Escopo == "TODOS"
-            ? "Relatório consolidado"
-            : "Resumo da sua carteira";
-        var assunto =
-            $"Aportiva | {tipoRelatorio} de {primeiroNome} — {relatorio.DataReferencia:dd/MM/yyyy}";
+        var assunto = relatorio.Escopo == "TODOS"
+            ? $"Aportiva | Relatório consolidado — {relatorio.DataReferencia:dd/MM/yyyy}"
+            : $"Aportiva | Resumo Semanal Carteira de {primeiroNome} - {relatorio.DataReferencia:dd/MM/yyyy}";
         var texto =
             $"Olá, {nome}.\n\n" +
             relatorio.Conteudo +
