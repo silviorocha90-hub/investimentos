@@ -107,32 +107,84 @@ public sealed class AssistenteIaService
             .ToListAsync(cancellationToken);
 
         var tickers = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        var opcoes = new Dictionary<string, OpcaoMercadoConsulta>(
-            StringComparer.OrdinalIgnoreCase);
 
         foreach (var id in investidores)
         {
             var dashboard = await _dashboardHandler.HandleAsync(
                 id, cancellationToken);
-            foreach (var posicao in dashboard.Posicoes.Where(x => x.Quantidade > 0))
-                tickers.Add(posicao.Ticker);
 
-            foreach (var opcao in dashboard.Opcoes
-                .Where(x => x.Situacao == "ABERTA" || x.Situacao == "EXECUTADA"))
+            foreach (var posicao in dashboard.Posicoes.Where(x =>
+                x.Quantidade > 0 &&
+                (string.Equals(x.TipoAtivoCodigo, "ACAO", StringComparison.OrdinalIgnoreCase) ||
+                 string.Equals(x.TipoAtivoCodigo, "FII", StringComparison.OrdinalIgnoreCase))))
             {
-                tickers.Add(opcao.TickerAtivo);
-                opcoes[opcao.TickerOpcao] = new OpcaoMercadoConsulta(
-                    opcao.TickerOpcao, opcao.Vencimento, opcao.Strike);
+                tickers.Add(posicao.Ticker);
             }
         }
 
+        // Atualização automática de mercado: somente ações e FIIs efetivamente
+        // mantidos em carteira. Posições zeradas e demais classes não consomem API.
         var atualizado = await _mercadoBrapiService.AtualizarAsync(
-            tickers, opcoes.Values, dataLocal, cancellationToken);
+            tickers, Array.Empty<OpcaoMercadoConsulta>(), dataLocal, cancellationToken);
 
         _logger.LogInformation(
-            "Atualização semanal do mercado: {Ativos} ativos e {Opcoes} opções com preço disponível.",
-            atualizado.Ativos.Count, atualizado.Opcoes.Count);
+            "Atualização de mercado: {Ativos} ações/FIIs com posição > 0.",
+            atualizado.Ativos.Count);
         return atualizado;
+    }
+
+    public async Task<RelatorioDiarioIa> GerarEEnviarManualAdminAsync(
+        DateTime dataLocal,
+        CancellationToken cancellationToken)
+    {
+        // Ação excepcional solicitada explicitamente por um Admin.
+        // Não altera UltimoEnvioRelatorioIa: o envio manual não substitui
+        // nem consome o relatório semanal automático da sexta-feira.
+        var relatorioAdmin = await GerarRelatorioAsync(
+            dataLocal, true, null, "TODOS", cancellationToken);
+
+        var administradores = await _context.Usuarios
+            .Where(x => x.Perfil == PerfilUsuario.Admin &&
+                        x.Status == StatusUsuario.Ativo &&
+                        x.ReceberRelatorioIa)
+            .ToListAsync(cancellationToken);
+
+        foreach (var administrador in administradores)
+            await EnviarRelatorioAsync(relatorioAdmin, administrador, cancellationToken);
+
+        var usuarios = await _context.Usuarios
+            .Where(x => x.Perfil == PerfilUsuario.Usuario &&
+                        x.Status == StatusUsuario.Ativo &&
+                        x.ReceberRelatorioIa)
+            .Include(x => x.Investidores)
+            .OrderBy(x => x.Nome)
+            .ToListAsync(cancellationToken);
+
+        foreach (var usuario in usuarios)
+        {
+            var investidoresIds = usuario.Investidores
+                .Select(x => x.InvestidorId)
+                .Distinct()
+                .ToArray();
+
+            if (investidoresIds.Length == 0)
+                continue;
+
+            var resumos = new List<RelatorioDiarioIa>();
+            foreach (var investidorId in investidoresIds)
+                resumos.Add(await GerarResumoInvestidorAsync(
+                    dataLocal, investidorId, cancellationToken));
+
+            var conteudoAgrupado = string.Join(
+                "\n\n---\n\n", resumos.Select(x => x.Conteudo));
+            var envio = new RelatorioDiarioIa(
+                dataLocal.Date, conteudoAgrupado,
+                "Resumo manual solicitado pelo Admin (sem chamada adicional à OpenAI)",
+                "INVESTIDOR");
+            await EnviarRelatorioAsync(envio, usuario, cancellationToken);
+        }
+
+        return relatorioAdmin;
     }
 
     public async Task ProcessarEnviosAsync(
