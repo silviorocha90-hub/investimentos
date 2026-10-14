@@ -522,24 +522,54 @@ public sealed class AssistenteIaService
                 $"{valorAtual} | {resultado} | {retorno} |");
         }
 
-        var opcoes = dashboard.Opcoes
-            .Where(x => x.Situacao == "ABERTA")
+        // EXECUTADA representa operacao vigente neste sistema; a finalizacao
+        // e determinada pela data, e nao apenas pelo texto do status.
+        var inicioSemana = data.AddDays(-(((int)data.DayOfWeek + 6) % 7));
+        var fimSemana = inicioSemana.AddDays(7);
+        var abertas = dashboard.Opcoes
+            .Where(x => (x.Situacao == "EXECUTADA" || x.Situacao == "ABERTA") &&
+                        !x.DataFinalizacao.HasValue)
             .OrderBy(x => x.Vencimento)
             .ToList();
+        var encerradasSemana = dashboard.Opcoes
+            .Where(x => x.DataFinalizacao.HasValue &&
+                        x.DataFinalizacao.Value.Date >= inicioSemana &&
+                        x.DataFinalizacao.Value.Date < fimSemana &&
+                        x.DataFinalizacao.Value.Date <= data)
+            .OrderBy(x => x.DataFinalizacao)
+            .ToList();
+
         linhas.Add("");
-        linhas.Add("## Opções abertas");
-        if (opcoes.Count == 0)
-            linhas.Add("Nenhuma opção aberta registrada.");
+        linhas.Add("## Opções em aberto");
+        if (abertas.Count == 0)
+            linhas.Add("Nenhuma opção em aberto registrada.");
         else
         {
             linhas.Add("| Opção | Ativo | Tipo | Operação | Quantidade | Strike | Vencimento |");
             linhas.Add("|---|---|---|---|---:|---:|---|");
-            foreach (var opcao in opcoes)
+            foreach (var opcao in abertas)
                 linhas.Add(
                     $"| {Celula(opcao.TickerOpcao)} | {Celula(opcao.TickerAtivo)} | " +
                     $"{opcao.TipoOpcao} | {opcao.Natureza} | " +
                     $"{Numero(opcao.Quantidade)} | {Dinheiro(opcao.Strike)} | " +
                     $"{opcao.Vencimento:dd/MM/yyyy} |");
+        }
+
+        linhas.Add("");
+        linhas.Add($"## Opções encerradas na semana ({inicioSemana:dd/MM/yyyy} a {data:dd/MM/yyyy})");
+        if (encerradasSemana.Count == 0)
+            linhas.Add("Nenhuma opção finalizada nesta semana.");
+        else
+        {
+            linhas.Add("| Opção | Tipo | Quantidade | Finalização | Resultado bruto | IR estimado | Resultado líquido |");
+            linhas.Add("|---|---|---:|---|---:|---:|---:|");
+            foreach (var opcao in encerradasSemana)
+                linhas.Add(
+                    $"| {Celula(opcao.TickerOpcao)} | {opcao.TipoOpcao} | " +
+                    $"{Numero(opcao.Quantidade)} | {opcao.DataFinalizacao:dd/MM/yyyy} | " +
+                    $"{(opcao.ResultadoBruto.HasValue ? Dinheiro(opcao.ResultadoBruto.Value) : "n/d")} | " +
+                    $"{Dinheiro(opcao.IrEstimado)} | " +
+                    $"{(opcao.ResultadoLiquido.HasValue ? Dinheiro(opcao.ResultadoLiquido.Value) : "n/d")} |");
         }
 
         linhas.Add("");
