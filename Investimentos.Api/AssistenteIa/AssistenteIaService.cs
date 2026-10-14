@@ -81,14 +81,15 @@ public sealed class AssistenteIaService
                 cancellationToken);
     }
 
-    public Task<RelatorioDiarioIa> GerarAsync(
+    // Geração fora da agenda semanal. Este método é usado exclusivamente
+    // pelo endpoint autenticado e restrito ao perfil Admin.
+    public Task<RelatorioDiarioIa> GerarManualAdminAsync(
         DateTime dataLocal,
-        bool substituir,
         CancellationToken cancellationToken)
     {
         return GerarRelatorioAsync(
             dataLocal,
-            substituir,
+            true,
             null,
             "TODOS",
             cancellationToken);
@@ -132,35 +133,6 @@ public sealed class AssistenteIaService
             "Atualização semanal do mercado: {Ativos} ativos e {Opcoes} opções com preço disponível.",
             atualizado.Ativos.Count, atualizado.Opcoes.Count);
         return atualizado;
-    }
-
-    // Disparo extraordinário solicitado para 09/10/2026.
-    // O marcador no relatório persistido impede reexecução em cada ciclo do worker.
-    public async Task ForcarRelatorioDeHojeAsync(
-        DateTime dataLocal,
-        CancellationToken cancellationToken)
-    {
-        if (dataLocal.Date != new DateTime(2026, 10, 9))
-            return;
-
-        var existente = await ObterHojeAsync(dataLocal, cancellationToken);
-        if (existente?.Modelo.Contains("MAIN_ATUALIZADA_20261009",
-                StringComparison.Ordinal) == true)
-            return;
-
-        // Libera apenas os destinatários habilitados para receber novamente.
-        // Fazemos isso antes de regenerar: se a geração falhar, uma tentativa
-        // posterior ainda poderá concluir o processo.
-        var destinatarios = await _context.Usuarios
-            .Where(x => x.Status == StatusUsuario.Ativo &&
-                        x.ReceberRelatorioIa)
-            .ToListAsync(cancellationToken);
-
-        foreach (var destinatario in destinatarios)
-            destinatario.RegistrarEnvioRelatorioIa(dataLocal.Date.AddDays(-1));
-
-        await _context.SaveChangesAsync(cancellationToken);
-        await GerarAsync(dataLocal, true, cancellationToken);
     }
 
     public async Task ProcessarEnviosAsync(
