@@ -45,10 +45,32 @@ public sealed class AssistenteIaService
         var usuarios = await _context.Usuarios.AsNoTracking()
             .Where(x => x.Status == StatusUsuario.Ativo && x.ReceberRelatorioIa)
             .Include(x => x.Investidores).ToListAsync(cancellationToken);
+        // Garante os resumos individuais da mesma data do consolidado antes do reenvio.
+        // Nao faz novas chamadas a OpenAI nem envia emails nesta etapa.
         var resumos = await _context.RelatoriosDiariosIa.AsNoTracking()
             .Where(x => x.DataReferencia == relatorio.DataReferencia &&
                         x.Escopo == "INVESTIDOR" && x.InvestidorId.HasValue)
             .ToListAsync(cancellationToken);
+        var idsSalvos = resumos.Where(x => x.InvestidorId.HasValue)
+            .Select(x => x.InvestidorId!.Value).ToHashSet();
+        var idsNecessarios = usuarios.Where(x => x.Perfil == PerfilUsuario.Usuario)
+            .SelectMany(x => x.Investidores.Select(i => i.InvestidorId))
+            .Distinct().ToList();
+        foreach (var investidorId in idsNecessarios.Where(id => !idsSalvos.Contains(id)))
+        {
+            try
+            {
+                var resumo = await GerarResumoInvestidorAsync(
+                    relatorio.DataReferencia, investidorId, cancellationToken);
+                resumos.Add(resumo);
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) { throw; }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Falha ao gerar resumo IA para investidor {InvestidorId} na data {Data}",
+                    investidorId, relatorio.DataReferencia);
+            }
+        }
         int enviados = 0, falhas = 0, semRelatorio = 0;
         foreach (var usuario in usuarios)
         {
