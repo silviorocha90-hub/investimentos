@@ -12,14 +12,14 @@ namespace Investimentos.Infrastructure.Migrations
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<decimal>(name: "PrecoMercadoAtual", table: "OperacaoOpcao", type: "decimal(18,8)", nullable: true);
-            migrationBuilder.AddColumn<System.DateTime>(name: "DataAtualizacaoCotacao", table: "OperacaoOpcao", type: "datetime2", nullable: true);
+            migrationBuilder.Sql("IF COL_LENGTH(N'dbo.OperacaoOpcao', N'PrecoMercadoAtual') IS NULL ALTER TABLE [dbo].[OperacaoOpcao] ADD [PrecoMercadoAtual] decimal(18,8) NULL;");
+            migrationBuilder.Sql("IF COL_LENGTH(N'dbo.OperacaoOpcao', N'DataAtualizacaoCotacao') IS NULL ALTER TABLE [dbo].[OperacaoOpcao] ADD [DataAtualizacaoCotacao] datetime2 NULL;");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropColumn(name: "PrecoMercadoAtual", table: "OperacaoOpcao");
-            migrationBuilder.DropColumn(name: "DataAtualizacaoCotacao", table: "OperacaoOpcao");
+            migrationBuilder.Sql("IF COL_LENGTH(N'dbo.OperacaoOpcao', N'PrecoMercadoAtual') IS NOT NULL ALTER TABLE [dbo].[OperacaoOpcao] DROP COLUMN [PrecoMercadoAtual];");
+            migrationBuilder.Sql("IF COL_LENGTH(N'dbo.OperacaoOpcao', N'DataAtualizacaoCotacao') IS NOT NULL ALTER TABLE [dbo].[OperacaoOpcao] DROP COLUMN [DataAtualizacaoCotacao];");
         }
     }
 }
