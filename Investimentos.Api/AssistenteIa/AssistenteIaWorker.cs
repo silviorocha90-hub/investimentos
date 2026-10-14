@@ -7,7 +7,6 @@ public sealed class AssistenteIaWorker : BackgroundService
     private readonly IHostEnvironment _environment;
     private readonly ILogger<AssistenteIaWorker> _logger;
     private readonly Investimentos.Api.ExceptionHandling.LogAplicacaoService _logs;
-    private DateTime? _ultimaAtualizacaoLocal;
 
     public AssistenteIaWorker(
         IServiceScopeFactory scopeFactory,
@@ -61,12 +60,8 @@ public sealed class AssistenteIaWorker : BackgroundService
             .GetRequiredService<AssistenteIaService>();
 
         AtualizacaoMercadoResultado? mercado = null;
-        if (_ultimaAtualizacaoLocal != agora.Date)
-        {
-            mercado = await service.AtualizarMercadoSemanalAsync(
-                agora, cancellationToken);
-            _ultimaAtualizacaoLocal = agora.Date;
-        }
+        mercado = await service.AtualizarMercadoUmaVezAoDiaAsync(
+            agora, "automatica", cancellationToken);
 
         if (agora.DayOfWeek == DayOfWeek.Friday &&
             GeracaoHabilitada(_configuration, _environment))
