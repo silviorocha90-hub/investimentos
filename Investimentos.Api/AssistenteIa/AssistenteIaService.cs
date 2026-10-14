@@ -1126,9 +1126,11 @@ Quando não houver novidade relevante, diga explicitamente.
         var primeiroNome = nome.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() ?? "Investidor";
         var tipoRelatorio = relatorio.Escopo == "TODOS"
             ? "Relatório consolidado"
-            : "Resumo da sua carteira";
+            : "Resumo Semanal Carteira";
         var assunto =
-            $"Aportiva | {tipoRelatorio} de {primeiroNome} — {relatorio.DataReferencia:dd/MM/yyyy}";
+            relatorio.Escopo == "TODOS"
+                ? $"Aportiva | {tipoRelatorio} — {relatorio.DataReferencia:dd/MM/yyyy}"
+                : $"Aportiva | {tipoRelatorio} de {primeiroNome} - {relatorio.DataReferencia:dd/MM/yyyy}";
         var texto =
             $"Olá, {nome}.\n\n" +
             relatorio.Conteudo +
@@ -1186,7 +1188,9 @@ Quando não houver novidade relevante, diga explicitamente.
         var html = new StringBuilder();
         html.Append("<!doctype html><html lang=\"pt-BR\"><body style=\"margin:0;background:#f3f6fb;padding:24px;font-family:Arial,sans-serif;color:#172b4d\">");
         html.Append("<main style=\"max-width:840px;margin:auto;background:#fff;padding:24px;border-radius:12px\">");
-        html.Append("<h1 style=\"color:#114d90;font-size:24px\">Aportiva | Resumo semanal</h1>");
+        html.Append("<h1 style=\"color:#114d90;font-size:24px\">Aportiva | Resumo Semanal Carteira de ")
+            .Append(Escapar(nome.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() ?? "Investidor"))
+            .Append("</h1>");
         html.Append("<p>Olá, ").Append(Escapar(nome)).Append(".</p>");
         html.Append("<p>Referência: ").Append(dataReferencia.ToString("dd/MM/yyyy")).Append("</p>");
 
