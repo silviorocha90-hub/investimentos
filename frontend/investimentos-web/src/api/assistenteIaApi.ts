@@ -75,3 +75,11 @@ export async function gerarRelatorioIa(): Promise<StatusGeracaoIa> {
   if (!response.ok) throw new Error(await lerErro(response))
   return response.json()
 }
+
+export async function reenviarRelatorioIa(id: string): Promise<{ enviados: number; falhas: number; semRelatorio: number }> {
+  const response = await fetch(`${API_URL}/api/assistente-ia/relatorios/${encodeURIComponent(id)}/reenviar`, {
+    method: 'POST', credentials: 'include',
+  })
+  if (!response.ok) throw new Error(await lerErro(response))
+  return response.json()
+}
