@@ -107,12 +107,16 @@ public sealed class AssistenteIaService
             .ToListAsync(cancellationToken);
 
         var tickers = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var opcoes = new Dictionary<string, OpcaoMercadoConsulta>(
+            StringComparer.OrdinalIgnoreCase);
 
         foreach (var id in investidores)
         {
             var dashboard = await _dashboardHandler.HandleAsync(
                 id, cancellationToken);
 
+            // Somente ações e FIIs com posição líquida positiva.
+            // PREVIDENCIA, FMP, ETF, renda fixa e posições zeradas não são consultados.
             foreach (var posicao in dashboard.Posicoes.Where(x =>
                 x.Quantidade > 0 &&
                 (string.Equals(x.TipoAtivoCodigo, "ACAO", StringComparison.OrdinalIgnoreCase) ||
@@ -120,16 +124,22 @@ public sealed class AssistenteIaService
             {
                 tickers.Add(posicao.Ticker);
             }
+
+            // Opções entram separadamente e somente enquanto estiverem abertas.
+            foreach (var opcao in dashboard.Opcoes.Where(x =>
+                string.Equals(x.Situacao, "ABERTA", StringComparison.OrdinalIgnoreCase)))
+            {
+                opcoes[opcao.TickerOpcao] = new OpcaoMercadoConsulta(
+                    opcao.TickerOpcao, opcao.Vencimento, opcao.Strike);
+            }
         }
 
-        // Atualização automática de mercado: somente ações e FIIs efetivamente
-        // mantidos em carteira. Posições zeradas e demais classes não consomem API.
         var atualizado = await _mercadoBrapiService.AtualizarAsync(
-            tickers, Array.Empty<OpcaoMercadoConsulta>(), dataLocal, cancellationToken);
+            tickers, opcoes.Values, dataLocal, cancellationToken);
 
         _logger.LogInformation(
-            "Atualização de mercado: {Ativos} ações/FIIs com posição > 0.",
-            atualizado.Ativos.Count);
+            "Atualização de mercado filtrada: {Ativos} ações/FIIs com posição > 0 e {Opcoes} opções abertas.",
+            atualizado.Ativos.Count, atualizado.Opcoes.Count);
         return atualizado;
     }
 
