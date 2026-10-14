@@ -234,9 +234,11 @@ public sealed class AssistenteIaService
                 tickers.Add(posicao.Ticker);
             }
 
-            // Opções entram separadamente e somente enquanto estiverem abertas.
+            // EXECUTADA sem data de finalizacao e uma opcao vigente no sistema.
             foreach (var opcao in dashboard.Opcoes.Where(x =>
-                string.Equals(x.Situacao, "ABERTA", StringComparison.OrdinalIgnoreCase)))
+                !x.DataFinalizacao.HasValue &&
+                (string.Equals(x.Situacao, "ABERTA", StringComparison.OrdinalIgnoreCase) ||
+                 string.Equals(x.Situacao, "EXECUTADA", StringComparison.OrdinalIgnoreCase))))
             {
                 opcoes[opcao.TickerOpcao] = new OpcaoMercadoConsulta(
                     opcao.TickerOpcao, opcao.Vencimento, opcao.Strike);
@@ -246,8 +248,34 @@ public sealed class AssistenteIaService
         var atualizado = await _mercadoBrapiService.AtualizarAsync(
             tickers, opcoes.Values, dataLocal, cancellationToken);
 
+        // Persistir somente precos validos efetivamente retornados pela fonte.
+        // Nao altera status, premio, recompra nem resultado da operacao.
+        if (atualizado.Opcoes.Count > 0)
+        {
+            var operacoes = await _context.OperacoesOpcoes
+                .Where(x => x.DataFinalizacao == null &&
+                            (x.Situacao == "ABERTA" || x.Situacao == "EXECUTADA"))
+                .ToListAsync(cancellationToken);
+            var gravadas = 0;
+            foreach (var operacao in operacoes)
+            {
+                if (!atualizado.Opcoes.TryGetValue(operacao.TickerOpcao, out var cotacao))
+                    continue;
+
+                operacao.AtualizarCotacaoMercado(
+                    cotacao.Preco, dataLocal);
+                gravadas++;
+            }
+
+            if (gravadas > 0)
+                await _context.SaveChangesAsync(cancellationToken);
+
+            _logger.LogInformation(
+                "Cotacoes de opcoes persistidas: {Gravadas} operacoes.", gravadas);
+        }
+
         _logger.LogInformation(
-            "Atualização de mercado filtrada: {Ativos} ações/FIIs com posição > 0 e {Opcoes} opções abertas.",
+            "Atualizacao de mercado: {Ativos} ativos e {Opcoes} tickers de opcoes cotados.",
             atualizado.Ativos.Count, atualizado.Opcoes.Count);
         return atualizado;
     }
