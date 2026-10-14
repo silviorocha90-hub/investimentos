@@ -5,7 +5,8 @@ import {
 } from 'react'
 
 import {
-  listarRelatoriosIa,\n  reenviarRelatorioIa,
+  listarRelatoriosIa,
+  reenviarRelatorioIa,
   type RelatorioIa,
 } from '../../api/assistenteIaApi'
 
@@ -64,7 +65,9 @@ export function AssistenteIaView({
     useState<RelatorioIa[]>([])
   const [selecionadoId, setSelecionadoId] =
     useState<string | null>(null)
-  const [reenviando, setReenviando] = useState(false)\n  const [mensagemReenvio, setMensagemReenvio] = useState<string | null>(null)\n  const [carregando, setCarregando] =
+  const [reenviando, setReenviando] = useState(false)
+  const [mensagemReenvio, setMensagemReenvio] = useState<string | null>(null)
+  const [carregando, setCarregando] =
     useState(true)
   const [erro, setErro] =
     useState<string | null>(null)
