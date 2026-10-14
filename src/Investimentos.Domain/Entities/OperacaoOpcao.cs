@@ -25,11 +25,18 @@
         public decimal PremioUnitario { get; private set; }
         public decimal Taxas { get; private set; }
 
-        public decimal? PrecoRecompraUnitario { get; private set; }
+        // Cotacao indicativa de mercado; nao representa recompra efetiva.\n        public decimal? PrecoMercadoAtual { get; private set; }\n        public DateTime? DataAtualizacaoCotacao { get; private set; }\n\n        public decimal? PrecoRecompraUnitario { get; private set; }
         public decimal? ValorExecucao { get; private set; }
         public decimal? ResultadoInformado { get; private set; }
 
         public string Situacao { get; private set; }
+
+        public void AtualizarCotacaoMercado(decimal preco, DateTime dataAtualizacao)
+        {
+            if (preco < 0) throw new ArgumentOutOfRangeException(nameof(preco));
+            PrecoMercadoAtual = preco;
+            DataAtualizacaoCotacao = dataAtualizacao;
+        }
 
         public decimal PremioTotal =>
             Quantidade * PremioUnitario;
