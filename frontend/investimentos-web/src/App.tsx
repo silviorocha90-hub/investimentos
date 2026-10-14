@@ -244,10 +244,13 @@ function App() {
         console.error('Falha ao consultar o estado da análise IA', error)
       }
     }
-    void consultar()
-    const timer = window.setInterval(() => void consultar(), 5000)
-    return () => { ativo = false; window.clearInterval(timer) }
-  }, [usuario?.perfil, jobNotificado])
+    // Uma consulta inicial; polling apenas durante uma geracao em andamento.
+    if (geracaoIa === null || geracaoIa.estado === 'executando') void consultar()
+    const timer = geracaoIa?.estado === 'executando'
+      ? window.setInterval(() => void consultar(), 5000)
+      : null
+    return () => { ativo = false; if (timer !== null) window.clearInterval(timer) }
+  }, [usuario?.perfil, jobNotificado, geracaoIa?.estado])
 
 
 
