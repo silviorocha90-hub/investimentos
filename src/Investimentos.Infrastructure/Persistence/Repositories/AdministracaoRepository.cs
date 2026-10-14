@@ -677,8 +677,8 @@ namespace Investimentos.Infrastructure.Persistence.Repositories
             if (request.Cotacao.HasValue)
             {
                 var dataCotacao =
-                    (request.DataCotacao ??
-                     DateTime.Today).Date;
+                    request.DataCotacao ??
+                     DateTime.Now;
 
                 cotacao =
                     new CotacaoAtivo(
@@ -803,8 +803,8 @@ namespace Investimentos.Infrastructure.Persistence.Repositories
             if (request.Cotacao.HasValue)
             {
                 var dataCotacao =
-                    (request.DataCotacao ??
-                     DateTime.Today).Date;
+                    request.DataCotacao ??
+                     DateTime.Now;
 
                 var cotacoesAtivo =
                     await _context.CotacoesAtivos
@@ -818,7 +818,7 @@ namespace Investimentos.Infrastructure.Persistence.Repositories
                     cotacoesAtivo
                         .FirstOrDefault(x =>
                             x.DataReferencia.Date ==
-                            dataCotacao);
+                            dataCotacao.Date);
 
                 if (cotacao is null)
                 {

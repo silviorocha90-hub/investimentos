@@ -382,7 +382,7 @@ export function AtivoModal({
                 </span>
 
                 <input
-                  type="date"
+                  type="datetime-local"
                   value={
                     formularioAtivo
                       .dataCotacao

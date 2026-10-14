@@ -179,7 +179,7 @@ public sealed class MercadoBrapiService
             var existente = await _context.CotacoesAtivos
                 .FirstOrDefaultAsync(
                     x => x.AtivoId == ativo.Id &&
-                         x.DataReferencia == data,
+                         x.DataReferencia.Date == data.Date,
                     cancellationToken);
 
             if (existente is null)

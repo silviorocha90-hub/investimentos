@@ -163,13 +163,14 @@ export function AdministracaoView({
   onOperationCreated,
   onDataChanged,
 }: AdministracaoViewProps) {
+  const agora = new Date()
   const hoje =
-    new Date()
-      .toISOString()
-      .slice(
-        0,
-        10,
-      )
+    agora.toISOString().slice(0, 10)
+  const dataHoraAtual =
+    new Date(
+      agora.getTime() -
+      agora.getTimezoneOffset() * 60000,
+    ).toISOString().slice(0, 16)
 
   const [
     dados,
@@ -318,7 +319,7 @@ export function AdministracaoView({
       tipoAtivoId: '',
       cotacao: '',
       dataCotacao:
-        hoje,
+        dataHoraAtual,
 
       valorPatrimonial: '',
 
@@ -458,7 +459,7 @@ export function AdministracaoView({
       cotacao: '',
 
       dataCotacao:
-        hoje,
+        dataHoraAtual,
 
       valorPatrimonial: '',
 
@@ -520,7 +521,7 @@ export function AdministracaoView({
             ),
 
       dataCotacao:
-        hoje,
+        dataHoraAtual,
 
       valorPatrimonial:
         (

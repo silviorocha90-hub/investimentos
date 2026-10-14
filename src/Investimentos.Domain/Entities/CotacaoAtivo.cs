@@ -33,7 +33,7 @@
 
             Ativo = ativo;
             AtivoId = ativo.Id;
-            DataReferencia = dataReferencia.Date;
+            DataReferencia = dataReferencia;
             Preco = preco;
         }
 
@@ -43,7 +43,7 @@
         {
             ValidarPreco(preco);
 
-            DataReferencia = dataReferencia.Date;
+            DataReferencia = dataReferencia;
             Preco = preco;
         }
 
