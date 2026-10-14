@@ -61,6 +61,14 @@ namespace Investimentos.Infrastructure.Persistence.Configuration
                 .HasPrecision(18, 2)
                 .IsRequired();
 
+            builder.Property(x => x.PrecoMercadoAtual)
+                .HasPrecision(18, 8)
+                .IsRequired(false);
+
+            builder.Property(x => x.DataAtualizacaoCotacao)
+                .HasColumnType("datetime2")
+                .IsRequired(false);
+
             builder.Property(x => x.PrecoRecompraUnitario)
                 .HasPrecision(18, 8)
                 .IsRequired(false);
