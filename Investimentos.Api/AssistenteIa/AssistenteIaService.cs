@@ -34,6 +34,52 @@ public sealed class AssistenteIaService
         _logger = logger;
     }
 
+    public async Task<(int Enviados, int Falhas, int SemRelatorio)> ReenviarRelatorioAsync(
+        Guid relatorioId, CancellationToken cancellationToken)
+    {
+        var relatorio = await _context.RelatoriosDiariosIa.AsNoTracking()
+            .FirstOrDefaultAsync(x => x.Id == relatorioId && x.Escopo == "TODOS", cancellationToken);
+        if (relatorio is null)
+            throw new KeyNotFoundException("Relatorio consolidado nao encontrado.");
+
+        var usuarios = await _context.Usuarios.AsNoTracking()
+            .Where(x => x.Status == StatusUsuario.Ativo && x.ReceberRelatorioIa)
+            .Include(x => x.Investidores).ToListAsync(cancellationToken);
+        var resumos = await _context.RelatoriosDiariosIa.AsNoTracking()
+            .Where(x => x.DataReferencia == relatorio.DataReferencia &&
+                        x.Escopo == "INVESTIDOR" && x.InvestidorId.HasValue)
+            .ToListAsync(cancellationToken);
+        int enviados = 0, falhas = 0, semRelatorio = 0;
+        foreach (var usuario in usuarios)
+        {
+            RelatorioDiarioIa? envio = null;
+            if (usuario.Perfil == PerfilUsuario.Admin)
+                envio = relatorio;
+            else if (usuario.Perfil == PerfilUsuario.Usuario)
+            {
+                var ids = usuario.Investidores.Select(x => x.InvestidorId).Distinct().ToHashSet();
+                var individuais = resumos.Where(x => x.InvestidorId.HasValue && ids.Contains(x.InvestidorId.Value)).ToList();
+                if (ids.Count > 0 && individuais.Select(x => x.InvestidorId!.Value).Distinct().Count() == ids.Count)
+                    envio = new RelatorioDiarioIa(relatorio.DataReferencia,
+                        string.Join("\\n\\n---\\n\\n", individuais.Select(x => x.Conteudo)),
+                        "Reenvio de relatorio salvo", "INVESTIDOR");
+            }
+            if (envio is null) { semRelatorio++; continue; }
+            try
+            {
+                await EnviarEmailAsync(envio, usuario.Email, usuario.Nome, cancellationToken);
+                enviados++;
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) { throw; }
+            catch (Exception ex)
+            {
+                falhas++;
+                _logger.LogError(ex, "Falha no reenvio IA para usuario {UsuarioId}", usuario.Id);
+            }
+        }
+        return (enviados, falhas, semRelatorio);
+    }
+
     public async Task<IReadOnlyList<RelatorioDiarioIa>> ListarAsync(
         Guid usuarioId,
         bool administrador,
