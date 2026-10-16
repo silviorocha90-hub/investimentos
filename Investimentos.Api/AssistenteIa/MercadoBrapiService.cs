@@ -81,19 +81,21 @@ public sealed class MercadoBrapiService
                 cotacoesOpcoes[opcao.TickerOpcao] = cotacao;
         }
 
-        // Cedro so consulta os tickers sem cotacao da fonte principal.
-        // Opt-in duplo: flag explicita e credenciais configuradas.
-        var consultarCedro = bool.TryParse(
-            _configuration["CEDRO_OPCOES_HABILITADAS"], out var cedroHabilitada) &&
-            cedroHabilitada &&
-            !string.IsNullOrWhiteSpace(_configuration["CEDRO_LOGIN"]) &&
-            !string.IsNullOrWhiteSpace(_configuration["CEDRO_PASSWORD"]);
-
-        var pendentes = opcoesDistintas
-            .Where(x => !cotacoesOpcoes.ContainsKey(x.TickerOpcao))
-            .ToList();
-        if (consultarCedro && pendentes.Count > 0)
-            await ConsultarOpcoesCedroAsync(pendentes, cotacoesOpcoes, cancellationToken);
+        // Google Finance e uma fonte indicativa e opcional: somente apos falha da Brapi.
+        // A pagina publica nao oferece API de cotacoes garantida para opcoes B3.
+        var consultarGoogle = bool.TryParse(
+            _configuration["GOOGLE_FINANCE_OPCOES_HABILITADAS"], out var googleHabilitado) &&
+            googleHabilitado;
+        if (consultarGoogle)
+        {
+            foreach (var opcao in opcoesDistintas.Where(x =>
+                         !cotacoesOpcoes.ContainsKey(x.TickerOpcao)))
+            {
+                var cotacao = await ObterCotacaoGoogleFinanceAsync(opcao, cancellationToken);
+                if (cotacao is not null)
+                    cotacoesOpcoes[opcao.TickerOpcao] = cotacao;
+            }
+        }
 
         return new AtualizacaoMercadoResultado(
             cotacoesAtivos,
@@ -289,110 +291,63 @@ public sealed class MercadoBrapiService
         }
     }
 
-    // WebFeeder Market Data: sessao SignIn e consulta de cotacao por ticker.
-    // Sem credenciais e habilitacao explicita, nenhuma chamada Cedro e feita.
-    private async Task ConsultarOpcoesCedroAsync(
-        IReadOnlyCollection<OpcaoMercadoConsulta> pendentes,
-        IDictionary<string, CotacaoOpcaoMercado> destino,
-        CancellationToken cancellationToken)
+    // Consulta indicativa da pagina publica Google Finance, sem pesquisa generica
+    // ou scraping de resultados do buscador. Nao grava valores sem prova de ticker.
+    private async Task<CotacaoOpcaoMercado?> ObterCotacaoGoogleFinanceAsync(
+        OpcaoMercadoConsulta opcao, CancellationToken cancellationToken)
     {
-        var login = _configuration["CEDRO_LOGIN"]!;
-        var password = _configuration["CEDRO_PASSWORD"]!;
-        var baseUrl = (_configuration["CEDRO_BASE_URL"] ??
-            "https://webfeeder.cedrotech.com").TrimEnd('/');
-        // Nao permitir hosts arbitrarios nem HTTP para evitar vazamento de credenciais.
-        if (!Uri.TryCreate(baseUrl, UriKind.Absolute, out var origem) ||
-            origem.Scheme != Uri.UriSchemeHttps ||
-            !string.Equals(origem.Host, "webfeeder.cedrotech.com",
-                StringComparison.OrdinalIgnoreCase))
-        {
-            _logger.LogWarning("Cedro: endereco de API invalido; fallback ignorado.");
-            return;
-        }
+        var ticker = opcao.TickerOpcao.Trim().ToUpperInvariant();
+        if (!System.Text.RegularExpressions.Regex.IsMatch(ticker, @"^[A-Z0-9]{5,15}$"))
+            return null;
 
-        using var handler = new HttpClientHandler { UseCookies = true };
-        using var client = new HttpClient(handler) { Timeout = TimeSpan.FromSeconds(30) };
+        var url = "https://www.google.com/finance/quote/" +
+            Uri.EscapeDataString(ticker) + ":BVMF";
         try
         {
-            // A API WebFeeder exige POST SignIn e cookie JSESSIONID.
-            // Nunca registrar a URL de autenticacao (contem credenciais).
-            var signIn = baseUrl + "/SignIn?login=" +
-                Uri.EscapeDataString(login) + "&password=" +
-                Uri.EscapeDataString(password);
-            using var auth = await client.PostAsync(signIn, null, cancellationToken);
-            if (!auth.IsSuccessStatusCode ||
-                !handler.CookieContainer.GetCookies(origem)
-                    .Cast<System.Net.Cookie>()
-                    .Any(x => x.Name == "JSESSIONID"))
+            var client = _httpClientFactory.CreateClient();
+            using var response = await client.GetAsync(url, cancellationToken);
+            if (!response.IsSuccessStatusCode)
             {
-                _logger.LogWarning("Cedro: autenticacao nao autorizada ou sem sessao (HTTP {Status}).",
-                    (int)auth.StatusCode);
-                return;
+                _logger.LogInformation("Google Finance: {Ticker} HTTP {Status}.",
+                    ticker, (int)response.StatusCode);
+                return null;
             }
 
-            foreach (var opcao in pendentes)
-            {
-                try
-                {
-                    var url = baseUrl + "/services/quotes/quote/" +
-                        Uri.EscapeDataString(opcao.TickerOpcao);
-                    using var response = await client.GetAsync(url, cancellationToken);
-                    if (!response.IsSuccessStatusCode)
-                    {
-                        _logger.LogWarning("Cedro: {Ticker} HTTP {Status}.",
-                            opcao.TickerOpcao, (int)response.StatusCode);
-                        continue;
-                    }
+            var html = await response.Content.ReadAsStringAsync(cancellationToken);
+            // Exige identidade exata do instrumento no titulo da pagina.
+            // Se a pagina nao possuir dados reconheciveis, nao inventar preco.
+            var title = System.Text.RegularExpressions.Regex.Match(html,
+                @"<title[^>]*>(?<title>[^<]*)</title>",
+                System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+            if (!title.Success ||
+                !System.Text.RegularExpressions.Regex.IsMatch(
+                    System.Net.WebUtility.HtmlDecode(title.Groups["title"].Value),
+                    @"\b" + System.Text.RegularExpressions.Regex.Escape(ticker) +
+                    @"\b", System.Text.RegularExpressions.RegexOptions.IgnoreCase))
+                return null;
 
-                    await using var stream = await response.Content
-                        .ReadAsStreamAsync(cancellationToken);
-                    using var document = await JsonDocument.ParseAsync(
-                        stream, cancellationToken: cancellationToken);
-                    var item = document.RootElement;
-                    if (item.ValueKind == JsonValueKind.Array)
-                        item = item.EnumerateArray().FirstOrDefault();
-                    if (item.ValueKind != JsonValueKind.Object)
-                        continue;
+            // O Google Finance usa o elemento YMlKec para o preco principal.
+            // Validar moeda BRL para evitar cotacoes de instrumentos homonimos.
+            if (!html.Contains("BRL", StringComparison.OrdinalIgnoreCase) &&
+                !html.Contains("R$", StringComparison.Ordinal))
+                return null;
+            var match = System.Text.RegularExpressions.Regex.Match(html,
+                @"<div[^>]*class=""[^""]*YMlKec[^""]*""[^>]*>\s*(?:R\$\s*)?(?<preco>[0-9][0-9.,]*)\s*</div>",
+                System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+            if (!match.Success)
+                return null;
+            var texto = match.Groups["preco"].Value;
+            if (texto.Contains(','))
+                texto = texto.Replace(".", "").Replace(',', '.');
+            if (!decimal.TryParse(texto, NumberStyles.Number,
+                    CultureInfo.InvariantCulture, out var preco) || preco <= 0)
+                return null;
 
-                    var symbol = ObterString(item, "symbol");
-                    if (!string.Equals(symbol, opcao.TickerOpcao,
-                            StringComparison.OrdinalIgnoreCase))
-                    {
-                        _logger.LogWarning("Cedro: ticker divergente para {Ticker}.",
-                            opcao.TickerOpcao);
-                        continue;
-                    }
-
-                    // lastTrade e preco negociado; nao substituir por bid/ask.
-                    var preco = ObterDecimal(item, "lastTrade");
-                    if (!preco.HasValue || preco.Value <= 0)
-                        continue;
-
-                    DateTimeOffset? data = null;
-                    var dataTrade = ObterString(item, "dateTrade");
-                    if (!string.IsNullOrWhiteSpace(dataTrade) &&
-                        DateTime.TryParseExact(dataTrade,
-                            new[] { "dd-MM-yyyy HH:mm:ss", "dd/MM/yyyy HH:mm:ss",
-                                    "yyyy-MM-dd HH:mm:ss" },
-                            CultureInfo.InvariantCulture,
-                            DateTimeStyles.None, out var negociacao))
-                        data = new DateTimeOffset(negociacao, TimeSpan.FromHours(-3));
-
-                    destino[opcao.TickerOpcao] = new CotacaoOpcaoMercado(
-                        opcao.TickerOpcao, preco.Value, data);
-                    _logger.LogInformation("Cedro: cotacao obtida para {Ticker}.",
-                        opcao.TickerOpcao);
-                }
-                catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
-                {
-                    throw;
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogWarning(ex, "Cedro: falha na cotacao de {Ticker}.",
-                        opcao.TickerOpcao);
-                }
-            }
+            // Data/hora nao e garantida: manter DataReferencia nula.
+            _logger.LogInformation(
+                "Google Finance: preco indicativo encontrado para {Ticker}; horario desconhecido.",
+                ticker);
+            return new CotacaoOpcaoMercado(ticker, preco, null);
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
@@ -400,9 +355,9 @@ public sealed class MercadoBrapiService
         }
         catch (Exception ex)
         {
-            // Evitar registrar a URL da autenticacao com senha em mensagens HTTP.
-            _logger.LogWarning("Cedro: falha de comunicacao/autenticacao ({Tipo}).",
-                ex.GetType().Name);
+            _logger.LogWarning("Google Finance: consulta indisponivel para {Ticker} ({Tipo}).",
+                ticker, ex.GetType().Name);
+            return null;
         }
     }
 
