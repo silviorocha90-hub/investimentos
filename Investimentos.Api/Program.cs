@@ -38,6 +38,26 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddInfrastructure(
     builder.Configuration);
 
+// Persist authentication keys on a shared persistent volume in production.
+// Configure DATA_PROTECTION_KEYS_PATH to an Azure Files mount shared by all replicas.
+var keysPath = builder.Configuration["DATA_PROTECTION_KEYS_PATH"];
+if (!string.IsNullOrWhiteSpace(keysPath))
+{
+    if (!Path.IsPathFullyQualified(keysPath))
+        throw new InvalidOperationException("DATA_PROTECTION_KEYS_PATH must be absolute.");
+
+    Directory.CreateDirectory(keysPath);
+    builder.Services.AddDataProtection()
+        .SetApplicationName("Aportiva.Investimentos")
+        .PersistKeysToFileSystem(new DirectoryInfo(keysPath));
+}
+else if (builder.Environment.IsProduction())
+{
+    Console.Error.WriteLine(
+        "WARNING: DATA_PROTECTION_KEYS_PATH is not configured. " +
+        "Authentication cookies may be invalidated after restarts or between replicas.");
+}
+
 builder.Services.AddScoped<
     AutenticacaoService>();
 
