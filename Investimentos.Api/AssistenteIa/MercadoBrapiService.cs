@@ -65,18 +65,35 @@ public sealed class MercadoBrapiService
             _configuration["BRAPI_OPCOES_HABILITADAS"], out var habilitadas) &&
             habilitadas;
 
-        foreach (var opcao in (consultarOpcoes ? opcoes : Enumerable.Empty<OpcaoMercadoConsulta>())
-                     .Where(x => !string.IsNullOrWhiteSpace(x.TickerOpcao))
-                     .GroupBy(x => x.TickerOpcao, StringComparer.OrdinalIgnoreCase)
-                     .Select(x => x.First()))
+        var opcoesDistintas = opcoes
+            .Where(x => !string.IsNullOrWhiteSpace(x.TickerOpcao))
+            .GroupBy(x => x.TickerOpcao, StringComparer.OrdinalIgnoreCase)
+            .Select(x => x.First())
+            .ToList();
+
+        foreach (var opcao in opcoesDistintas)
         {
-            var cotacao = await ObterCotacaoOpcaoAsync(
-                opcao,
-                cancellationToken);
+            CotacaoOpcaoMercado? cotacao = null;
+            if (consultarOpcoes)
+                cotacao = await ObterCotacaoOpcaoAsync(opcao, cancellationToken);
 
             if (cotacao is not null)
                 cotacoesOpcoes[opcao.TickerOpcao] = cotacao;
         }
+
+        // Cedro so consulta os tickers sem cotacao da fonte principal.
+        // Opt-in duplo: flag explicita e credenciais configuradas.
+        var consultarCedro = bool.TryParse(
+            _configuration["CEDRO_OPCOES_HABILITADAS"], out var cedroHabilitada) &&
+            cedroHabilitada &&
+            !string.IsNullOrWhiteSpace(_configuration["CEDRO_LOGIN"]) &&
+            !string.IsNullOrWhiteSpace(_configuration["CEDRO_PASSWORD"]);
+
+        var pendentes = opcoesDistintas
+            .Where(x => !cotacoesOpcoes.ContainsKey(x.TickerOpcao))
+            .ToList();
+        if (consultarCedro && pendentes.Count > 0)
+            await ConsultarOpcoesCedroAsync(pendentes, cotacoesOpcoes, cancellationToken);
 
         return new AtualizacaoMercadoResultado(
             cotacoesAtivos,
@@ -269,6 +286,123 @@ public sealed class MercadoBrapiService
                 "Cotação da opção {TickerOpcao} indisponível.",
                 opcao.TickerOpcao);
             return null;
+        }
+    }
+
+    // WebFeeder Market Data: sessao SignIn e consulta de cotacao por ticker.
+    // Sem credenciais e habilitacao explicita, nenhuma chamada Cedro e feita.
+    private async Task ConsultarOpcoesCedroAsync(
+        IReadOnlyCollection<OpcaoMercadoConsulta> pendentes,
+        IDictionary<string, CotacaoOpcaoMercado> destino,
+        CancellationToken cancellationToken)
+    {
+        var login = _configuration["CEDRO_LOGIN"]!;
+        var password = _configuration["CEDRO_PASSWORD"]!;
+        var baseUrl = (_configuration["CEDRO_BASE_URL"] ??
+            "https://webfeeder.cedrotech.com").TrimEnd('/');
+        // Nao permitir hosts arbitrarios nem HTTP para evitar vazamento de credenciais.
+        if (!Uri.TryCreate(baseUrl, UriKind.Absolute, out var origem) ||
+            origem.Scheme != Uri.UriSchemeHttps ||
+            !string.Equals(origem.Host, "webfeeder.cedrotech.com",
+                StringComparison.OrdinalIgnoreCase))
+        {
+            _logger.LogWarning("Cedro: endereco de API invalido; fallback ignorado.");
+            return;
+        }
+
+        using var handler = new HttpClientHandler { UseCookies = true };
+        using var client = new HttpClient(handler) { Timeout = TimeSpan.FromSeconds(30) };
+        try
+        {
+            // A API WebFeeder exige POST SignIn e cookie JSESSIONID.
+            // Nunca registrar a URL de autenticacao (contem credenciais).
+            var signIn = baseUrl + "/SignIn?login=" +
+                Uri.EscapeDataString(login) + "&password=" +
+                Uri.EscapeDataString(password);
+            using var auth = await client.PostAsync(signIn, null, cancellationToken);
+            if (!auth.IsSuccessStatusCode ||
+                !handler.CookieContainer.GetCookies(origem)
+                    .Cast<System.Net.Cookie>()
+                    .Any(x => x.Name == "JSESSIONID"))
+            {
+                _logger.LogWarning("Cedro: autenticacao nao autorizada ou sem sessao (HTTP {Status}).",
+                    (int)auth.StatusCode);
+                return;
+            }
+
+            foreach (var opcao in pendentes)
+            {
+                try
+                {
+                    var url = baseUrl + "/services/quotes/quote/" +
+                        Uri.EscapeDataString(opcao.TickerOpcao);
+                    using var response = await client.GetAsync(url, cancellationToken);
+                    if (!response.IsSuccessStatusCode)
+                    {
+                        _logger.LogWarning("Cedro: {Ticker} HTTP {Status}.",
+                            opcao.TickerOpcao, (int)response.StatusCode);
+                        continue;
+                    }
+
+                    await using var stream = await response.Content
+                        .ReadAsStreamAsync(cancellationToken);
+                    using var document = await JsonDocument.ParseAsync(
+                        stream, cancellationToken: cancellationToken);
+                    var item = document.RootElement;
+                    if (item.ValueKind == JsonValueKind.Array)
+                        item = item.EnumerateArray().FirstOrDefault();
+                    if (item.ValueKind != JsonValueKind.Object)
+                        continue;
+
+                    var symbol = ObterString(item, "symbol");
+                    if (!string.Equals(symbol, opcao.TickerOpcao,
+                            StringComparison.OrdinalIgnoreCase))
+                    {
+                        _logger.LogWarning("Cedro: ticker divergente para {Ticker}.",
+                            opcao.TickerOpcao);
+                        continue;
+                    }
+
+                    // lastTrade e preco negociado; nao substituir por bid/ask.
+                    var preco = ObterDecimal(item, "lastTrade");
+                    if (!preco.HasValue || preco.Value <= 0)
+                        continue;
+
+                    DateTimeOffset? data = null;
+                    var dataTrade = ObterString(item, "dateTrade");
+                    if (!string.IsNullOrWhiteSpace(dataTrade) &&
+                        DateTime.TryParseExact(dataTrade,
+                            new[] { "dd-MM-yyyy HH:mm:ss", "dd/MM/yyyy HH:mm:ss",
+                                    "yyyy-MM-dd HH:mm:ss" },
+                            CultureInfo.InvariantCulture,
+                            DateTimeStyles.None, out var negociacao))
+                        data = new DateTimeOffset(negociacao, TimeSpan.FromHours(-3));
+
+                    destino[opcao.TickerOpcao] = new CotacaoOpcaoMercado(
+                        opcao.TickerOpcao, preco.Value, data);
+                    _logger.LogInformation("Cedro: cotacao obtida para {Ticker}.",
+                        opcao.TickerOpcao);
+                }
+                catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+                {
+                    throw;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Cedro: falha na cotacao de {Ticker}.",
+                        opcao.TickerOpcao);
+                }
+            }
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            // Evitar registrar a URL da autenticacao com senha em mensagens HTTP.
+            _logger.LogWarning("Cedro: falha de comunicacao/autenticacao ({Tipo}).",
+                ex.GetType().Name);
         }
     }
 
