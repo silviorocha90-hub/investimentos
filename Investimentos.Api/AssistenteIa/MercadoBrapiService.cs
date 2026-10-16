@@ -81,22 +81,6 @@ public sealed class MercadoBrapiService
                 cotacoesOpcoes[opcao.TickerOpcao] = cotacao;
         }
 
-        // Google Finance e uma fonte indicativa e opcional: somente apos falha da Brapi.
-        // A pagina publica nao oferece API de cotacoes garantida para opcoes B3.
-        var consultarGoogle = bool.TryParse(
-            _configuration["GOOGLE_FINANCE_OPCOES_HABILITADAS"], out var googleHabilitado) &&
-            googleHabilitado;
-        if (consultarGoogle)
-        {
-            foreach (var opcao in opcoesDistintas.Where(x =>
-                         !cotacoesOpcoes.ContainsKey(x.TickerOpcao)))
-            {
-                var cotacao = await ObterCotacaoGoogleFinanceAsync(opcao, cancellationToken);
-                if (cotacao is not null)
-                    cotacoesOpcoes[opcao.TickerOpcao] = cotacao;
-            }
-        }
-
         return new AtualizacaoMercadoResultado(
             cotacoesAtivos,
             cotacoesOpcoes);
@@ -287,76 +271,6 @@ public sealed class MercadoBrapiService
                 ex,
                 "Cotação da opção {TickerOpcao} indisponível.",
                 opcao.TickerOpcao);
-            return null;
-        }
-    }
-
-    // Consulta indicativa da pagina publica Google Finance, sem pesquisa generica
-    // ou scraping de resultados do buscador. Nao grava valores sem prova de ticker.
-    private async Task<CotacaoOpcaoMercado?> ObterCotacaoGoogleFinanceAsync(
-        OpcaoMercadoConsulta opcao, CancellationToken cancellationToken)
-    {
-        var ticker = opcao.TickerOpcao.Trim().ToUpperInvariant();
-        if (!System.Text.RegularExpressions.Regex.IsMatch(ticker, @"^[A-Z0-9]{5,15}$"))
-            return null;
-
-        var url = "https://www.google.com/finance/quote/" +
-            Uri.EscapeDataString(ticker) + ":BVMF";
-        try
-        {
-            var client = _httpClientFactory.CreateClient();
-            using var response = await client.GetAsync(url, cancellationToken);
-            if (!response.IsSuccessStatusCode)
-            {
-                _logger.LogInformation("Google Finance: {Ticker} HTTP {Status}.",
-                    ticker, (int)response.StatusCode);
-                return null;
-            }
-
-            var html = await response.Content.ReadAsStringAsync(cancellationToken);
-            // Exige identidade exata do instrumento no titulo da pagina.
-            // Se a pagina nao possuir dados reconheciveis, nao inventar preco.
-            var title = System.Text.RegularExpressions.Regex.Match(html,
-                @"<title[^>]*>(?<title>[^<]*)</title>",
-                System.Text.RegularExpressions.RegexOptions.IgnoreCase);
-            if (!title.Success ||
-                !System.Text.RegularExpressions.Regex.IsMatch(
-                    System.Net.WebUtility.HtmlDecode(title.Groups["title"].Value),
-                    @"\b" + System.Text.RegularExpressions.Regex.Escape(ticker) +
-                    @"\b", System.Text.RegularExpressions.RegexOptions.IgnoreCase))
-                return null;
-
-            // O Google Finance usa o elemento YMlKec para o preco principal.
-            // Validar moeda BRL para evitar cotacoes de instrumentos homonimos.
-            if (!html.Contains("BRL", StringComparison.OrdinalIgnoreCase) &&
-                !html.Contains("R$", StringComparison.Ordinal))
-                return null;
-            var match = System.Text.RegularExpressions.Regex.Match(html,
-                @"<div[^>]*class=""[^""]*YMlKec[^""]*""[^>]*>\s*(?:R\$\s*)?(?<preco>[0-9][0-9.,]*)\s*</div>",
-                System.Text.RegularExpressions.RegexOptions.IgnoreCase);
-            if (!match.Success)
-                return null;
-            var texto = match.Groups["preco"].Value;
-            if (texto.Contains(','))
-                texto = texto.Replace(".", "").Replace(',', '.');
-            if (!decimal.TryParse(texto, NumberStyles.Number,
-                    CultureInfo.InvariantCulture, out var preco) || preco <= 0)
-                return null;
-
-            // Data/hora nao e garantida: manter DataReferencia nula.
-            _logger.LogInformation(
-                "Google Finance: preco indicativo encontrado para {Ticker}; horario desconhecido.",
-                ticker);
-            return new CotacaoOpcaoMercado(ticker, preco, null);
-        }
-        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
-        {
-            throw;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning("Google Finance: consulta indisponivel para {Ticker} ({Tipo}).",
-                ticker, ex.GetType().Name);
             return null;
         }
     }
