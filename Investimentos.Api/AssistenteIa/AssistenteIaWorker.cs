@@ -32,17 +32,53 @@ public sealed class AssistenteIaWorker : BackgroundService
                 await ExecutarSeNecessarioAsync(
                     stoppingToken);
             }
+            catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+            {
+                break;
+            }
+            catch (Microsoft.Data.SqlClient.SqlException ex) when (ex.Number == -2)
+            {
+                _logger.LogWarning(ex,
+                    "Azure SQL indisponivel por timeout na conexao. " +
+                    "Worker tentara novamente no proximo ciclo; nenhuma cotacao foi marcada como concluida.");
+                await RegistrarErroSemInterromperWorkerAsync(
+                    "Timeout Azure SQL", ex, stoppingToken);
+            }
             catch (Exception ex)
             {
-                _logger.LogError(
-                    ex,
-                    "Falha no envio semanal do Assistente IA.");
-                await _logs.RegistrarAsync("Assistente IA", "Worker automatico", ex);
+                _logger.LogError(ex,
+                    "Falha no ciclo automatico do Assistente IA.");
+                await RegistrarErroSemInterromperWorkerAsync(
+                    "Worker automatico", ex, stoppingToken);
             }
 
-            await Task.Delay(
-                TimeSpan.FromMinutes(15),
-                stoppingToken);
+            try
+            {
+                await Task.Delay(TimeSpan.FromMinutes(15), stoppingToken);
+            }
+            catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+            {
+                break;
+            }
+        }
+    }
+
+    // O log de erro tambem utiliza SQL; sua falha nao pode encerrar o worker.
+    private async Task RegistrarErroSemInterromperWorkerAsync(
+        string operacao, Exception erro, CancellationToken cancellationToken)
+    {
+        try
+        {
+            await _logs.RegistrarAsync("Assistente IA", operacao, erro);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception logEx)
+        {
+            _logger.LogWarning(logEx,
+                "Falha ao persistir diagnostico do Assistente IA em LogsAplicacao.");
         }
     }
 
