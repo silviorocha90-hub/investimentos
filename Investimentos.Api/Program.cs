@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.DataProtection;
 using System.Security.Claims;
 using Investimentos.Api.Endpoints;
 using Investimentos.Api.ExceptionHandling;
