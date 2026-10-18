@@ -95,40 +95,28 @@ public sealed class HistoricoCotacoesService
                         .Where(c => c.AtivoId == ativo.Id && c.DataReferencia >= Inicio &&
                             c.DataReferencia < fim.AddDays(1))
                         .ToListAsync(ct);
-                    // A chave lógica é AtivoId + DIA, não o DateTime completo.
-                    // Preserva a cotação mais recente quando já existem duplicatas
-                    // do mesmo pregão e elimina as linhas redundantes.
+                    // Importação histórica nunca elimina snapshots manuais intradiários.
+                    // Atualiza somente o registro diário à meia-noite quando já existir.
                     var inseridosAtivo = 0;
                     var atualizadosAtivo = 0;
                     var duplicatasAtivo = 0;
-                    var porDia = new Dictionary<DateTime, CotacaoAtivo>();
-                    foreach (var grupo in existentes.GroupBy(c => c.DataReferencia.Date))
-                    {
-                        var ordenados = grupo.OrderByDescending(c => c.DataReferencia).ToList();
-                        porDia[grupo.Key] = ordenados[0];
-                        foreach (var duplicada in ordenados.Skip(1))
-                        {
-                            _db.CotacoesAtivos.Remove(duplicada);
-                            duplicatasAtivo++;
-                        }
-                    }
+                    var porDataExata = existentes.ToDictionary(c => c.DataReferencia, c => c);
                     foreach (var (dia, preco) in novos)
                     {
-                        if (porDia.TryGetValue(dia, out var existente))
+                        if (porDataExata.TryGetValue(dia, out var existente))
                         {
-                            // Atualiza a mesma linha, mesmo quando a hora registrada difere.
-                            // Mantém a cotação intradiária de hoje, se já existir.
                             if (dia != fim && existente.Preco != preco)
                             {
                                 existente.Atualizar(existente.DataReferencia, preco);
                                 atualizadosAtivo++;
                             }
                         }
-                        else
+                        else if (!existentes.Any(c => c.DataReferencia.Date == dia))
                         {
                             _db.CotacoesAtivos.Add(new CotacaoAtivo(ativo, dia, preco));
                             inseridosAtivo++;
                         }
+                        // Se só existem capturas manuais nesse dia, preservá-las.
                     }
                     await _db.SaveChangesAsync(ct);
                     // Só contabiliza gravações após confirmação do banco.
