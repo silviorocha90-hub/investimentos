@@ -32,8 +32,8 @@ export function AnaliseEstrategicaView({ dashboard, investidoresIds }: { dashboa
         method: 'POST', credentials: 'include',
       })
       if (!response.ok) throw new Error(`HTTP ${response.status}`)
-      const dados = await response.json() as { ativosConsultados: number; inseridos: number; atualizados: number; falhas: string[] }
-      setResultadoImportacao(`Ativos consultados: ${dados.ativosConsultados}; cotações inseridas: ${dados.inseridos}; corrigidas: ${dados.atualizados}. ${dados.falhas.length ? 'Falhas: ' + dados.falhas.join(', ') : 'Sem falhas.'}`)
+      const dados = await response.json() as { ativosConsultados: number; inseridos: number; atualizados: number; duplicatasRemovidas: number; totalPersistido: number; falhas: string[] }
+      setResultadoImportacao(`Ativos consultados: ${dados.ativosConsultados}; cotações inseridas: ${dados.inseridos}; corrigidas: ${dados.atualizados}; duplicatas removidas: ${dados.duplicatasRemovidas}; total de linhas confirmadas no banco: ${dados.totalPersistido}. ${dados.falhas.length ? 'Falhas: ' + dados.falhas.join(', ') : 'Sem falhas.'}`)
     } catch (e) {
       setResultadoImportacao('Importação não concluída: ' + (e instanceof Error ? e.message : 'erro desconhecido'))
     } finally { setImportando(false) }
