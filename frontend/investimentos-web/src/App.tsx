@@ -760,6 +760,17 @@ function App() {
     usuario,
   ])
 
+  // O administrador não precisa esperar /api/investidores para ver o painel.
+  // A chamada é deduplicada com o carregamento posterior pelo requestCache.
+  useEffect(() => {
+    if (usuario?.perfil !== 'Admin' || !possuiPermissao('Dashboard')) return
+    let ativo = true
+    void obterDashboardConsolidado()
+      .then(dados => { if (ativo) { setDashboard(dados); setApiDisponivel(true) } })
+      .catch(error => { if (ativo) { console.error('Falha no painel inicial', error); setErro('Não foi possível carregar o painel.') } })
+    return () => { ativo = false }
+  }, [usuario])
+
   useEffect(() => {
     if (
       !apiDisponivel ||
@@ -935,10 +946,7 @@ function App() {
       }
     }
 
-    if (
-      todosInvestidores.length >
-      0
-    ) {
+    if (todosInvestidores.length > 0) {
       void carregarPainel()
     }
 
@@ -1071,7 +1079,7 @@ function App() {
   }
 
   if (
-    carregandoInvestidores
+    carregandoInvestidores && usuario?.perfil !== 'Admin'
   ) {
     return (
       <main className="estado-pagina">
