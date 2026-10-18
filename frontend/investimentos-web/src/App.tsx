@@ -1094,7 +1094,8 @@ function App() {
   }
 
   if (
-    carregandoInvestidores && usuario?.perfil !== 'Admin'
+    carregandoInvestidores && usuario?.perfil !== 'Admin' &&
+    !(telaAtual === 'painel' && (dashboard !== null || carteirasPainel.length > 0))
   ) {
     return (
       <main className="estado-pagina">
