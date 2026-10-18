@@ -75,6 +75,7 @@ import {
 } from './utils/formatters'
 
 import './styles/legacy.css'
+import { invalidateRequests } from './api/requestCache'
 
 type Tela =
   | 'painel'
@@ -555,6 +556,7 @@ function App() {
       setAtualizandoDados(true)
       setErro(null)
 
+      invalidateRequests()
       await carregarDadosAtuais()
 
     } catch (error) {
@@ -886,32 +888,23 @@ function App() {
               }
             })
 
-        const [
-          dadosDashboard,
-          dadosEvolucao,
-          resultadosCarteiras,
-        ] =
-          await Promise.all([
-            obterDashboardConsolidado(),
-
-            obterEvolucaoConsolidada(),
-
-            Promise.allSettled(
-              todosInvestidores.map(
-                async (
-                  investidor,
-                ) => ({
-                  nome:
-                    investidor.nome,
-
-                  dashboard:
-                    await obterDashboardPorInvestidor(
-                      investidor.id,
-                    ),
-                }),
-              ),
-            ),
-          ])
+        // O painel principal não precisa aguardar evolução ou carteiras individuais.
+        const evolucaoPromise = obterEvolucaoConsolidada()
+          .then(value => { if (!controller.signal.aborted) setEvolucao(value) })
+          .catch(error => { console.error(error); if (!controller.signal.aborted) setEvolucao([]) })
+        const carteirasPromise = Promise.allSettled(
+          todosInvestidores.map(async investidor => ({
+            nome: investidor.nome,
+            dashboard: await obterDashboardPorInvestidor(investidor.id),
+          })),
+        ).then(resultados => {
+          if (controller.signal.aborted) return
+          setCarteirasPainel(resultados.flatMap(resultado =>
+            resultado.status === 'fulfilled' ? [resultado.value] : []))
+        })
+        const dadosDashboard = await obterDashboardConsolidado()
+        void evolucaoPromise
+        void carteirasPromise
 
         if (
           controller.signal
@@ -920,26 +913,7 @@ function App() {
           return
         }
 
-        const carteirasComSucesso =
-          resultadosCarteiras.flatMap(
-            (resultado) =>
-              resultado.status ===
-              'fulfilled'
-                ? [resultado.value]
-                : [],
-          )
-
-        setDashboard(
-          dadosDashboard,
-        )
-
-        setEvolucao(
-          dadosEvolucao,
-        )
-
-        setCarteirasPainel(
-          carteirasComSucesso,
-        )
+        setDashboard(dadosDashboard)
 
         void performancePromise
       } catch (error) {
