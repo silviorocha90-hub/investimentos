@@ -6,6 +6,8 @@ import { obterAdministracao } from '../../api/administracaoApi'
 import type { AtivoAdministracao } from '../../types/administracao'
 import type { Dashboard, OperacaoCarteira, OperacaoOpcao, PosicaoAtivo } from '../../types/dashboard'
 
+type ResumoCotacoes = { ticker: string; registrosCotacoes: number; diasCotados: number; menorCotacao: number; maiorCotacao: number; mediaCotacao: number; primeiraCotacao: string; ultimaCotacao: string; ultimoPreco: number }
+
 const moeda = (n: number) => n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
 const percentual = (n: number) => n.toLocaleString('pt-BR', { maximumFractionDigits: 1 }) + '%'
 const operacaoTipo = (op: OperacaoCarteira, tipo: string) => op.tipoOperacao.toUpperCase().includes(tipo)
@@ -18,6 +20,7 @@ const acima = (valor: number) => Math.round((valor + .01) * 100) / 100
 export function AnaliseEstrategicaView({ dashboard, investidoresIds }: { dashboard: Dashboard | null; investidoresIds: string[] }) {
   const [historico, setHistorico] = useState<OperacaoCarteira[]>([])
   const [ativos, setAtivos] = useState<AtivoAdministracao[]>([])
+  const [cotacoes, setCotacoes] = useState<ResumoCotacoes[]>([])
   const [carregando, setCarregando] = useState(true)
   const [erro, setErro] = useState<string | null>(null)
   const [busca, setBusca] = useState('')
@@ -31,14 +34,17 @@ export function AnaliseEstrategicaView({ dashboard, investidoresIds }: { dashboa
     Promise.all([
       Promise.all(chave.split(',').filter(Boolean).map(id => obterOperacoes(id))),
       obterAdministracao(),
+      fetch(`${import.meta.env.VITE_API_URL ?? 'https://localhost:7237'}/api/analise-estrategica/cotacoes`, { credentials: 'include' })
+        .then(async response => { if (!response.ok) throw new Error(`Histórico de cotações: HTTP ${response.status}`); return await response.json() as ResumoCotacoes[] }),
     ])
-      .then(([grupos, administracao]) => {
+      .then(([grupos, administracao, resumosCotacoes]) => {
         if (ativo) {
           setHistorico([...new Map(grupos.flat().map(o => [o.id, o])).values()].sort((a,b) => a.data.localeCompare(b.data) || a.sequencia - b.sequencia))
           setAtivos(administracao.ativos)
+          setCotacoes(resumosCotacoes)
         }
       })
-      .catch(e => { if (ativo) { setHistorico([]); setAtivos([]); setErro(e instanceof Error ? e.message : 'Erro ao carregar operações') } })
+      .catch(e => { if (ativo) { setHistorico([]); setAtivos([]); setCotacoes([]); setErro(e instanceof Error ? e.message : 'Erro ao carregar operações') } })
       .finally(() => { if (ativo) setCarregando(false) })
     return () => { ativo = false }
   }, [chave])
@@ -71,6 +77,13 @@ export function AnaliseEstrategicaView({ dashboard, investidoresIds }: { dashboa
         custoTotal: 0, resultadoRealizado: 0, valorAtual: 0, valorizacao: 0,
       })
     }
+    for (const resumo of cotacoes) {
+      const ticker = resumo.ticker.toUpperCase()
+      if (!elegivel(ticker) || porTicker.has(ticker)) continue
+      porTicker.set(ticker, { ticker, nome: ativos.find(a => a.ticker.toUpperCase() === ticker)?.nome ?? ticker,
+        tipoAtivoCodigo: '', tipoAtivoNome: '', quantidade: 0, precoMedio: 0,
+        custoTotal: 0, resultadoRealizado: 0, valorAtual: 0, valorizacao: 0 })
+    }
     const posicoes = [...porTicker.values()]
     const total = posicoes.filter(p => p.quantidade > 0).reduce((s,p) => s + p.valorAtual, 0)
     return posicoes.map(p => {
@@ -78,13 +91,14 @@ export function AnaliseEstrategicaView({ dashboard, investidoresIds }: { dashboa
       const compras = ops.filter(o => operacaoTipo(o, 'COMPRA'))
       const vendas = ops.filter(o => operacaoTipo(o, 'VENDA'))
       const opcoes = dashboard.opcoes.filter(o => o.tickerAtivo?.toUpperCase() === p.ticker.toUpperCase())
-      const totalRegistros = ops.length + opcoes.length
+      const resumoCotacoes = cotacoes.find(c => c.ticker.toUpperCase() === p.ticker.toUpperCase())
+      const totalRegistros = ops.length + opcoes.length + (resumoCotacoes?.registrosCotacoes ?? 0)
       const menorCompra = compras.length ? Math.min(...compras.filter(o => o.precoUnitario > 0).map(o => o.precoUnitario)) : null
       const compra = menorCompra === null || !Number.isFinite(menorCompra) ? null : abaixo(menorCompra)
       const putsLucrativas = opcoes.filter(o => opcaoTipo(o, 'PUT') && encerrada(o) && ganhoPositivo(o) && o.strike > 0)
       const menorStrikeLucro = putsLucrativas.length ? Math.min(...putsLucrativas.map(o => o.strike)) : null
       const put = menorStrikeLucro === null ? null : abaixo(menorStrikeLucro)
-      const maiorHistorico = [...ops.map(o => o.precoUnitario), ...opcoes.map(o => o.strike)].filter(n => Number.isFinite(n) && n > 0)
+      const maiorHistorico = [...ops.map(o => o.precoUnitario), ...opcoes.map(o => o.strike), ...(resumoCotacoes ? [resumoCotacoes.maiorCotacao] : [])].filter(n => Number.isFinite(n) && n > 0)
       const maiorRegistrado = maiorHistorico.length ? Math.max(...maiorHistorico) : null
       // Lucro mínimo de 15% sobre o preço médio consolidado, além do maior preço registrado.
       const venda = p.quantidade <= 0 || maiorRegistrado === null || p.precoMedio <= 0 ? null : acima(Math.max(maiorRegistrado, p.precoMedio * 1.15))
@@ -106,9 +120,9 @@ export function AnaliseEstrategicaView({ dashboard, investidoresIds }: { dashboa
         compra !== null && preco <= compra ? 'Rentável: avaliar compra a mercado' :
         put !== null && preco > put ? 'Rentável: avaliar PUT com garantia' :
         'Rentável: manter / aguardar preço'
-      return { ...p, ops, compras, vendas, opcoes, totalRegistros, compra, venda, put, call, preco, pm, peso, livres, putsAbertas, callsAbertas, classificacao, resultadoEconomico, rentavel, menorCompra, menorStrikeLucro, maiorRegistrado, dataCotacao: ativo?.dataCotacao ?? null, putsLucrativas }
+      return { ...p, ops, compras, vendas, opcoes, resumoCotacoes, totalRegistros, compra, venda, put, call, preco, pm, peso, livres, putsAbertas, callsAbertas, classificacao, resultadoEconomico, rentavel, menorCompra, menorStrikeLucro, maiorRegistrado, dataCotacao: ativo?.dataCotacao ?? null, putsLucrativas }
     }).sort((a,b) => a.ticker.localeCompare(b.ticker))
-  }, [dashboard, historico, ativos, carregando, erro])
+  }, [dashboard, historico, ativos, cotacoes, carregando, erro])
   const filtradas = analises.filter(p => (p.ticker + ' ' + p.nome).toLowerCase().includes(busca.toLowerCase()))
   const atual = analises.find(p => p.ticker === selecionado)
   const mostrar = (valor: number | null) => valor === null ? 'Sem referência' : moeda(valor)
@@ -139,7 +153,7 @@ export function AnaliseEstrategicaView({ dashboard, investidoresIds }: { dashboa
               <td className="estrategia-positive">{mostrar(p.put)}</td>
               <td>{mostrar(p.venda)}</td>
               <td>{mostrar(p.call)}</td>
-              <td title={`${p.ops.length} operações de ativos e ${p.opcoes.length} operações de opções`}>{p.totalRegistros.toLocaleString('pt-BR')}</td>
+              <td title={`${p.resumoCotacoes?.registrosCotacoes ?? 0} cotações, ${p.ops.length} operações de ativos e ${p.opcoes.length} operações de opções`}>{p.totalRegistros.toLocaleString('pt-BR')}</td>
               <td><span className={p.rentavel ? 'estrategia-status positive' : 'estrategia-status'}>{p.classificacao}</span></td>
             </tr>)}</tbody>
           </table>
@@ -157,7 +171,7 @@ export function AnaliseEstrategicaView({ dashboard, investidoresIds }: { dashboa
             <div><span>Preço médio consolidado</span><strong>{atual.quantidade > 0 && atual.pm > 0 ? moeda(atual.pm) : 'Sem posição'}</strong></div>
             <div><span>Quantidade</span><strong>{atual.quantidade.toLocaleString('pt-BR')}</strong></div>
             <div><span>Peso em ações</span><strong>{percentual(atual.peso)}</strong></div>
-            <div><span>Registros analisados</span><strong>{atual.totalRegistros.toLocaleString('pt-BR')}</strong><small>{atual.ops.length} operações de ativos + {atual.opcoes.length} operações de opções</small></div>
+            <div><span>Registros analisados</span><strong>{atual.totalRegistros.toLocaleString('pt-BR')}</strong><small>{atual.resumoCotacoes?.registrosCotacoes ?? 0} cotações + {atual.ops.length} operações de ativos + {atual.opcoes.length} operações de opções</small></div>
           </div>
           <div className="estrategia-opportunities">
             {[
@@ -172,7 +186,8 @@ export function AnaliseEstrategicaView({ dashboard, investidoresIds }: { dashboa
             </div>)}
           </div>
           <div className="estrategia-notes">
-            <p><strong>Base utilizada:</strong> {atual.compras.length} compras, {atual.vendas.length} vendas e {atual.opcoes.length} operações de opções registradas. Esta contagem considera operações da carteira e opções, não registros diários da tabela de cotações. A compra usa o menor preço executado; a PUT usa apenas opções encerradas com resultado positivo; a venda exige superar o maior preço registrado e o PM em pelo menos 15%.</p>
+            {atual.resumoCotacoes && <p><strong>Histórico de mercado:</strong> {atual.resumoCotacoes.registrosCotacoes.toLocaleString('pt-BR')} cotações em {atual.resumoCotacoes.diasCotados.toLocaleString('pt-BR')} dias distintos, de {new Date(atual.resumoCotacoes.primeiraCotacao).toLocaleDateString('pt-BR')} a {new Date(atual.resumoCotacoes.ultimaCotacao).toLocaleDateString('pt-BR')}. Mínima diária {moeda(atual.resumoCotacoes.menorCotacao)}, máxima diária {moeda(atual.resumoCotacoes.maiorCotacao)} e média dos últimos registros de cada dia {moeda(atual.resumoCotacoes.mediaCotacao)}. Todas as linhas válidas são contabilizadas; para estatísticas diárias, utiliza-se a última cotação de cada dia.</p>}
+            <p><strong>Base utilizada:</strong> {atual.compras.length} compras, {atual.vendas.length} vendas e {atual.opcoes.length} operações de opções registradas. Esta contagem inclui todas as cotações válidas, operações da carteira e operações de opções. A máxima histórica de cotações também integra a referência de saída. A compra usa o menor preço executado; a PUT usa apenas opções encerradas com resultado positivo; a venda exige superar o maior preço registrado e o PM em pelo menos 15%.</p>
             {atual.quantidade <= 0 && <p><strong>Sem posição atual:</strong> este ativo aparece por operações históricas de carteira ou opções. Preço médio e resultado econômico não representam uma posição em aberto; referências de entrada não constituem recomendação de compra.</p>}
             {atual.quantidade > 0 && <p><strong>Leitura histórica:</strong> resultado econômico estimado {moeda(atual.resultadoEconomico)}. {atual.rentavel ? 'Ativo com resultado positivo na carteira; avaliar oportunidades somente nos preços-alvo.' : 'Resultado não positivo; evitar reforço automático e reavaliar fundamentos e saída.'} Esta avaliação mede rentabilidade na carteira, não qualidade fundamentalista da empresa.</p>}
             {atual.quantidade > 0 && <p><strong>Garantias:</strong> {atual.livres.toLocaleString('pt-BR')} ações potencialmente livres para CALL, antes de validar contratos, bloqueios e demais garantias; {atual.putsAbertas.length} PUTs e {atual.callsAbertas.length} CALLs ativas cadastradas.</p>}

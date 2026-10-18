@@ -324,6 +324,47 @@ app.MapGet(
     })
     .RequireAuthorization();
 
+// Resumo de TODAS as linhas de CotacaoAtivo, sem limite de 90 dias.
+// A série diária usa a última observação do dia para não superponderar snapshots.
+app.MapGet(
+    "/api/analise-estrategica/cotacoes",
+    async (InvestimentosDbContext db, CancellationToken ct) =>
+    {
+        var ativos = await db.Ativos.AsNoTracking()
+            .Select(a => new { a.Id, Ticker = a.Ticker.Codigo })
+            .ToListAsync(ct);
+        var tickers = ativos.ToDictionary(a => a.Id, a => a.Ticker.ToUpperInvariant());
+        var cotacoes = await db.CotacoesAtivos.AsNoTracking()
+            .Select(c => new { c.AtivoId, c.DataReferencia, c.Preco })
+            .ToListAsync(ct);
+        var resultado = cotacoes
+            .Where(c => c.Preco > 0 && tickers.ContainsKey(c.AtivoId))
+            .GroupBy(c => tickers[c.AtivoId])
+            .Select(g =>
+            {
+                var serieDiaria = g.GroupBy(c => c.DataReferencia.Date)
+                    .Select(d => d.OrderByDescending(c => c.DataReferencia).First())
+                    .OrderBy(c => c.DataReferencia)
+                    .ToList();
+                return new
+                {
+                    ticker = g.Key,
+                    registrosCotacoes = g.Count(),
+                    diasCotados = serieDiaria.Count,
+                    menorCotacao = serieDiaria.Min(c => c.Preco),
+                    maiorCotacao = serieDiaria.Max(c => c.Preco),
+                    mediaCotacao = serieDiaria.Average(c => c.Preco),
+                    primeiraCotacao = serieDiaria[0].DataReferencia,
+                    ultimaCotacao = serieDiaria[^1].DataReferencia,
+                    ultimoPreco = serieDiaria[^1].Preco
+                };
+            })
+            .OrderBy(x => x.ticker)
+            .ToList();
+        return Results.Ok(resultado);
+    })
+    .RequireAuthorization();
+
 app.MapPost(
     "/api/admin/importar-historico-cotacoes",
     async (ClaimsPrincipal principal, HistoricoCotacoesService service,
