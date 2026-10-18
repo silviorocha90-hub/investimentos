@@ -113,6 +113,7 @@ builder.Services.AddHttpClient();
 builder.Services.AddScoped<AssistenteIaService>();
 builder.Services.AddSingleton<GeracaoRelatorioBackground>();
 builder.Services.AddScoped<MercadoBrapiService>();
+builder.Services.AddScoped<HistoricoCotacoesService>();
 builder.Services.AddHostedService<AssistenteIaWorker>();
 
 builder.Services.AddScoped<CadastrarInvestidorHandler>();
@@ -320,6 +321,16 @@ app.MapGet(
         if (!principal.IsInRole("Admin")) return Results.Forbid();
         return Results.Ok(await logs.ListarAsync(modulo, nivel, correlacaoId,
             limite ?? 100, cancellationToken));
+    })
+    .RequireAuthorization();
+
+app.MapPost(
+    "/api/admin/importar-historico-cotacoes",
+    async (ClaimsPrincipal principal, HistoricoCotacoesService service,
+        CancellationToken cancellationToken) =>
+    {
+        if (!principal.IsInRole("Admin")) return Results.Forbid();
+        return Results.Ok(await service.ImportarAsync(cancellationToken));
     })
     .RequireAuthorization();
 
