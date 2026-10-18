@@ -1,5 +1,7 @@
 import type { Dashboard, EvolucaoInvestidor, OperacaoCarteira, PerformanceCarteira } from '../types/dashboard'
 
+import { cachedRequest, invalidateRequests } from './requestCache'
+
 const API_URL = import.meta.env.VITE_API_URL ?? 'https://localhost:7237'
 
 async function obterMensagemErro(response: Response): Promise<string> {
@@ -19,6 +21,7 @@ async function obterMensagemErro(response: Response): Promise<string> {
 export async function obterDashboard(
     investidorId: string,
 ): Promise<Dashboard> {
+    return cachedRequest(`dashboard:investidor:${investidorId}`, async () => {
     const response = await fetch(
         `${API_URL}/api/dashboard/${investidorId}`,
         { cache: 'no-store', credentials: 'include' },
@@ -31,9 +34,11 @@ export async function obterDashboard(
     }
 
     return response.json()
+    })
 }
 
 export async function obterDashboardConsolidado(): Promise<Dashboard> {
+    return cachedRequest('dashboard:all', async () => {
     const response = await fetch(
         `${API_URL}/api/dashboard`,
         { cache: 'no-store', credentials: 'include' },
@@ -46,11 +51,13 @@ export async function obterDashboardConsolidado(): Promise<Dashboard> {
     }
 
     return response.json()
+    })
 }
 
 export async function obterDashboardPorInvestidor(
     investidorId: string,
 ): Promise<Dashboard> {
+    return cachedRequest(`dashboard:investidor:${investidorId}`, async () => {
     const response = await fetch(
         `${API_URL}/api/dashboard/${investidorId}`,
         { cache: 'no-store', credentials: 'include' },
@@ -63,6 +70,7 @@ export async function obterDashboardPorInvestidor(
     }
 
     return response.json()
+    })
 }
 
 export async function obterEvolucaoConsolidada(
@@ -72,6 +80,7 @@ export async function obterEvolucaoConsolidada(
         ? `?investidorId=${encodeURIComponent(investidorId)}`
         : ''
 
+    return cachedRequest(`evolucao:${investidorId ?? 'all'}`, async () => {
     const response = await fetch(
         `${API_URL}/api/dashboard/evolucao${query}`,
         { cache: 'no-store', credentials: 'include' },
@@ -84,6 +93,7 @@ export async function obterEvolucaoConsolidada(
     }
 
     return response.json()
+    })
 }
 
 export async function obterOperacoes(
@@ -130,6 +140,7 @@ export async function atualizarOperacao(
             `Erro ao atualizar a operação. ${await obterMensagemErro(response)}`,
         )
     }
+    invalidateRequests()
 }
 
 export async function criarOperacao(
@@ -173,6 +184,7 @@ export async function criarOperacao(
     }
 
     return response.json()
+    invalidateRequests()
 }
 
 export async function excluirOperacao(id: string): Promise<void> {
@@ -189,6 +201,7 @@ export async function excluirOperacao(id: string): Promise<void> {
             `Erro ao excluir a operação. ${await obterMensagemErro(response)}`,
         )
     }
+    invalidateRequests()
 }
 export async function obterPerformance(
     investidorId?: string,
@@ -197,6 +210,7 @@ export async function obterPerformance(
         ? `?investidorId=${encodeURIComponent(investidorId)}`
         : ''
 
+    return cachedRequest(`performance:${investidorId ?? 'all'}`, async () => {
     const response = await fetch(
         `${API_URL}/api/performance${query}`,
         { cache: 'no-store', credentials: 'include' },
@@ -209,4 +223,5 @@ export async function obterPerformance(
     }
 
     return response.json()
+    })
 }
