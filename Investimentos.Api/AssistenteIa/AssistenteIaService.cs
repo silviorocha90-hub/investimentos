@@ -180,13 +180,14 @@ public sealed class AssistenteIaService
                 x.Modulo == "Cotacoes" && x.Operacao == "Atualizacao diaria" &&
                 x.Nivel == "INFO" && x.CorrelacaoId == chave,
                 cancellationToken);
-            if (executada)
+            if (executada && !string.Equals(origem, "manual", StringComparison.OrdinalIgnoreCase))
             {
                 _logger.LogInformation("Cotacoes ja atualizadas em {Dia}; origem {Origem} ignorada.", dia, origem);
                 return null;
             }
 
-            var resultado = await AtualizarMercadoSemanalAsync(dataLocal, cancellationToken);
+            var resultado = await AtualizarMercadoSemanalAsync(dataLocal, cancellationToken,
+                registrarNovaCotacao: string.Equals(origem, "manual", StringComparison.OrdinalIgnoreCase));
             _context.LogsAplicacao.Add(new LogAplicacao
             {
                 Ambiente = _configuration["ASPNETCORE_ENVIRONMENT"] ?? "Production",
@@ -207,7 +208,8 @@ public sealed class AssistenteIaService
 
     public async Task<AtualizacaoMercadoResultado> AtualizarMercadoSemanalAsync(
         DateTime dataLocal,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        bool registrarNovaCotacao = false)
     {
         var investidores = await _context.Investidores
             .AsNoTracking()
@@ -246,7 +248,7 @@ public sealed class AssistenteIaService
         }
 
         var atualizado = await _mercadoBrapiService.AtualizarAsync(
-            tickers, opcoes.Values, dataLocal, cancellationToken);
+            tickers, opcoes.Values, dataLocal, cancellationToken, registrarNovaCotacao);
 
         // Persistir somente precos validos efetivamente retornados pela fonte.
         // Nao altera status, premio, recompra nem resultado da operacao.
