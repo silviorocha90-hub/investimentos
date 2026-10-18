@@ -53,10 +53,6 @@ export function AnaliseEstrategicaView({ dashboard, investidoresIds }: { dashboa
         <h1>Análise Estratégica da Carteira</h1>
         <p>Visão consolidada de todos os investidores. Apenas ativos existentes, sem separar titularidade.</p>
       </div>
-      <div style={{ padding: 16, border: '1px solid #497a75', borderRadius: 12, marginBottom: 18 }}>
-        <strong>Simulação educacional — não é recomendação automática de compra.</strong>
-        <p>Os strikes abaixo são preços-alvo teóricos calculados por desconto sobre a última cotação cadastrada, não contratos negociáveis confirmados. Prêmios, delta, liquidez e vencimentos precisam ser consultados no book antes de enviar ordens. Cotações podem estar desatualizadas.</p>
-      </div>
       <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginBottom: 20 }}>
         <label>Desconto-alvo para PUT (%)
           <select value={desconto} onChange={e => setDesconto(Number(e.target.value))} style={{ display: 'block', padding: 9 }}>
@@ -67,13 +63,6 @@ export function AnaliseEstrategicaView({ dashboard, investidoresIds }: { dashboa
           <input value={busca} onChange={e => setBusca(e.target.value)} placeholder="Ticker ou empresa" style={{ display: 'block', padding: 9 }} />
         </label>
       </div>
-      <p><strong>Histórico integral de operações:</strong> {carregandoHistorico ? 'Carregando...' : erroHistorico ? 'Indisponível' : `${historico.length} registros de ${investidoresIds.length} investidores, desde ${historico.length ? new Date(historico[0].data).toLocaleDateString('pt-BR') : 'sem registros'}.`} Inclui posições já encerradas no histórico global, embora o ranking de compras se restrinja às posições atuais.</p>
-      {!carregandoHistorico && !erroHistorico && <div style={{ padding: 16, border: '1px solid #497a75', borderRadius: 12, marginBottom: 18 }}>
-        <h2>Resumo de todo o histórico registrado</h2>
-        <p>Operações de ações: {historico.length} | Compras: {historico.filter(o => /COMPRA/i.test(o.tipoOperacao)).length} | Vendas: {historico.filter(o => /VENDA/i.test(o.tipoOperacao)).length} | Ativos negociados: {porAtivo.size} | Opções registradas no dashboard consolidado: {dashboard?.opcoes.length ?? 0}</p>
-        <p>Ativos com histórico, mas sem posição atual: {[...porAtivo.keys()].filter(t => !posicoes.some(p => p.ticker.toUpperCase() === t)).join(', ') || 'Nenhum'}. As operações desses ativos continuam contabilizadas no histórico, mas não são sugeridas para novas compras.</p>
-        <p>O histórico de ações é carregado diretamente de todas as carteiras. O histórico de opções e proventos usa os registros disponibilizados pelo dashboard consolidado. Esta tela ainda não produz um valuation fundamentalista ou ranking quantitativo baseado em fluxo de caixa.</p>
-      </div>}
       {erroHistorico && <p role="alert">Não foi possível carregar todo o histórico: {erroHistorico}. A análise histórica não está completa.</p>}
       {!dashboard ? <p>Carregando carteira consolidada ou dados indisponíveis.</p> : filtradas.length === 0 ? <p>Nenhuma ação encontrada na carteira consolidada.</p> :
       <div style={{ overflowX: 'auto' }}>
