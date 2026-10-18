@@ -46,6 +46,7 @@ export async function obterAdministracao():
       `${apiUrl}/api/admin`,
       {
         cache: 'no-store',
+        credentials: 'include',
       },
     )
 
