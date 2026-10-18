@@ -47,6 +47,7 @@ public sealed class HistoricoCotacoesService
             var atualizados = 0;
             var falhas = new List<string>();
             var duplicatasRemovidas = 0;
+            var totalPersistido = 0;
             foreach (var ativo in elegiveis)
             {
                 ct.ThrowIfCancellationRequested();
@@ -130,6 +131,8 @@ public sealed class HistoricoCotacoesService
                     atualizados += atualizadosAtivo;
                     duplicatasRemovidas += duplicatasAtivo;
                     _db.ChangeTracker.Clear();
+                    totalPersistido += await _db.CotacoesAtivos.AsNoTracking()
+                        .CountAsync(c => c.AtivoId == ativo.Id && c.DataReferencia >= Inicio && c.DataReferencia < fim.AddDays(1), ct);
                 }
                 catch (OperationCanceledException) when (ct.IsCancellationRequested) { throw; }
                 catch (Exception ex)
@@ -139,7 +142,7 @@ public sealed class HistoricoCotacoesService
                     _logger.LogWarning(ex, "Falha ao importar historico de {Ticker}", ticker);
                 }
             }
-            return new HistoricoCotacoesResultado(Inicio, fim, elegiveis.Count, inseridos, atualizados, duplicatasRemovidas, falhas);
+            return new HistoricoCotacoesResultado(Inicio, fim, elegiveis.Count, inseridos, atualizados, duplicatasRemovidas, totalPersistido, falhas);
         }
         finally { Trava.Release(); }
     }
@@ -147,4 +150,4 @@ public sealed class HistoricoCotacoesService
 
 public sealed record HistoricoCotacoesResultado(
     DateTime Inicio, DateTime Fim, int AtivosConsultados,
-    int Inseridos, int Atualizados, int DuplicatasRemovidas, IReadOnlyList<string> Falhas);
+    int Inseridos, int Atualizados, int DuplicatasRemovidas, int TotalPersistido, IReadOnlyList<string> Falhas);
