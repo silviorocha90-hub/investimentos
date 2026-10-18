@@ -86,9 +86,9 @@ public sealed class AssistenteIaWorker : BackgroundService
         CancellationToken cancellationToken)
     {
         var agora = ObterAgoraSaoPaulo();
-        // Preços: uma atualização diária. Envio: retentativas independentes
+        // Preços: uma atualização diária a partir das 10h. Envio: retentativas independentes
         // a cada ciclo de 15 minutos enquanto houver destinatários pendentes.
-        if (agora.Hour < 19)
+        if (agora.Hour < 10)
             return;
 
         using var scope = _scopeFactory.CreateScope();
@@ -120,7 +120,7 @@ public sealed class AssistenteIaWorker : BackgroundService
                     StringComparer.OrdinalIgnoreCase));
         }
 
-        // Sexta-feira apos as 19h, com recuperacao no sabado e domingo.
+        // Sexta-feira apos as 10h, com recuperacao no sabado e domingo.
         // A data de referencia permanece a sexta para evitar relatorios
         // diferentes ou duplicados no mesmo fim de semana.
         if (GeracaoHabilitada(_configuration, _environment) &&
