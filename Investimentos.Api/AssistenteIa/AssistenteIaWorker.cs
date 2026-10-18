@@ -112,6 +112,12 @@ public sealed class AssistenteIaWorker : BackgroundService
                 "Falha na atualizacao automatica de cotacoes; relatorio semanal sera tentado independentemente.");
             await RegistrarErroSemInterromperWorkerAsync(
                 "Atualizacao cotacoes", ex, cancellationToken);
+            // Evita nova consulta ao SQL/Brapi durante a geracao do relatorio.
+            mercado = new AtualizacaoMercadoResultado(
+                new Dictionary<string, CotacaoAtivoMercado>(
+                    StringComparer.OrdinalIgnoreCase),
+                new Dictionary<string, CotacaoOpcaoMercado>(
+                    StringComparer.OrdinalIgnoreCase));
         }
 
         // Sexta-feira apos as 19h, com recuperacao no sabado e domingo.
