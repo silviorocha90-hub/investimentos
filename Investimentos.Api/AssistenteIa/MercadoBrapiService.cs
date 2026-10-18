@@ -33,7 +33,8 @@ public sealed class MercadoBrapiService
         IEnumerable<string> tickersAtivos,
         IEnumerable<OpcaoMercadoConsulta> opcoes,
         DateTime dataLocal,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        bool registrarNovaCotacao = false)
     {
         var tickers = tickersAtivos
             .Where(x => !string.IsNullOrWhiteSpace(x))
@@ -53,7 +54,8 @@ public sealed class MercadoBrapiService
         await PersistirCotacoesAtivosAsync(
             cotacoesAtivos,
             dataLocal,
-            cancellationToken);
+            cancellationToken,
+            registrarNovaCotacao);
 
         var cotacoesOpcoes =
             new Dictionary<string, CotacaoOpcaoMercado>(
@@ -165,7 +167,8 @@ public sealed class MercadoBrapiService
     private async Task PersistirCotacoesAtivosAsync(
         IReadOnlyDictionary<string, CotacaoAtivoMercado> cotacoes,
         DateTime dataLocal,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        bool registrarNovaCotacao)
     {
         if (cotacoes.Count == 0)
             return;
@@ -177,33 +180,36 @@ public sealed class MercadoBrapiService
                 x => x.Ticker.Codigo,
                 StringComparer.OrdinalIgnoreCase);
 
-        // Preserve the time of the successful quote refresh, not just its calendar day.
+        // Cada consulta manual bem-sucedida gera um snapshot próprio.
+        // A atualização automática mantém o comportamento de uma cotação por dia.
         var data = dataLocal;
-
         foreach (var item in cotacoes.Values)
         {
             if (!porTicker.TryGetValue(item.Ticker, out var ativo))
                 continue;
 
             var existente = await _context.CotacoesAtivos
-                .FirstOrDefaultAsync(
-                    x => x.AtivoId == ativo.Id &&
-                         x.DataReferencia.Date == data.Date,
-                    cancellationToken);
+                .Where(x => x.AtivoId == ativo.Id && x.DataReferencia.Date == data.Date)
+                .OrderByDescending(x => x.DataReferencia)
+                .FirstOrDefaultAsync(cancellationToken);
 
-            if (existente is null)
+            if (registrarNovaCotacao || existente is null)
             {
-                _context.CotacoesAtivos.Add(
-                    new CotacaoAtivo(
-                        ativo,
-                        data,
-                        item.Preco));
+                // Evita colisão no índice único (AtivoId, DataReferencia)
+                // quando duas consultas são concluídas no mesmo instante.
+                var instante = data;
+                while (await _context.CotacoesAtivos.AnyAsync(
+                    x => x.AtivoId == ativo.Id && x.DataReferencia == instante,
+                    cancellationToken) ||
+                    _context.CotacoesAtivos.Local.Any(
+                        x => x.AtivoId == ativo.Id && x.DataReferencia == instante))
+                    instante = instante.AddTicks(1);
+
+                _context.CotacoesAtivos.Add(new CotacaoAtivo(ativo, instante, item.Preco));
             }
             else
             {
-                existente.Atualizar(
-                    data,
-                    item.Preco);
+                existente.Atualizar(data, item.Preco);
             }
         }
 
