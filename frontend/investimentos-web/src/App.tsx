@@ -56,6 +56,7 @@ import {
 import { consultarGeracaoIa, gerarRelatorioIa, type StatusGeracaoIa } from './api/assistenteIaApi'
 
 import { AnalisesView } from './pages/Analises/AnalisesView'
+import { AnaliseEstrategicaView } from './pages/AnaliseEstrategica/AnaliseEstrategicaView'
 import { AlterarSenhaModal } from './pages/AlterarSenha/AlterarSenhaModal'
 
 import type {
@@ -82,6 +83,7 @@ type Tela =
   | 'opcoes'
   | 'proventos'
   | 'assistente-ia'
+  | 'analise-estrategica'
   | 'analises'
   | 'administracao'
 
@@ -104,6 +106,10 @@ const menuPrincipal:
 
 const menuAssistenteIa: ConfiguracaoMenu = {
   tela: 'assistente-ia', permissao: 'AssistenteIa', titulo: 'Assistente IA', icone: '✦',
+}
+
+const menuEstrategia: ConfiguracaoMenu = {
+  tela: 'analise-estrategica', permissao: 'Administracao', titulo: 'Análise Estratégica', icone: '◎',
 }
 
 const menuAdministracao: ConfiguracaoMenu = {
@@ -303,6 +309,7 @@ function App() {
       const configuracoes = [
         ...menuPrincipal,
         menuAssistenteIa,
+        menuEstrategia,
         menuAdministracao,
       ]
 
@@ -368,6 +375,7 @@ function App() {
     const configuracao = [
       ...menuPrincipal,
       menuAssistenteIa,
+      menuEstrategia,
       menuAdministracao,
     ].find(
       (item) =>
@@ -378,7 +386,7 @@ function App() {
       return false
     }
 
-    if (configuracao.tela === 'administracao') {
+    if (configuracao.tela === 'administracao' || configuracao.tela === 'analise-estrategica') {
       return usuario?.perfil === 'Admin'
     }
 
@@ -1259,6 +1267,14 @@ function App() {
             )
           })()}
 
+          {usuario?.perfil === 'Admin' ? (
+            <button className={`menu-item ${telaAtual === 'analise-estrategica' ? 'ativo' : ''}`}
+              type="button" onClick={() => navegar('analise-estrategica')}>
+              <span className="menu-icone">◎</span>
+              Análise Estratégica
+            </button>
+          ) : null}
+
           {(() => {
             const permitido =
               possuiPermissao(
@@ -1538,6 +1554,10 @@ function App() {
             investidores={investidoresPorPermissao('Analises')}
             carteiras={carteirasPorInvestidor}
           />
+        ) : null}
+
+        {telaAtual === 'analise-estrategica' && usuario?.perfil === 'Admin' ? (
+          <AnaliseEstrategicaView dashboard={dashboard} />
         ) : null}
 
         {telaAtual ===
