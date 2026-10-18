@@ -10,6 +10,8 @@ type ResumoCotacoes = { ticker: string; registrosCotacoes: number; diasCotados: 
 
 const ehFii = (codigo?: string | null, nome?: string | null) => /^(FII|FIIS|FUNDO_IMOBILIARIO|FUNDOS_IMOBILIARIOS)$/i.test((codigo ?? '').replace(/[\s-]+/g, '_')) || /FUNDO(S)?\s+(DE\s+INVESTIMENTO(S)?\s+)?IMOBILI[AÁ]RIO(S)?/i.test(nome ?? '')
 
+const ehPrevidencia = (codigo?: string | null, nome?: string | null) => /PREVID[EÊ]NCIA|PREVIDENCIA|PREV[_ -]?PRIVADA|PGBL|VGBL/i.test(`${codigo ?? ''} ${nome ?? ''}`)
+
 const moeda = (n: number) => n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
 const percentual = (n: number) => n.toLocaleString('pt-BR', { maximumFractionDigits: 1 }) + '%'
 const operacaoTipo = (op: OperacaoCarteira, tipo: string) => op.tipoOperacao.toUpperCase().includes(tipo)
@@ -61,6 +63,10 @@ export function AnaliseEstrategicaView({ dashboard, investidoresIds }: { dashboa
       const cadastro = ativos.find(a => a.ticker.toUpperCase() === codigo)
       const posicao = dashboard.posicoes.find(p => p.ticker.toUpperCase() === codigo)
       return !!codigo && codigo !== 'FMP ELETROBRAS' && !codigo.startsWith('FMP ') &&
+        !ehPrevidencia(codigo, cadastro?.nome ?? posicao?.nome) &&
+        !ehPrevidencia(cadastro?.tipoAtivoCodigo, cadastro?.tipoAtivoNome) &&
+        !ehPrevidencia(cadastro?.classeAtivoCodigo, cadastro?.classeAtivoNome) &&
+        !ehPrevidencia(posicao?.tipoAtivoCodigo, posicao?.tipoAtivoNome) &&
         !ehFii(cadastro?.tipoAtivoCodigo, cadastro?.tipoAtivoNome) &&
         !ehFii(cadastro?.classeAtivoCodigo, cadastro?.classeAtivoNome) &&
         !ehFii(posicao?.tipoAtivoCodigo, posicao?.tipoAtivoNome)
@@ -107,7 +113,11 @@ export function AnaliseEstrategicaView({ dashboard, investidoresIds }: { dashboa
       const compra = menorCompra === null || !Number.isFinite(menorCompra) ? null : abaixo(menorCompra)
       const putsLucrativas = opcoes.filter(o => opcaoTipo(o, 'PUT') && encerrada(o) && ganhoPositivo(o) && o.strike > 0)
       const menorStrikeLucro = putsLucrativas.length ? Math.min(...putsLucrativas.map(o => o.strike)) : null
-      const put = menorStrikeLucro === null ? null : abaixo(menorStrikeLucro)
+      // Sem PUT lucrativa, usar a mínima histórica apenas como referência estatística,
+      // nunca como strike negociável confirmado.
+      const putHistorica = menorStrikeLucro === null && resumoCotacoes && resumoCotacoes.menorCotacao > 0
+      const put = menorStrikeLucro !== null ? abaixo(menorStrikeLucro) :
+        putHistorica ? abaixo(resumoCotacoes.menorCotacao) : null
       const maiorHistorico = [...ops.map(o => o.precoUnitario), ...opcoes.map(o => o.strike), ...(resumoCotacoes ? [resumoCotacoes.maiorCotacao] : [])].filter(n => Number.isFinite(n) && n > 0)
       const maiorRegistrado = maiorHistorico.length ? Math.max(...maiorHistorico) : null
       // Lucro mínimo de 15% sobre o preço médio consolidado, além do maior preço registrado.
@@ -130,7 +140,7 @@ export function AnaliseEstrategicaView({ dashboard, investidoresIds }: { dashboa
         compra !== null && preco <= compra ? 'Rentável: avaliar compra a mercado' :
         put !== null && preco > put ? 'Rentável: avaliar PUT com garantia' :
         'Rentável: manter / aguardar preço'
-      return { ...p, ops, compras, vendas, opcoes, resumoCotacoes, totalRegistros, compra, venda, put, call, preco, pm, peso, livres, putsAbertas, callsAbertas, classificacao, resultadoEconomico, rentavel, menorCompra, menorStrikeLucro, maiorRegistrado, dataCotacao: ativo?.dataCotacao ?? null, putsLucrativas }
+      return { ...p, ops, compras, vendas, opcoes, resumoCotacoes, totalRegistros, putHistorica, compra, venda, put, call, preco, pm, peso, livres, putsAbertas, callsAbertas, classificacao, resultadoEconomico, rentavel, menorCompra, menorStrikeLucro, maiorRegistrado, dataCotacao: ativo?.dataCotacao ?? null, putsLucrativas }
     }).sort((a,b) => a.ticker.localeCompare(b.ticker))
   }, [dashboard, historico, ativos, cotacoes, carregando, erro])
   const filtradas = analises.filter(p =>
@@ -169,7 +179,7 @@ export function AnaliseEstrategicaView({ dashboard, investidoresIds }: { dashboa
               <td>{mostrar(p.preco)}</td>
               <td>{p.quantidade > 0 && p.pm > 0 ? moeda(p.pm) : '—'}</td>
               <td className="estrategia-positive">{mostrar(p.compra)}</td>
-              <td className="estrategia-positive">{mostrar(p.put)}</td>
+              <td className="estrategia-positive" title={p.putHistorica ? 'Referência estatística: abaixo da menor cotação histórica; não é strike validado na B3' : 'Referência de PUT encerrada com lucro'}>{mostrar(p.put)}{p.putHistorica && <small>Referência histórica</small>}</td>
               <td>{mostrar(p.venda)}</td>
               <td>{mostrar(p.call)}</td>
               <td title={`${p.resumoCotacoes?.registrosCotacoes ?? 0} cotações, ${p.ops.length} operações de ativos e ${p.opcoes.length} operações de opções`}>{p.totalRegistros.toLocaleString('pt-BR')}</td>
@@ -195,7 +205,7 @@ export function AnaliseEstrategicaView({ dashboard, investidoresIds }: { dashboa
           <div className="estrategia-opportunities">
             {[
               { titulo: 'Compra a mercado', valor: atual.compra, nota: 'Abaixo da menor compra registrada no histórico consolidado' },
-              { titulo: 'Venda de PUT', valor: atual.put, nota: 'Abaixo do menor strike de PUT encerrada com resultado positivo' },
+              { titulo: 'Venda de PUT', valor: atual.put, nota: atual.putHistorica ? 'Referência estatística abaixo da mínima histórica de cotação; não há PUT lucrativa registrada e o strike não foi validado na B3' : 'Abaixo do menor strike de PUT encerrada com resultado positivo' },
               { titulo: 'Venda a mercado', valor: atual.venda, nota: 'Acima do maior preço histórico registrado e com pelo menos 15% sobre o PM' },
               { titulo: 'CALL coberta', valor: atual.call, nota: 'Strike-alvo acima do maior preço histórico e do PM acrescido de 15%; validar cobertura' },
             ].map(item => <div className="estrategia-opportunity" key={item.titulo}>
@@ -206,13 +216,14 @@ export function AnaliseEstrategicaView({ dashboard, investidoresIds }: { dashboa
           </div>
           <div className="estrategia-notes">
             {atual.resumoCotacoes && <p><strong>Histórico de mercado:</strong> {atual.resumoCotacoes.registrosCotacoes.toLocaleString('pt-BR')} cotações em {atual.resumoCotacoes.diasCotados.toLocaleString('pt-BR')} dias distintos, de {new Date(atual.resumoCotacoes.primeiraCotacao).toLocaleDateString('pt-BR')} a {new Date(atual.resumoCotacoes.ultimaCotacao).toLocaleDateString('pt-BR')}. Mínima diária {moeda(atual.resumoCotacoes.menorCotacao)}, máxima diária {moeda(atual.resumoCotacoes.maiorCotacao)} e média dos últimos registros de cada dia {moeda(atual.resumoCotacoes.mediaCotacao)}. Todas as linhas válidas são contabilizadas; para estatísticas diárias, utiliza-se a última cotação de cada dia.</p>}
-            <p><strong>Base utilizada:</strong> {atual.compras.length} compras, {atual.vendas.length} vendas e {atual.opcoes.length} operações de opções registradas. Esta contagem inclui todas as cotações válidas, operações da carteira e operações de opções. A máxima histórica de cotações também integra a referência de saída. A compra usa o menor preço executado; a PUT usa apenas opções encerradas com resultado positivo; a venda exige superar o maior preço registrado e o PM em pelo menos 15%.</p>
+            <p><strong>Base utilizada:</strong> {atual.compras.length} compras, {atual.vendas.length} vendas e {atual.opcoes.length} operações de opções registradas. Esta contagem inclui todas as cotações válidas, operações da carteira e operações de opções. A máxima histórica de cotações também integra a referência de saída. A compra usa o menor preço executado; a PUT prioriza opções encerradas com resultado positivo e, na ausência delas, exibe referência estatística da mínima histórica; a venda exige superar o maior preço registrado e o PM em pelo menos 15%.</p>
             {atual.quantidade <= 0 && <p><strong>Sem posição atual:</strong> este ativo aparece por operações históricas de carteira ou opções. Preço médio e resultado econômico não representam uma posição em aberto; referências de entrada não constituem recomendação de compra.</p>}
             {atual.quantidade > 0 && <p><strong>Leitura histórica:</strong> resultado econômico estimado {moeda(atual.resultadoEconomico)}. {atual.rentavel ? 'Ativo com resultado positivo na carteira; avaliar oportunidades somente nos preços-alvo.' : 'Resultado não positivo; evitar reforço automático e reavaliar fundamentos e saída.'} Esta avaliação mede rentabilidade na carteira, não qualidade fundamentalista da empresa.</p>}
             {atual.quantidade > 0 && <p><strong>Garantias:</strong> {atual.livres.toLocaleString('pt-BR')} ações potencialmente livres para CALL, antes de validar contratos, bloqueios e demais garantias; {atual.putsAbertas.length} PUTs e {atual.callsAbertas.length} CALLs ativas cadastradas.</p>}
             <p><strong>Antes de operar opções:</strong> validar existência do strike na B3, vencimento, prêmio, spread, liquidez, delta, cobertura e custo efetivo. O sistema não dispõe de book confirmado nesta tela; não apresenta prêmios inventados nem envia ordens.</p>
             {atual.compra === null && <p>Sem compras registradas para definir preço inferior ao mínimo histórico.</p>}
-            {atual.put === null && <p>Sem PUT encerrada com resultado positivo; não há strike histórico lucrativo para referência.</p>}
+            {atual.putHistorica && <p>Sem PUT encerrada com resultado positivo: o valor de PUT exibido é somente referência baseada nas cotações históricas, não uma oportunidade negociável confirmada.</p>}
+            {atual.put === null && <p>Sem PUT encerrada com resultado positivo ou cotação histórica válida para referência.</p>}
             {atual.venda === null && <p>Sem PM ou preços históricos suficientes para estabelecer saída com 15% de ganho.</p>}
           </div>
         </article>
