@@ -7,10 +7,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Investimentos.Api.AssistenteIa;
 
-/// <summary>Backfill idempotente das cotacoes diarias desde o inicio das operacoes BTG.</summary>
+/// <summary>Importacao idempotente limitada aos ultimos 90 dias permitidos pela Brapi.</summary>
 public sealed class HistoricoCotacoesService
 {
-    public static readonly DateTime Inicio = new(2026, 5, 1);
+    public static readonly DateTime InicioHistorico = new(2026, 5, 1);
+    private const int LimiteDiasBrapi = 90;
     private static readonly SemaphoreSlim Trava = new(1, 1);
     private readonly InvestimentosDbContext _db;
     private readonly IHttpClientFactory _http;
@@ -32,6 +33,8 @@ public sealed class HistoricoCotacoesService
         try
         {
             var fim = AssistenteIaWorker.ObterAgoraSaoPaulo().Date;
+            // Janela inclusiva de 90 datas (89 dias de diferenca entre inicio e fim).
+            var inicio = new[] { InicioHistorico, fim.AddDays(-(LimiteDiasBrapi - 1)) }.Max();
             var ativos = await _db.Ativos.AsNoTracking().ToListAsync(ct);
             var elegiveis = ativos.Where(a =>
                 System.Text.RegularExpressions.Regex.IsMatch(a.Ticker.Codigo,
@@ -56,7 +59,7 @@ public sealed class HistoricoCotacoesService
                 {
                     // Endpoint brapi documentado: startDate/endDate + interval=1d.
                     var url = "https://brapi.dev/api/v2/stocks/historical?symbols=" + Uri.EscapeDataString(ticker) +
-                        "&startDate=" + Inicio.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) +
+                        "&startDate=" + inicio.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) +
                         "&endDate=" + fim.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) +
                         "&interval=1d";
                     using var response = await client.GetAsync(url, ct);
@@ -84,7 +87,7 @@ public sealed class HistoricoCotacoesService
                         if (!ponto.TryGetProperty("date", out var data) ||
                             !data.TryGetInt64(out var epoch)) continue;
                         var dia = DateTimeOffset.FromUnixTimeSeconds(epoch).UtcDateTime.Date;
-                        if (dia < Inicio || dia > fim) continue;
+                        if (dia < inicio || dia > fim) continue;
                         if (!ponto.TryGetProperty("close", out var fechamento) ||
                             !fechamento.TryGetDecimal(out var preco) || preco <= 0) continue;
                         novos[dia] = preco;
@@ -92,7 +95,7 @@ public sealed class HistoricoCotacoesService
                     // O ativo foi carregado AsNoTracking: anexá-lo como existente evita INSERT de Ativo.
                     _db.Ativos.Attach(ativo);
                     var existentes = await _db.CotacoesAtivos
-                        .Where(c => c.AtivoId == ativo.Id && c.DataReferencia >= Inicio &&
+                        .Where(c => c.AtivoId == ativo.Id && c.DataReferencia >= inicio &&
                             c.DataReferencia < fim.AddDays(1))
                         .ToListAsync(ct);
                     // Importação histórica nunca elimina snapshots manuais intradiários.
@@ -139,7 +142,7 @@ public sealed class HistoricoCotacoesService
                     _logger.LogWarning(ex, "Falha ao importar historico de {Ticker}", ticker);
                 }
             }
-            return new HistoricoCotacoesResultado(Inicio, fim, elegiveis.Count, inseridos, atualizados, duplicatasRemovidas, totalPersistido, falhas);
+            return new HistoricoCotacoesResultado(inicio, fim, elegiveis.Count, inseridos, atualizados, duplicatasRemovidas, totalPersistido, falhas);
         }
         finally { Trava.Release(); }
     }
