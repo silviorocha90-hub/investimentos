@@ -76,6 +76,9 @@ import {
 
 import './styles/legacy.css'
 import { invalidateRequests } from './api/requestCache'
+import { IndicadorCarregamento, instalarIndicadorRequisicoes } from './components/IndicadorCarregamento'
+
+instalarIndicadorRequisicoes()
 
 type Tela =
   | 'painel'
@@ -1099,6 +1102,7 @@ function App() {
   ) {
     return (
       <main className="estado-pagina">
+        <IndicadorCarregamento />
         <div className="loader" />
 
         <p>
@@ -1123,6 +1127,7 @@ function App() {
 
   return (
     <div className="shell">
+      <IndicadorCarregamento />
       {popupIa ? (
         <div role="alertdialog" aria-live="polite" style={{
           position: 'fixed', top: '22px', right: '22px', zIndex: 9999,
