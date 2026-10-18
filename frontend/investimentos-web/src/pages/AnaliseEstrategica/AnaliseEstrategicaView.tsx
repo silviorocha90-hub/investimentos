@@ -8,6 +8,8 @@ import type { Dashboard, OperacaoCarteira, OperacaoOpcao, PosicaoAtivo } from '.
 
 type ResumoCotacoes = { ticker: string; registrosCotacoes: number; diasCotados: number; menorCotacao: number; maiorCotacao: number; mediaCotacao: number; primeiraCotacao: string; ultimaCotacao: string; ultimoPreco: number }
 
+const ehFii = (codigo?: string | null, nome?: string | null) => /^(FII|FIIS|FUNDO_IMOBILIARIO|FUNDOS_IMOBILIARIOS)$/i.test((codigo ?? '').replace(/[\s-]+/g, '_')) || /FUNDO(S)?\s+(DE\s+INVESTIMENTO(S)?\s+)?IMOBILI[AÁ]RIO(S)?/i.test(nome ?? '')
+
 const moeda = (n: number) => n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
 const percentual = (n: number) => n.toLocaleString('pt-BR', { maximumFractionDigits: 1 }) + '%'
 const operacaoTipo = (op: OperacaoCarteira, tipo: string) => op.tipoOperacao.toUpperCase().includes(tipo)
@@ -24,6 +26,7 @@ export function AnaliseEstrategicaView({ dashboard, investidoresIds }: { dashboa
   const [carregando, setCarregando] = useState(true)
   const [erro, setErro] = useState<string | null>(null)
   const [busca, setBusca] = useState('')
+  const [filtroPosicao, setFiltroPosicao] = useState<'com' | 'sem'>('com')
   const [selecionado, setSelecionado] = useState<string | null>(null)
   const chave = [...investidoresIds].sort().join(',')
 
@@ -53,8 +56,15 @@ export function AnaliseEstrategicaView({ dashboard, investidoresIds }: { dashboa
     if (!dashboard || carregando || erro) return []
     // Incluir ativos já negociados, mesmo sem posição atual, e subjacentes
     // de opções, mesmo quando nunca houve compra direta da ação.
-    const elegivel = (ticker: string) => !!ticker.trim() &&
-      ticker.toUpperCase() !== 'FMP ELETROBRAS' && !ticker.toUpperCase().startsWith('FMP ')
+    const elegivel = (ticker: string) => {
+      const codigo = ticker.trim().toUpperCase()
+      const cadastro = ativos.find(a => a.ticker.toUpperCase() === codigo)
+      const posicao = dashboard.posicoes.find(p => p.ticker.toUpperCase() === codigo)
+      return !!codigo && codigo !== 'FMP ELETROBRAS' && !codigo.startsWith('FMP ') &&
+        !ehFii(cadastro?.tipoAtivoCodigo, cadastro?.tipoAtivoNome) &&
+        !ehFii(cadastro?.classeAtivoCodigo, cadastro?.classeAtivoNome) &&
+        !ehFii(posicao?.tipoAtivoCodigo, posicao?.tipoAtivoNome)
+    }
     const porTicker = new Map<string, PosicaoAtivo>()
     for (const p of dashboard.posicoes) {
       if (elegivel(p.ticker)) porTicker.set(p.ticker.toUpperCase(), p)
@@ -123,8 +133,10 @@ export function AnaliseEstrategicaView({ dashboard, investidoresIds }: { dashboa
       return { ...p, ops, compras, vendas, opcoes, resumoCotacoes, totalRegistros, compra, venda, put, call, preco, pm, peso, livres, putsAbertas, callsAbertas, classificacao, resultadoEconomico, rentavel, menorCompra, menorStrikeLucro, maiorRegistrado, dataCotacao: ativo?.dataCotacao ?? null, putsLucrativas }
     }).sort((a,b) => a.ticker.localeCompare(b.ticker))
   }, [dashboard, historico, ativos, cotacoes, carregando, erro])
-  const filtradas = analises.filter(p => (p.ticker + ' ' + p.nome).toLowerCase().includes(busca.toLowerCase()))
-  const atual = analises.find(p => p.ticker === selecionado)
+  const filtradas = analises.filter(p =>
+    (filtroPosicao === 'com' ? p.quantidade > 0 : p.quantidade <= 0) &&
+    (p.ticker + ' ' + p.nome).toLowerCase().includes(busca.toLowerCase()))
+  const atual = filtradas.find(p => p.ticker === selecionado)
   const mostrar = (valor: number | null) => valor === null ? 'Sem referência' : moeda(valor)
   const delta = (alvo: number | null, atual: number | null) => alvo === null || atual === null ? '—' : percentual((alvo / atual - 1) * 100)
   return (
@@ -137,6 +149,13 @@ export function AnaliseEstrategicaView({ dashboard, investidoresIds }: { dashboa
           <label className="estrategia-search">
             <span>Pesquisar ativo</span>
             <input value={busca} onChange={e => setBusca(e.target.value)} placeholder="Ticker ou empresa" />
+          </label>
+          <label className="estrategia-search">
+            <span>Posição na carteira</span>
+            <select value={filtroPosicao} onChange={e => { setFiltroPosicao(e.target.value as 'com' | 'sem'); setSelecionado(null) }}>
+              <option value="com">Com posição ({analises.filter(p => p.quantidade > 0).length})</option>
+              <option value="sem">Sem posição ({analises.filter(p => p.quantidade <= 0).length})</option>
+            </select>
           </label>
         </div>
         {carregando && <div className="estrategia-state">Calculando preços a partir do histórico completo de operações...</div>}
