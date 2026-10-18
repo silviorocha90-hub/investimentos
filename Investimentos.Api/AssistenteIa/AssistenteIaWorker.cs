@@ -95,16 +95,46 @@ public sealed class AssistenteIaWorker : BackgroundService
         var service = scope.ServiceProvider
             .GetRequiredService<AssistenteIaService>();
 
+        // A falha nas cotacoes nao pode impedir o relatorio semanal.
         AtualizacaoMercadoResultado? mercado = null;
-        mercado = await service.AtualizarMercadoUmaVezAoDiaAsync(
-            agora, "automatica", cancellationToken);
-
-        if (agora.DayOfWeek == DayOfWeek.Friday &&
-            GeracaoHabilitada(_configuration, _environment))
+        try
         {
-            // Único fluxo automático de IA/e-mail: sexta-feira.
+            mercado = await service.AtualizarMercadoUmaVezAoDiaAsync(
+                agora, "automatica", cancellationToken);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex,
+                "Falha na atualizacao automatica de cotacoes; relatorio semanal sera tentado independentemente.");
+            await RegistrarErroSemInterromperWorkerAsync(
+                "Atualizacao cotacoes", ex, cancellationToken);
+            // Evita nova consulta ao SQL/Brapi durante a geracao do relatorio.
+            mercado = new AtualizacaoMercadoResultado(
+                new Dictionary<string, CotacaoAtivoMercado>(
+                    StringComparer.OrdinalIgnoreCase),
+                new Dictionary<string, CotacaoOpcaoMercado>(
+                    StringComparer.OrdinalIgnoreCase));
+        }
+
+        // Sexta-feira apos as 19h, com recuperacao no sabado e domingo.
+        // A data de referencia permanece a sexta para evitar relatorios
+        // diferentes ou duplicados no mesmo fim de semana.
+        if (GeracaoHabilitada(_configuration, _environment) &&
+            agora.DayOfWeek is DayOfWeek.Friday or DayOfWeek.Saturday or DayOfWeek.Sunday)
+        {
+            var diasDesdeSexta = agora.DayOfWeek switch
+            {
+                DayOfWeek.Saturday => 1,
+                DayOfWeek.Sunday => 2,
+                _ => 0
+            };
+            var sextaReferencia = agora.AddDays(-diasDesdeSexta);
             await service.ProcessarEnviosAsync(
-                agora, cancellationToken, mercado);
+                sextaReferencia, cancellationToken, mercado);
         }
     }
 
