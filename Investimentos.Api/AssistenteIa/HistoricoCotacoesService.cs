@@ -88,15 +88,24 @@ public sealed class HistoricoCotacoesService
                         .Where(c => c.AtivoId == ativo.Id && c.DataReferencia >= Inicio &&
                             c.DataReferencia < fim.AddDays(1))
                         .ToListAsync(ct);
-                    var porDia = existentes.GroupBy(c => c.DataReferencia.Date)
-                        .ToDictionary(g => g.Key, g => g.OrderByDescending(c => c.DataReferencia).First());
+                    // A chave lógica é AtivoId + DIA, não o DateTime completo.
+                    // Preserva a cotação mais recente quando já existem duplicatas
+                    // do mesmo pregão e elimina as linhas redundantes.
+                    var porDia = new Dictionary<DateTime, CotacaoAtivo>();
+                    foreach (var grupo in existentes.GroupBy(c => c.DataReferencia.Date))
+                    {
+                        var ordenados = grupo.OrderByDescending(c => c.DataReferencia).ToList();
+                        porDia[grupo.Key] = ordenados[0];
+                        foreach (var duplicada in ordenados.Skip(1))
+                            _db.CotacoesAtivos.Remove(duplicada);
+                    }
                     foreach (var (dia, preco) in novos)
                     {
                         if (porDia.TryGetValue(dia, out var existente))
                         {
-                            // Preserva a cotacao ja coletada hoje pelo fluxo normal.
-                            if (dia == fim) continue;
-                            if (existente.Preco != preco)
+                            // Atualiza a mesma linha, mesmo quando a hora registrada difere.
+                            // Mantém a cotação intradiária de hoje, se já existir.
+                            if (dia != fim && existente.Preco != preco)
                             {
                                 existente.Atualizar(existente.DataReferencia, preco);
                                 atualizados++;
