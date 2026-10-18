@@ -9,7 +9,7 @@ const isAcao = (p: PosicaoAtivo) => /^(ACAO|AÇÃO|ACOES|AÇÕES)$/i.test(p.tipo
 
 export function AnaliseEstrategicaView({ dashboard, investidoresIds }: { dashboard: Dashboard | null; investidoresIds: string[] }) {
   const [historico, setHistorico] = useState<OperacaoCarteira[]>([])
-  const [carregandoHistorico, setCarregandoHistorico] = useState(true)
+  const [, setCarregandoHistorico] = useState(true)
   const [erroHistorico, setErroHistorico] = useState<string | null>(null)
   const idsChave = [...investidoresIds].sort().join(',')
   useEffect(() => {
