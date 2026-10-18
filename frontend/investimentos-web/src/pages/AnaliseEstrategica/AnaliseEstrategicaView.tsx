@@ -75,10 +75,10 @@ export function AnaliseEstrategicaView({ dashboard, investidoresIds }: { dashboa
     const total = posicoes.filter(p => p.quantidade > 0).reduce((s,p) => s + p.valorAtual, 0)
     return posicoes.map(p => {
       const ops = historico.filter(o => o.ticker.toUpperCase() === p.ticker.toUpperCase())
-      const totalRegistros = ops.length + opcoes.length
       const compras = ops.filter(o => operacaoTipo(o, 'COMPRA'))
       const vendas = ops.filter(o => operacaoTipo(o, 'VENDA'))
       const opcoes = dashboard.opcoes.filter(o => o.tickerAtivo?.toUpperCase() === p.ticker.toUpperCase())
+      const totalRegistros = ops.length + opcoes.length
       const menorCompra = compras.length ? Math.min(...compras.filter(o => o.precoUnitario > 0).map(o => o.precoUnitario)) : null
       const compra = menorCompra === null || !Number.isFinite(menorCompra) ? null : abaixo(menorCompra)
       const putsLucrativas = opcoes.filter(o => opcaoTipo(o, 'PUT') && encerrada(o) && ganhoPositivo(o) && o.strike > 0)
