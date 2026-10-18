@@ -115,7 +115,7 @@ export function AnaliseEstrategicaView({ dashboard, investidoresIds }: { dashboa
             <input value={busca} onChange={e => setBusca(e.target.value)} placeholder="Ticker ou empresa" />
           </label>
           <button className="admin-primary-button" type="button" disabled={importando} onClick={() => void importarHistorico()}>
-            {importando ? 'Importando histórico...' : 'Importar cotações desde 01/05/2026'}
+            {importando ? 'Importando histórico...' : 'Importar cotações dos últimos 90 dias'}
           </button>
         </div>
         {resultadoImportacao && <p className="estrategia-feedback" role="status">{resultadoImportacao}</p>}
