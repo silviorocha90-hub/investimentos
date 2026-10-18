@@ -1557,7 +1557,7 @@ function App() {
         ) : null}
 
         {telaAtual === 'analise-estrategica' && usuario?.perfil === 'Admin' ? (
-          <AnaliseEstrategicaView dashboard={dashboard} />
+          <AnaliseEstrategicaView dashboard={dashboard} investidoresIds={todosInvestidores.map(i => i.id)} />
         ) : null}
 
         {telaAtual ===
