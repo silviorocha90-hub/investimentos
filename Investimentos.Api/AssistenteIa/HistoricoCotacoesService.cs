@@ -46,6 +46,7 @@ public sealed class HistoricoCotacoesService
             var inseridos = 0;
             var atualizados = 0;
             var falhas = new List<string>();
+            var duplicatasRemovidas = 0;
             foreach (var ativo in elegiveis)
             {
                 ct.ThrowIfCancellationRequested();
@@ -91,13 +92,19 @@ public sealed class HistoricoCotacoesService
                     // A chave lógica é AtivoId + DIA, não o DateTime completo.
                     // Preserva a cotação mais recente quando já existem duplicatas
                     // do mesmo pregão e elimina as linhas redundantes.
+                    var inseridosAtivo = 0;
+                    var atualizadosAtivo = 0;
+                    var duplicatasAtivo = 0;
                     var porDia = new Dictionary<DateTime, CotacaoAtivo>();
                     foreach (var grupo in existentes.GroupBy(c => c.DataReferencia.Date))
                     {
                         var ordenados = grupo.OrderByDescending(c => c.DataReferencia).ToList();
                         porDia[grupo.Key] = ordenados[0];
                         foreach (var duplicada in ordenados.Skip(1))
+                        {
                             _db.CotacoesAtivos.Remove(duplicada);
+                            duplicatasAtivo++;
+                        }
                     }
                     foreach (var (dia, preco) in novos)
                     {
@@ -108,16 +115,20 @@ public sealed class HistoricoCotacoesService
                             if (dia != fim && existente.Preco != preco)
                             {
                                 existente.Atualizar(existente.DataReferencia, preco);
-                                atualizados++;
+                                atualizadosAtivo++;
                             }
                         }
                         else
                         {
                             _db.CotacoesAtivos.Add(new CotacaoAtivo(ativo, dia, preco));
-                            inseridos++;
+                            inseridosAtivo++;
                         }
                     }
                     await _db.SaveChangesAsync(ct);
+                    // Só contabiliza gravações após confirmação do banco.
+                    inseridos += inseridosAtivo;
+                    atualizados += atualizadosAtivo;
+                    duplicatasRemovidas += duplicatasAtivo;
                     _db.ChangeTracker.Clear();
                 }
                 catch (OperationCanceledException) when (ct.IsCancellationRequested) { throw; }
@@ -128,7 +139,7 @@ public sealed class HistoricoCotacoesService
                     _logger.LogWarning(ex, "Falha ao importar historico de {Ticker}", ticker);
                 }
             }
-            return new HistoricoCotacoesResultado(Inicio, fim, elegiveis.Count, inseridos, atualizados, falhas);
+            return new HistoricoCotacoesResultado(Inicio, fim, elegiveis.Count, inseridos, atualizados, duplicatasRemovidas, falhas);
         }
         finally { Trava.Release(); }
     }
@@ -136,4 +147,4 @@ public sealed class HistoricoCotacoesService
 
 public sealed record HistoricoCotacoesResultado(
     DateTime Inicio, DateTime Fim, int AtivosConsultados,
-    int Inseridos, int Atualizados, IReadOnlyList<string> Falhas);
+    int Inseridos, int Atualizados, int DuplicatasRemovidas, IReadOnlyList<string> Falhas);
