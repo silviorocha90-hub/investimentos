@@ -86,8 +86,9 @@ public sealed class AssistenteIaWorker : BackgroundService
         CancellationToken cancellationToken)
     {
         var agora = ObterAgoraSaoPaulo();
-        // Preços: uma atualização diária a partir das 10h. Envio: retentativas independentes
-        // a cada ciclo de 15 minutos enquanto houver destinatários pendentes.
+        // Precos: uma atualizacao diaria a partir das 10h.
+        // Relatorio: sexta apos as 19h; recuperacao sabado/domingo apos as 10h.
+        // Os ciclos de 15 minutos so reprocessam destinatarios ainda pendentes.
         if (agora.Hour < 10)
             return;
 
@@ -120,11 +121,16 @@ public sealed class AssistenteIaWorker : BackgroundService
                     StringComparer.OrdinalIgnoreCase));
         }
 
-        // Sexta-feira apos as 10h, com recuperacao no sabado e domingo.
+        // Envio principal sexta apos as 19h; recuperacao sabado e domingo apos as 10h.
         // A data de referencia permanece a sexta para evitar relatorios
         // diferentes ou duplicados no mesmo fim de semana.
-        if (GeracaoHabilitada(_configuration, _environment) &&
-            agora.DayOfWeek is DayOfWeek.Friday or DayOfWeek.Saturday or DayOfWeek.Sunday)
+        var janelaRelatorio = agora.DayOfWeek switch
+        {
+            DayOfWeek.Friday => agora.Hour >= 19,
+            DayOfWeek.Saturday or DayOfWeek.Sunday => agora.Hour >= 10,
+            _ => false
+        };
+        if (GeracaoHabilitada(_configuration, _environment) && janelaRelatorio)
         {
             var diasDesdeSexta = agora.DayOfWeek switch
             {
