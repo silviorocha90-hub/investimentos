@@ -1,0 +1,41 @@
+.estrategia-page{display:grid;gap:14px;min-width:0}
+.estrategia-heading{min-width:0}
+.estrategia-panel{min-width:0;overflow:hidden;border:1px solid var(--border);border-radius:16px;background:var(--panel)}
+.estrategia-toolbar{display:flex;align-items:end;justify-content:space-between;flex-wrap:wrap;gap:12px;padding:14px;border-bottom:1px solid var(--border)}
+.estrategia-search{display:grid;gap:6px;min-width:min(100%,240px);flex:1;max-width:380px}
+.estrategia-search span{font-size:.7rem;font-weight:700;color:var(--muted)}
+.estrategia-search input{width:100%;min-height:36px;padding:0 12px;border:1px solid var(--border);border-radius:10px;background:var(--panel-strong);color:var(--text);outline:none;font:inherit;font-size:.76rem}
+.estrategia-search input:focus{border-color:var(--accent)}
+.estrategia-toolbar .admin-primary-button{white-space:normal}
+.estrategia-feedback{margin:12px 14px;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:var(--panel-strong);color:var(--text);font-size:.73rem}
+.estrategia-state{padding:28px 16px;text-align:center;color:var(--muted);font-size:.78rem}
+.estrategia-error{color:var(--negative)}
+.estrategia-table-wrap{width:100%;overflow-x:auto}
+.estrategia-table{width:100%;min-width:1000px;border-collapse:collapse;font-size:.73rem}
+.estrategia-table thead{background:var(--panel-strong)}
+.estrategia-table th{padding:12px 11px;color:var(--muted);font-size:.66rem;font-weight:800;text-align:left;white-space:nowrap;border-bottom:1px solid var(--border)}
+.estrategia-table td{padding:12px 11px;border-bottom:1px solid var(--border);color:var(--text);vertical-align:middle;white-space:nowrap}
+.estrategia-table td:first-child strong{display:block;color:var(--accent);font-size:.78rem}
+.estrategia-table td:first-child small{display:block;margin-top:4px;color:var(--muted);max-width:180px;overflow:hidden;text-overflow:ellipsis}
+.estrategia-table tbody tr{cursor:pointer;transition:background .15s ease}
+.estrategia-table tbody tr:hover,.estrategia-table tbody tr.selected{background:rgba(99,230,200,.07)}
+.estrategia-table .estrategia-positive{color:var(--accent);font-weight:700}
+.estrategia-status{display:inline-block;max-width:250px;white-space:normal;line-height:1.45;padding:5px 9px;border-radius:9px;background:var(--panel-strong);color:var(--muted);font-weight:700}
+.estrategia-status.positive{color:var(--accent);background:rgba(99,230,200,.09)}
+.estrategia-details{padding:18px}
+.estrategia-details-header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:16px}
+.estrategia-details-header h2{margin:0;font-size:1rem;color:var(--text)}
+.estrategia-details-header p{margin:5px 0 0;color:var(--muted);font-size:.72rem}
+.estrategia-overview{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:14px}
+.estrategia-overview>div,.estrategia-opportunity{display:grid;align-content:start;gap:8px;padding:14px;border:1px solid var(--border);border-radius:13px;background:var(--panel-strong)}
+.estrategia-overview span,.estrategia-opportunity span{color:var(--muted);font-size:.68rem;font-weight:700}
+.estrategia-overview strong,.estrategia-opportunity strong{color:var(--text);font-size:1.02rem}
+.estrategia-overview small,.estrategia-opportunity small{color:var(--muted);font-size:.66rem}
+.estrategia-opportunities{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.estrategia-opportunity strong{color:var(--accent);font-size:1.2rem}
+.estrategia-opportunity p{margin:2px 0 0;color:var(--muted);font-size:.68rem;line-height:1.5}
+.estrategia-notes{margin-top:16px;padding:12px 14px;border-top:1px solid var(--border)}
+.estrategia-notes p{margin:8px 0;color:var(--muted);font-size:.72rem;line-height:1.65}
+.estrategia-notes strong{color:var(--text)}
+@media(max-width:1050px){.estrategia-overview,.estrategia-opportunities{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:600px){.estrategia-toolbar{align-items:stretch}.estrategia-search{max-width:none;flex-basis:100%}.estrategia-overview,.estrategia-opportunities{grid-template-columns:1fr}.estrategia-details{padding:12px}}
