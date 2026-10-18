@@ -3291,3 +3291,39 @@ a {
 .alterar-senha-modal form > button { padding:11px; border:0; border-radius:7px; background:#2563eb; color:#fff; cursor:pointer; }
 .alterar-senha-modal form > button:disabled { opacity:.45; cursor:not-allowed; }
 .alterar-senha-modal [role="alert"] { color:#b91c1c; }
+
+/* Indicador global não bloqueante, presente em todas as telas durante chamadas à API. */
+.aportiva-loading-status {
+  position: fixed;
+  top: 16px;
+  right: 18px;
+  z-index: 11000;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border: 1px solid var(--border, #334155);
+  border-radius: 12px;
+  background: var(--panel, #101d2b);
+  color: var(--text, #f1f5f9);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, .25);
+  font-size: 13px;
+  pointer-events: none;
+}
+.aportiva-loading-status strong { font-variant-numeric: tabular-nums; }
+.aportiva-loading-spinner {
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(44, 183, 206, .22);
+  border-top-color: #26b6cb;
+  border-right-color: #24a16b;
+  border-radius: 50%;
+  animation: aportiva-loading-rotate .8s linear infinite;
+}
+@keyframes aportiva-loading-rotate { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) {
+  .aportiva-loading-spinner { animation: none; }
+}
+@media (max-width: 640px) {
+  .aportiva-loading-status { top: 8px; right: 8px; padding: 8px 10px; }
+}
