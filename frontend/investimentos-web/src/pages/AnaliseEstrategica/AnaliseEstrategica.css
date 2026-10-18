@@ -4,8 +4,8 @@
 .estrategia-toolbar{display:flex;align-items:end;justify-content:space-between;flex-wrap:wrap;gap:12px;padding:14px;border-bottom:1px solid var(--border)}
 .estrategia-search{display:grid;gap:6px;min-width:min(100%,240px);flex:1;max-width:380px}
 .estrategia-search span{font-size:.7rem;font-weight:700;color:var(--muted)}
-.estrategia-search input{width:100%;min-height:36px;padding:0 12px;border:1px solid var(--border);border-radius:10px;background:var(--panel-strong);color:var(--text);outline:none;font:inherit;font-size:.76rem}
-.estrategia-search input:focus{border-color:var(--accent)}
+.estrategia-search input,.estrategia-search select{width:100%;min-height:36px;padding:0 12px;border:1px solid var(--border);border-radius:10px;background:var(--panel-strong);color:var(--text);outline:none;font:inherit;font-size:.76rem}
+.estrategia-search input:focus,.estrategia-search select:focus{border-color:var(--accent)}
 .estrategia-toolbar .admin-primary-button{white-space:normal}
 .estrategia-feedback{margin:12px 14px;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:var(--panel-strong);color:var(--text);font-size:.73rem}
 .estrategia-state{padding:28px 16px;text-align:center;color:var(--muted);font-size:.78rem}
