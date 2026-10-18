@@ -334,11 +334,21 @@ app.MapGet(
             .Select(a => new { a.Id, Ticker = a.Ticker.Codigo })
             .ToListAsync(ct);
         var tickers = ativos.ToDictionary(a => a.Id, a => a.Ticker.ToUpperInvariant());
+        // SQL agrega contagens e seleciona apenas a última cotação de cada dia.
+        // Evita transportar todos os snapshots intradiários para a API.
+        var contagens = await db.CotacoesAtivos.AsNoTracking()
+            .Where(c => c.Preco > 0)
+            .GroupBy(c => c.AtivoId)
+            .Select(g => new { AtivoId = g.Key, Total = g.Count() })
+            .ToDictionaryAsync(x => x.AtivoId, x => x.Total, ct);
         var cotacoes = await db.CotacoesAtivos.AsNoTracking()
-            .Select(c => new { c.AtivoId, c.DataReferencia, c.Preco })
+            .Where(c => c.Preco > 0)
+            .GroupBy(c => new { c.AtivoId, Dia = c.DataReferencia.Date })
+            .Select(g => g.OrderByDescending(c => c.DataReferencia)
+                .Select(c => new { c.AtivoId, c.DataReferencia, c.Preco }).First())
             .ToListAsync(ct);
         var resultado = cotacoes
-            .Where(c => c.Preco > 0 && tickers.ContainsKey(c.AtivoId))
+            .Where(c => tickers.ContainsKey(c.AtivoId))
             .GroupBy(c => tickers[c.AtivoId])
             .Select(g =>
             {
@@ -349,7 +359,7 @@ app.MapGet(
                 return new
                 {
                     ticker = g.Key,
-                    registrosCotacoes = g.Count(),
+                    registrosCotacoes = contagens.GetValueOrDefault(g.First().AtivoId),
                     diasCotados = serieDiaria.Count,
                     menorCotacao = serieDiaria.Min(c => c.Preco),
                     maiorCotacao = serieDiaria.Max(c => c.Preco),

@@ -3,6 +3,7 @@ import { SectionTitle } from '../../components/SectionTitle'
 import './AnaliseEstrategica.css'
 import { obterOperacoes } from '../../api/dashboardApi'
 import { obterAdministracao } from '../../api/administracaoApi'
+import { cachedRequest } from '../../api/requestCache'
 import type { AtivoAdministracao } from '../../types/administracao'
 import type { Dashboard, OperacaoCarteira, OperacaoOpcao, PosicaoAtivo } from '../../types/dashboard'
 
@@ -39,8 +40,11 @@ export function AnaliseEstrategicaView({ dashboard, investidoresIds }: { dashboa
     Promise.all([
       Promise.all(chave.split(',').filter(Boolean).map(id => obterOperacoes(id))),
       obterAdministracao(),
-      fetch(`${import.meta.env.VITE_API_URL ?? 'https://localhost:7237'}/api/analise-estrategica/cotacoes`, { credentials: 'include' })
-        .then(async response => { if (!response.ok) throw new Error(`Histórico de cotações: HTTP ${response.status}`); return await response.json() as ResumoCotacoes[] }),
+      cachedRequest('analise:cotacoes', async () => {
+        const response = await fetch(`${import.meta.env.VITE_API_URL ?? 'https://localhost:7237'}/api/analise-estrategica/cotacoes`, { credentials: 'include' })
+        if (!response.ok) throw new Error(`Histórico de cotações: HTTP ${response.status}`)
+        return await response.json() as ResumoCotacoes[]
+      }),
     ])
       .then(([grupos, administracao, resumosCotacoes]) => {
         if (ativo) {
@@ -60,8 +64,8 @@ export function AnaliseEstrategicaView({ dashboard, investidoresIds }: { dashboa
     // de opções, mesmo quando nunca houve compra direta da ação.
     const elegivel = (ticker: string) => {
       const codigo = ticker.trim().toUpperCase()
-      const cadastro = ativos.find(a => a.ticker.toUpperCase() === codigo)
-      const posicao = dashboard.posicoes.find(p => p.ticker.toUpperCase() === codigo)
+      const cadastro = ativosPorTicker.get(codigo)
+      const posicao = posicoesPorTicker.get(codigo)
       return !!codigo && codigo !== 'FMP ELETROBRAS' && !codigo.startsWith('FMP ') &&
         !ehPrevidencia(codigo, cadastro?.nome ?? posicao?.nome) &&
         !ehPrevidencia(cadastro?.tipoAtivoCodigo, cadastro?.tipoAtivoNome) &&
@@ -72,6 +76,24 @@ export function AnaliseEstrategicaView({ dashboard, investidoresIds }: { dashboa
         !ehFii(posicao?.tipoAtivoCodigo, posicao?.tipoAtivoNome)
     }
     const porTicker = new Map<string, PosicaoAtivo>()
+    const ativosPorTicker = new Map(ativos.map(a => [a.ticker.toUpperCase(), a]))
+    const posicoesPorTicker = new Map(dashboard.posicoes.map(p => [p.ticker.toUpperCase(), p]))
+    const cotacoesPorTicker = new Map(cotacoes.map(c => [c.ticker.toUpperCase(), c]))
+    const opsPorTicker = new Map<string, OperacaoCarteira[]>()
+    for (const op of historico) {
+      const ticker = op.ticker.toUpperCase()
+      const grupo = opsPorTicker.get(ticker) ?? []
+      grupo.push(op)
+      opsPorTicker.set(ticker, grupo)
+    }
+    const opcoesPorTicker = new Map<string, OperacaoOpcao[]>()
+    for (const op of dashboard.opcoes) {
+      const ticker = op.tickerAtivo?.toUpperCase()
+      if (!ticker) continue
+      const grupo = opcoesPorTicker.get(ticker) ?? []
+      grupo.push(op)
+      opcoesPorTicker.set(ticker, grupo)
+    }
     for (const p of dashboard.posicoes) {
       if (elegivel(p.ticker)) porTicker.set(p.ticker.toUpperCase(), p)
     }
@@ -88,7 +110,7 @@ export function AnaliseEstrategicaView({ dashboard, investidoresIds }: { dashboa
       const ticker = (op.tickerAtivo ?? '').trim().toUpperCase()
       if (!elegivel(ticker) || porTicker.has(ticker)) continue
       porTicker.set(ticker, {
-        ticker, nome: ativos.find(a => a.ticker.toUpperCase() === ticker)?.nome ?? ticker,
+        ticker, nome: ativosPorTicker.get(ticker)?.nome ?? ticker,
         tipoAtivoCodigo: '', tipoAtivoNome: '', quantidade: 0, precoMedio: 0,
         custoTotal: 0, resultadoRealizado: 0, valorAtual: 0, valorizacao: 0,
       })
@@ -103,11 +125,11 @@ export function AnaliseEstrategicaView({ dashboard, investidoresIds }: { dashboa
     const posicoes = [...porTicker.values()]
     const total = posicoes.filter(p => p.quantidade > 0).reduce((s,p) => s + p.valorAtual, 0)
     return posicoes.map(p => {
-      const ops = historico.filter(o => o.ticker.toUpperCase() === p.ticker.toUpperCase())
+      const ops = opsPorTicker.get(p.ticker.toUpperCase()) ?? []
       const compras = ops.filter(o => operacaoTipo(o, 'COMPRA'))
       const vendas = ops.filter(o => operacaoTipo(o, 'VENDA'))
-      const opcoes = dashboard.opcoes.filter(o => o.tickerAtivo?.toUpperCase() === p.ticker.toUpperCase())
-      const resumoCotacoes = cotacoes.find(c => c.ticker.toUpperCase() === p.ticker.toUpperCase())
+      const opcoes = opcoesPorTicker.get(p.ticker.toUpperCase()) ?? []
+      const resumoCotacoes = cotacoesPorTicker.get(p.ticker.toUpperCase())
       const totalRegistros = ops.length + opcoes.length + (resumoCotacoes?.registrosCotacoes ?? 0)
       const menorCompra = compras.length ? Math.min(...compras.filter(o => o.precoUnitario > 0).map(o => o.precoUnitario)) : null
       const compra = menorCompra === null || !Number.isFinite(menorCompra) ? null : abaixo(menorCompra)
@@ -128,7 +150,7 @@ export function AnaliseEstrategicaView({ dashboard, investidoresIds }: { dashboa
       const comprometidas = callsAbertas.reduce((s,o) => s + o.acoesComprometidasCall, 0)
       const livres = Math.max(0,p.quantidade - comprometidas)
       const peso = total > 0 ? p.valorAtual / total * 100 : 0
-      const ativo = ativos.find(a => a.ticker.toUpperCase() === p.ticker.toUpperCase())
+      const ativo = ativosPorTicker.get(p.ticker.toUpperCase())
       const preco = ativo?.cotacaoAtual && ativo.cotacaoAtual > 0 ? ativo.cotacaoAtual : null
       const pm = p.precoMedio
       const resultadoEconomico = (p.resultadoRealizado ?? 0) + (preco !== null ? (preco - pm) * p.quantidade : 0) + (p.proventos ?? 0) + (p.resultadoOpcoes ?? 0)
