@@ -19,6 +19,23 @@ export function AnaliseEstrategicaView({ dashboard, investidoresIds }: { dashboa
   const [ativos, setAtivos] = useState<AtivoAdministracao[]>([])
   const [carregando, setCarregando] = useState(true)
   const [erro, setErro] = useState<string | null>(null)
+  const [importando, setImportando] = useState(false)
+  const [resultadoImportacao, setResultadoImportacao] = useState<string | null>(null)
+  const importarHistorico = async () => {
+    setImportando(true)
+    setResultadoImportacao(null)
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL ?? 'https://localhost:7237'
+      const response = await fetch(`${apiUrl}/api/admin/importar-historico-cotacoes`, {
+        method: 'POST', credentials: 'include',
+      })
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
+      const dados = await response.json() as { ativosConsultados: number; inseridos: number; atualizados: number; falhas: string[] }
+      setResultadoImportacao(`Ativos consultados: ${dados.ativosConsultados}; cotações inseridas: ${dados.inseridos}; corrigidas: ${dados.atualizados}. ${dados.falhas.length ? 'Falhas: ' + dados.falhas.join(', ') : 'Sem falhas.'}`)
+    } catch (e) {
+      setResultadoImportacao('Importação não concluída: ' + (e instanceof Error ? e.message : 'erro desconhecido'))
+    } finally { setImportando(false) }
+  }
   const [busca, setBusca] = useState('')
   const [selecionado, setSelecionado] = useState<string | null>(null)
   const chave = [...investidoresIds].sort().join(',')
@@ -90,6 +107,12 @@ export function AnaliseEstrategicaView({ dashboard, investidoresIds }: { dashboa
       <h1>Análise Estratégica da Carteira</h1>
       <p>Preços de referência para compra, venda e operações cobertas, usando o histórico consolidado de todos os investidores.</p>
     </header>
+    <div style={{ marginBottom: 16 }}>
+      <button type="button" disabled={importando} onClick={() => void importarHistorico()}>
+        {importando ? 'Importando histórico...' : 'Importar cotações desde 01/05/2026'}
+      </button>
+      {resultadoImportacao && <p role="status">{resultadoImportacao}</p>}
+    </div>
     <label>Pesquisar ativo <input value={busca} onChange={e => setBusca(e.target.value)} placeholder="Ticker ou empresa" style={{ display: 'block', padding: 10, margin: '8px 0 18px', minWidth: 230 }} /></label>
     {carregando && <p>Calculando preços a partir do histórico completo de operações...</p>}
     {erro && <p role="alert">Não foi possível calcular as referências históricas: {erro}</p>}
