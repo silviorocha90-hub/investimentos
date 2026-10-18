@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
+import { SectionTitle } from '../../components/SectionTitle'
+import './AnaliseEstrategica.css'
 import { obterOperacoes } from '../../api/dashboardApi'
 import { obterAdministracao } from '../../api/administracaoApi'
 import type { AtivoAdministracao } from '../../types/administracao'
@@ -101,53 +103,77 @@ export function AnaliseEstrategicaView({ dashboard, investidoresIds }: { dashboa
   const atual = analises.find(p => p.ticker === selecionado)
   const mostrar = (valor: number | null) => valor === null ? 'Sem referência' : moeda(valor)
   const delta = (alvo: number | null, atual: number | null) => alvo === null || atual === null ? '—' : percentual((alvo / atual - 1) * 100)
-  return <section style={{ padding: 24, maxWidth: 1400, margin: '0 auto' }}>
-    <header style={{ marginBottom: 22 }}>
-      <small style={{ color: '#55d8bc', letterSpacing: 2 }}>INTELIGÊNCIA DE INVESTIMENTOS</small>
-      <h1>Análise Estratégica da Carteira</h1>
-      <p>Preços de referência para compra, venda e operações cobertas, usando o histórico consolidado de todos os investidores.</p>
-    </header>
-    <div style={{ marginBottom: 16 }}>
-      <button type="button" disabled={importando} onClick={() => void importarHistorico()}>
-        {importando ? 'Importando histórico...' : 'Importar cotações desde 01/05/2026'}
-      </button>
-      {resultadoImportacao && <p role="status">{resultadoImportacao}</p>}
-    </div>
-    <label>Pesquisar ativo <input value={busca} onChange={e => setBusca(e.target.value)} placeholder="Ticker ou empresa" style={{ display: 'block', padding: 10, margin: '8px 0 18px', minWidth: 230 }} /></label>
-    {carregando && <p>Calculando preços a partir do histórico completo de operações...</p>}
-    {erro && <p role="alert">Não foi possível calcular as referências históricas: {erro}</p>}
-    {!carregando && !erro && !dashboard && <p>Carteira consolidada indisponível.</p>}
-    {!carregando && !erro && dashboard && <div style={{ overflowX: 'auto' }}>
-      <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-        <thead><tr>{['Ativo', 'Cotação (Ativo)', 'PM consolidado', 'Compra abaixo de', 'PUT abaixo de', 'Venda acima de', 'CALL acima de', 'Leitura histórica'].map(t => <th key={t} style={{ padding: 12, borderBottom: '1px solid #497a75' }}>{t}</th>)}</tr></thead>
-        <tbody>{filtradas.map(p => <tr key={p.ticker} onClick={() => setSelecionado(selecionado === p.ticker ? null : p.ticker)} style={{ cursor: 'pointer', background: selecionado === p.ticker ? 'rgba(80,210,170,.12)' : undefined }}>
-          <td style={{ padding: 12 }}><strong>{p.ticker}</strong><div style={{ fontSize: 12, opacity: .7 }}>{p.nome}</div></td>
-          <td>{mostrar(p.preco)}</td><td>{moeda(p.pm)}</td><td>{mostrar(p.compra)}</td><td>{mostrar(p.put)}</td><td>{mostrar(p.venda)}</td><td>{mostrar(p.call)}</td><td>{p.classificacao}</td>
-        </tr>)}</tbody>
-      </table>
-      {!filtradas.length && <p>Nenhum ativo encontrado.</p>}
-    </div>}
-    {atual && <article style={{ border: '1px solid #497a75', borderRadius: 12, padding: 20, marginTop: 24 }}>
-      <h2>{atual.ticker} — valores de entrada e saída</h2>
-      <p>Cotação do cadastro de ativos: <strong>{mostrar(atual.preco)}</strong> ({atual.dataCotacao ? new Date(atual.dataCotacao).toLocaleString('pt-BR') : 'sem data'}) | PM consolidado: <strong>{moeda(atual.pm)}</strong> | Posição: <strong>{atual.quantidade.toLocaleString('pt-BR')}</strong> ações | Peso na carteira de ações: <strong>{percentual(atual.peso)}</strong></p>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(215px, 1fr))', gap: 12 }}>
-        {[
-          { titulo: 'COMPRA A MERCADO', valor: atual.compra, nota: 'Abaixo da menor compra registrada no histórico consolidado' },
-          { titulo: 'VENDA DE PUT', valor: atual.put, nota: 'Abaixo do menor strike de PUT encerrada com resultado positivo' },
-          { titulo: 'VENDA A MERCADO', valor: atual.venda, nota: 'Acima do maior preço histórico registrado e com pelo menos 15% sobre o PM' },
-          { titulo: 'CALL COBERTA', valor: atual.call, nota: 'Strike-alvo acima do maior preço histórico e do PM acrescido de 15%; validar cobertura' },
-        ].map(item => <div key={item.titulo} style={{ border: '1px solid #355955', borderRadius: 10, padding: 14 }}>
-          <small style={{ opacity: .8 }}>{item.titulo}</small><h2 style={{ margin: '8px 0' }}>{mostrar(item.valor)}</h2>
-          <div>Distância da cotação: {delta(item.valor, atual.preco)}</div><p style={{ fontSize: 12, opacity: .8 }}>{item.nota}</p>
-        </div>)}
+  return (
+    <section className="estrategia-page">
+      <div className="estrategia-heading">
+        <SectionTitle title="Análise Estratégica" subtitle="Preços de referência para compra, venda e opções com base no histórico consolidado da carteira." />
       </div>
-      <p><strong>Base utilizada:</strong> {atual.compras.length} compras, {atual.vendas.length} vendas e {atual.opcoes.length} operações de opções registradas. A compra usa o menor preço executado; a PUT usa apenas opções encerradas com resultado positivo; a venda exige superar o maior preço registrado e o PM em pelo menos 15%.</p>
-      <p><strong>Leitura histórica:</strong> resultado econômico estimado {moeda(atual.resultadoEconomico)}. {atual.rentavel ? 'Ativo com resultado positivo na carteira; avaliar oportunidades somente nos preços-alvo.' : 'Resultado não positivo; evitar reforço automático e reavaliar fundamentos e saída.'} Esta avaliação mede rentabilidade na carteira, não qualidade fundamentalista da empresa.</p>
-      <p><strong>Garantias:</strong> {atual.livres.toLocaleString('pt-BR')} ações potencialmente livres para CALL, antes de validar contratos, bloqueios e demais garantias; {atual.putsAbertas.length} PUTs e {atual.callsAbertas.length} CALLs ativas cadastradas.</p>
-      <p><strong>Antes de operar opções:</strong> validar existência do strike na B3, vencimento, prêmio, spread, liquidez, delta, cobertura e custo efetivo. O sistema não dispõe de book confirmado nesta tela; não apresenta prêmios inventados nem envia ordens.</p>
-      {atual.compra === null && <p>Sem compras registradas para definir preço inferior ao mínimo histórico.</p>}
-      {atual.put === null && <p>Sem PUT encerrada com resultado positivo; não há strike histórico lucrativo para referência.</p>}
-      {atual.venda === null && <p>Sem PM ou preços históricos suficientes para estabelecer saída com 15% de ganho.</p>}
-    </article>}
-  </section>
+      <div className="estrategia-panel">
+        <div className="estrategia-toolbar">
+          <label className="estrategia-search">
+            <span>Pesquisar ativo</span>
+            <input value={busca} onChange={e => setBusca(e.target.value)} placeholder="Ticker ou empresa" />
+          </label>
+          <button className="admin-primary-button" type="button" disabled={importando} onClick={() => void importarHistorico()}>
+            {importando ? 'Importando histórico...' : 'Importar cotações desde 01/05/2026'}
+          </button>
+        </div>
+        {resultadoImportacao && <p className="estrategia-feedback" role="status">{resultadoImportacao}</p>}
+        {carregando && <div className="estrategia-state">Calculando preços a partir do histórico completo de operações...</div>}
+        {erro && <div className="estrategia-state estrategia-error" role="alert">Não foi possível calcular as referências históricas: {erro}</div>}
+        {!carregando && !erro && !dashboard && <div className="estrategia-state">Carteira consolidada indisponível.</div>}
+        {!carregando && !erro && dashboard && <div className="estrategia-table-wrap">
+          <table className="estrategia-table">
+            <thead><tr>{['Ativo', 'Cotação', 'PM consolidado', 'Compra abaixo de', 'PUT abaixo de', 'Venda acima de', 'CALL acima de', 'Leitura histórica'].map(t => <th key={t}>{t}</th>)}</tr></thead>
+            <tbody>{filtradas.map(p => <tr key={p.ticker} className={selecionado === p.ticker ? 'selected' : ''} onClick={() => setSelecionado(selecionado === p.ticker ? null : p.ticker)} aria-selected={selecionado === p.ticker}>
+              <td><strong>{p.ticker}</strong><small>{p.nome}</small></td>
+              <td>{mostrar(p.preco)}</td>
+              <td>{moeda(p.pm)}</td>
+              <td className="estrategia-positive">{mostrar(p.compra)}</td>
+              <td className="estrategia-positive">{mostrar(p.put)}</td>
+              <td>{mostrar(p.venda)}</td>
+              <td>{mostrar(p.call)}</td>
+              <td><span className={p.rentavel ? 'estrategia-status positive' : 'estrategia-status'}>{p.classificacao}</span></td>
+            </tr>)}</tbody>
+          </table>
+          {!filtradas.length && <div className="estrategia-state">Nenhum ativo encontrado.</div>}
+        </div>}
+      </div>
+      {atual && (
+        <article className="estrategia-panel estrategia-details">
+          <div className="estrategia-details-header">
+            <div><h2>{atual.ticker} — valores de entrada e saída</h2><p>{atual.nome}</p></div>
+            <button className="admin-clear-button" type="button" onClick={() => setSelecionado(null)}>Fechar detalhes</button>
+          </div>
+          <div className="estrategia-overview">
+            <div><span>Cotação atual</span><strong>{mostrar(atual.preco)}</strong><small>{atual.dataCotacao ? new Date(atual.dataCotacao).toLocaleString('pt-BR') : 'Sem data de atualização'}</small></div>
+            <div><span>Preço médio consolidado</span><strong>{moeda(atual.pm)}</strong></div>
+            <div><span>Quantidade</span><strong>{atual.quantidade.toLocaleString('pt-BR')}</strong></div>
+            <div><span>Peso em ações</span><strong>{percentual(atual.peso)}</strong></div>
+          </div>
+          <div className="estrategia-opportunities">
+            {[
+              { titulo: 'Compra a mercado', valor: atual.compra, nota: 'Abaixo da menor compra registrada no histórico consolidado' },
+              { titulo: 'Venda de PUT', valor: atual.put, nota: 'Abaixo do menor strike de PUT encerrada com resultado positivo' },
+              { titulo: 'Venda a mercado', valor: atual.venda, nota: 'Acima do maior preço histórico registrado e com pelo menos 15% sobre o PM' },
+              { titulo: 'CALL coberta', valor: atual.call, nota: 'Strike-alvo acima do maior preço histórico e do PM acrescido de 15%; validar cobertura' },
+            ].map(item => <div className="estrategia-opportunity" key={item.titulo}>
+              <span>{item.titulo}</span><strong>{mostrar(item.valor)}</strong>
+              <small>Distância da cotação: {delta(item.valor, atual.preco)}</small>
+              <p>{item.nota}</p>
+            </div>)}
+          </div>
+          <div className="estrategia-notes">
+            <p><strong>Base utilizada:</strong> {atual.compras.length} compras, {atual.vendas.length} vendas e {atual.opcoes.length} operações de opções registradas. A compra usa o menor preço executado; a PUT usa apenas opções encerradas com resultado positivo; a venda exige superar o maior preço registrado e o PM em pelo menos 15%.</p>
+            <p><strong>Leitura histórica:</strong> resultado econômico estimado {moeda(atual.resultadoEconomico)}. {atual.rentavel ? 'Ativo com resultado positivo na carteira; avaliar oportunidades somente nos preços-alvo.' : 'Resultado não positivo; evitar reforço automático e reavaliar fundamentos e saída.'} Esta avaliação mede rentabilidade na carteira, não qualidade fundamentalista da empresa.</p>
+            <p><strong>Garantias:</strong> {atual.livres.toLocaleString('pt-BR')} ações potencialmente livres para CALL, antes de validar contratos, bloqueios e demais garantias; {atual.putsAbertas.length} PUTs e {atual.callsAbertas.length} CALLs ativas cadastradas.</p>
+            <p><strong>Antes de operar opções:</strong> validar existência do strike na B3, vencimento, prêmio, spread, liquidez, delta, cobertura e custo efetivo. O sistema não dispõe de book confirmado nesta tela; não apresenta prêmios inventados nem envia ordens.</p>
+            {atual.compra === null && <p>Sem compras registradas para definir preço inferior ao mínimo histórico.</p>}
+            {atual.put === null && <p>Sem PUT encerrada com resultado positivo; não há strike histórico lucrativo para referência.</p>}
+            {atual.venda === null && <p>Sem PM ou preços históricos suficientes para estabelecer saída com 15% de ganho.</p>}
+          </div>
+        </article>
+      )}
+    </section>
+  )
 }
