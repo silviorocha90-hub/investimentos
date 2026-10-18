@@ -133,7 +133,7 @@ export function AnaliseEstrategicaView({ dashboard, investidoresIds }: { dashboa
             <tbody>{filtradas.map(p => <tr key={p.ticker} className={selecionado === p.ticker ? 'selected' : ''} onClick={() => setSelecionado(selecionado === p.ticker ? null : p.ticker)} aria-selected={selecionado === p.ticker}>
               <td><strong>{p.ticker}</strong><small>{p.nome}</small></td>
               <td>{mostrar(p.preco)}</td>
-              <td>{moeda(p.pm)}</td>
+              <td>{p.quantidade > 0 && p.pm > 0 ? moeda(p.pm) : '—'}</td>
               <td className="estrategia-positive">{mostrar(p.compra)}</td>
               <td className="estrategia-positive">{mostrar(p.put)}</td>
               <td>{mostrar(p.venda)}</td>
@@ -152,7 +152,7 @@ export function AnaliseEstrategicaView({ dashboard, investidoresIds }: { dashboa
           </div>
           <div className="estrategia-overview">
             <div><span>Cotação atual</span><strong>{mostrar(atual.preco)}</strong><small>{atual.dataCotacao ? new Date(atual.dataCotacao).toLocaleString('pt-BR') : 'Sem data de atualização'}</small></div>
-            <div><span>Preço médio consolidado</span><strong>{moeda(atual.pm)}</strong></div>
+            <div><span>Preço médio consolidado</span><strong>{atual.quantidade > 0 && atual.pm > 0 ? moeda(atual.pm) : 'Sem posição'}</strong></div>
             <div><span>Quantidade</span><strong>{atual.quantidade.toLocaleString('pt-BR')}</strong></div>
             <div><span>Peso em ações</span><strong>{percentual(atual.peso)}</strong></div>
           </div>
@@ -172,7 +172,7 @@ export function AnaliseEstrategicaView({ dashboard, investidoresIds }: { dashboa
             <p><strong>Base utilizada:</strong> {atual.compras.length} compras, {atual.vendas.length} vendas e {atual.opcoes.length} operações de opções registradas. A compra usa o menor preço executado; a PUT usa apenas opções encerradas com resultado positivo; a venda exige superar o maior preço registrado e o PM em pelo menos 15%.</p>
             {atual.quantidade <= 0 && <p><strong>Sem posição atual:</strong> este ativo aparece por operações históricas de carteira ou opções. Preço médio e resultado econômico não representam uma posição em aberto; referências de entrada não constituem recomendação de compra.</p>}
             {atual.quantidade > 0 && <p><strong>Leitura histórica:</strong> resultado econômico estimado {moeda(atual.resultadoEconomico)}. {atual.rentavel ? 'Ativo com resultado positivo na carteira; avaliar oportunidades somente nos preços-alvo.' : 'Resultado não positivo; evitar reforço automático e reavaliar fundamentos e saída.'} Esta avaliação mede rentabilidade na carteira, não qualidade fundamentalista da empresa.</p>}
-            <p><strong>Garantias:</strong> {atual.livres.toLocaleString('pt-BR')} ações potencialmente livres para CALL, antes de validar contratos, bloqueios e demais garantias; {atual.putsAbertas.length} PUTs e {atual.callsAbertas.length} CALLs ativas cadastradas.</p>
+            {atual.quantidade > 0 && <p><strong>Garantias:</strong> {atual.livres.toLocaleString('pt-BR')} ações potencialmente livres para CALL, antes de validar contratos, bloqueios e demais garantias; {atual.putsAbertas.length} PUTs e {atual.callsAbertas.length} CALLs ativas cadastradas.</p>}
             <p><strong>Antes de operar opções:</strong> validar existência do strike na B3, vencimento, prêmio, spread, liquidez, delta, cobertura e custo efetivo. O sistema não dispõe de book confirmado nesta tela; não apresenta prêmios inventados nem envia ordens.</p>
             {atual.compra === null && <p>Sem compras registradas para definir preço inferior ao mínimo histórico.</p>}
             {atual.put === null && <p>Sem PUT encerrada com resultado positivo; não há strike histórico lucrativo para referência.</p>}
