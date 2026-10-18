@@ -1318,7 +1318,7 @@ function App() {
             className="menu-item"
             type="button"
             title="Sair da aplicação"
-            onClick={() => void logout()}
+            onClick={() => { invalidateRequests(); void logout() }}
           >
             <span className="menu-icone">
               ↪
