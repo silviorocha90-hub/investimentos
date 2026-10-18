@@ -75,6 +75,7 @@ export function AnaliseEstrategicaView({ dashboard, investidoresIds }: { dashboa
     const total = posicoes.filter(p => p.quantidade > 0).reduce((s,p) => s + p.valorAtual, 0)
     return posicoes.map(p => {
       const ops = historico.filter(o => o.ticker.toUpperCase() === p.ticker.toUpperCase())
+      const totalRegistros = ops.length + opcoes.length
       const compras = ops.filter(o => operacaoTipo(o, 'COMPRA'))
       const vendas = ops.filter(o => operacaoTipo(o, 'VENDA'))
       const opcoes = dashboard.opcoes.filter(o => o.tickerAtivo?.toUpperCase() === p.ticker.toUpperCase())
@@ -105,7 +106,7 @@ export function AnaliseEstrategicaView({ dashboard, investidoresIds }: { dashboa
         compra !== null && preco <= compra ? 'Rentável: avaliar compra a mercado' :
         put !== null && preco > put ? 'Rentável: avaliar PUT com garantia' :
         'Rentável: manter / aguardar preço'
-      return { ...p, ops, compras, vendas, opcoes, compra, venda, put, call, preco, pm, peso, livres, putsAbertas, callsAbertas, classificacao, resultadoEconomico, rentavel, menorCompra, menorStrikeLucro, maiorRegistrado, dataCotacao: ativo?.dataCotacao ?? null, putsLucrativas }
+      return { ...p, ops, compras, vendas, opcoes, totalRegistros, compra, venda, put, call, preco, pm, peso, livres, putsAbertas, callsAbertas, classificacao, resultadoEconomico, rentavel, menorCompra, menorStrikeLucro, maiorRegistrado, dataCotacao: ativo?.dataCotacao ?? null, putsLucrativas }
     }).sort((a,b) => a.ticker.localeCompare(b.ticker))
   }, [dashboard, historico, ativos, carregando, erro])
   const filtradas = analises.filter(p => (p.ticker + ' ' + p.nome).toLowerCase().includes(busca.toLowerCase()))
@@ -129,7 +130,7 @@ export function AnaliseEstrategicaView({ dashboard, investidoresIds }: { dashboa
         {!carregando && !erro && !dashboard && <div className="estrategia-state">Carteira consolidada indisponível.</div>}
         {!carregando && !erro && dashboard && <div className="estrategia-table-wrap">
           <table className="estrategia-table">
-            <thead><tr>{['Ativo', 'Cotação', 'PM consolidado', 'Compra abaixo de', 'PUT abaixo de', 'Venda acima de', 'CALL acima de', 'Leitura histórica'].map(t => <th key={t}>{t}</th>)}</tr></thead>
+            <thead><tr>{['Ativo', 'Cotação', 'PM consolidado', 'Compra abaixo de', 'PUT abaixo de', 'Venda acima de', 'CALL acima de', 'Registros analisados', 'Leitura histórica'].map(t => <th key={t}>{t}</th>)}</tr></thead>
             <tbody>{filtradas.map(p => <tr key={p.ticker} className={selecionado === p.ticker ? 'selected' : ''} onClick={() => setSelecionado(selecionado === p.ticker ? null : p.ticker)} aria-selected={selecionado === p.ticker}>
               <td><strong>{p.ticker}</strong><small>{p.nome}</small></td>
               <td>{mostrar(p.preco)}</td>
@@ -138,6 +139,7 @@ export function AnaliseEstrategicaView({ dashboard, investidoresIds }: { dashboa
               <td className="estrategia-positive">{mostrar(p.put)}</td>
               <td>{mostrar(p.venda)}</td>
               <td>{mostrar(p.call)}</td>
+              <td title={`${p.ops.length} operações de ativos e ${p.opcoes.length} operações de opções`}>{p.totalRegistros.toLocaleString('pt-BR')}</td>
               <td><span className={p.rentavel ? 'estrategia-status positive' : 'estrategia-status'}>{p.classificacao}</span></td>
             </tr>)}</tbody>
           </table>
@@ -155,6 +157,7 @@ export function AnaliseEstrategicaView({ dashboard, investidoresIds }: { dashboa
             <div><span>Preço médio consolidado</span><strong>{atual.quantidade > 0 && atual.pm > 0 ? moeda(atual.pm) : 'Sem posição'}</strong></div>
             <div><span>Quantidade</span><strong>{atual.quantidade.toLocaleString('pt-BR')}</strong></div>
             <div><span>Peso em ações</span><strong>{percentual(atual.peso)}</strong></div>
+            <div><span>Registros analisados</span><strong>{atual.totalRegistros.toLocaleString('pt-BR')}</strong><small>{atual.ops.length} operações de ativos + {atual.opcoes.length} operações de opções</small></div>
           </div>
           <div className="estrategia-opportunities">
             {[
@@ -169,7 +172,7 @@ export function AnaliseEstrategicaView({ dashboard, investidoresIds }: { dashboa
             </div>)}
           </div>
           <div className="estrategia-notes">
-            <p><strong>Base utilizada:</strong> {atual.compras.length} compras, {atual.vendas.length} vendas e {atual.opcoes.length} operações de opções registradas. A compra usa o menor preço executado; a PUT usa apenas opções encerradas com resultado positivo; a venda exige superar o maior preço registrado e o PM em pelo menos 15%.</p>
+            <p><strong>Base utilizada:</strong> {atual.compras.length} compras, {atual.vendas.length} vendas e {atual.opcoes.length} operações de opções registradas. Esta contagem considera operações da carteira e opções, não registros diários da tabela de cotações. A compra usa o menor preço executado; a PUT usa apenas opções encerradas com resultado positivo; a venda exige superar o maior preço registrado e o PM em pelo menos 15%.</p>
             {atual.quantidade <= 0 && <p><strong>Sem posição atual:</strong> este ativo aparece por operações históricas de carteira ou opções. Preço médio e resultado econômico não representam uma posição em aberto; referências de entrada não constituem recomendação de compra.</p>}
             {atual.quantidade > 0 && <p><strong>Leitura histórica:</strong> resultado econômico estimado {moeda(atual.resultadoEconomico)}. {atual.rentavel ? 'Ativo com resultado positivo na carteira; avaliar oportunidades somente nos preços-alvo.' : 'Resultado não positivo; evitar reforço automático e reavaliar fundamentos e saída.'} Esta avaliação mede rentabilidade na carteira, não qualidade fundamentalista da empresa.</p>}
             {atual.quantidade > 0 && <p><strong>Garantias:</strong> {atual.livres.toLocaleString('pt-BR')} ações potencialmente livres para CALL, antes de validar contratos, bloqueios e demais garantias; {atual.putsAbertas.length} PUTs e {atual.callsAbertas.length} CALLs ativas cadastradas.</p>}
