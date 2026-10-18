@@ -760,6 +760,33 @@ function App() {
     usuario,
   ])
 
+  // Investidores: iniciar o painel usando apenas IDs autorizados do login,
+  // sem bloquear na consulta de nomes/lista de investidores.
+  useEffect(() => {
+    if (!usuario || usuario.perfil === 'Admin' || !possuiPermissao('Dashboard')) return
+    const ids = [...new Set(usuario.investidoresIds)].filter(id =>
+      permissaoNoInvestidor('Dashboard', id))
+    if (!ids.length) return
+    let ativo = true
+    void Promise.allSettled(ids.map(async id => ({
+      id,
+      dashboard: await obterDashboardPorInvestidor(id),
+    }))).then(resultados => {
+      if (!ativo) return
+      const sucesso = resultados.flatMap(resultado =>
+        resultado.status === 'fulfilled' ? [resultado.value] : [])
+      if (!sucesso.length) return
+      // Nomes amigáveis chegam depois; os IDs são suficientes para iniciar.
+      setCarteirasPainel(sucesso.map(item => ({
+        nome: todosInvestidores.find(i => i.id === item.id)?.nome ?? item.id,
+        dashboard: item.dashboard,
+      })))
+      setDashboard(sucesso.length === 1 ? sucesso[0].dashboard : null)
+      setApiDisponivel(true)
+    }).catch(error => { if (ativo) console.error('Falha no painel inicial do investidor', error) })
+    return () => { ativo = false }
+  }, [usuario])
+
   // O administrador não precisa esperar /api/investidores para ver o painel.
   // A chamada é deduplicada com o carregamento posterior pelo requestCache.
   useEffect(() => {
@@ -858,26 +885,14 @@ function App() {
               : null,
           )
 
-          const evolucoesPermitidas =
-            await Promise.all(
-              investidoresPainel.map(
-                (investidor) =>
-                  obterEvolucaoConsolidada(
-                    investidor.id,
-                  ),
-              ),
-            )
-
-          if (
-            controller.signal
-              .aborted
-          ) {
-            return
-          }
-
-          setEvolucao(
-            evolucoesPermitidas.flat(),
-          )
+          // Evolução é secundária: não atrasar a exibição dos saldos.
+          void Promise.allSettled(
+            investidoresPainel.map(investidor => obterEvolucaoConsolidada(investidor.id)),
+          ).then(resultados => {
+            if (controller.signal.aborted) return
+            setEvolucao(resultados.flatMap(resultado =>
+              resultado.status === 'fulfilled' ? resultado.value : []))
+          })
           setPerformance(null)
 
           return
@@ -1079,7 +1094,8 @@ function App() {
   }
 
   if (
-    carregandoInvestidores && usuario?.perfil !== 'Admin'
+    carregandoInvestidores && usuario?.perfil !== 'Admin' &&
+    !(telaAtual === 'painel' && (dashboard !== null || carteirasPainel.length > 0))
   ) {
     return (
       <main className="estado-pagina">
