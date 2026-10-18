@@ -73,9 +73,9 @@ export function AnaliseEstrategicaView({ dashboard, investidoresIds }: { dashboa
       const rentavel = resultadoEconomico > 0
       const classificacao = !preco ? 'Sem cotação atualizada' :
         !rentavel ? 'Resultado econômico não positivo: aguardar / avaliar venda' :
+        venda !== null && preco >= venda ? 'Rentável: avaliar venda ou CALL' :
         compra !== null && preco <= compra ? 'Rentável: avaliar compra a mercado' :
         put !== null && preco > put ? 'Rentável: avaliar PUT com garantia' :
-        venda !== null && preco >= venda ? 'Rentável: avaliar venda ou CALL' :
         'Rentável: manter / aguardar preço'
       return { ...p, ops, compras, vendas, opcoes, compra, venda, put, call, preco, pm, peso, livres, putsAbertas, callsAbertas, classificacao, resultadoEconomico, rentavel, menorCompra, menorStrikeLucro, maiorRegistrado, dataCotacao: ativo?.dataCotacao ?? null, putsLucrativas }
     }).sort((a,b) => a.ticker.localeCompare(b.ticker))
