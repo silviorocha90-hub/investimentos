@@ -220,6 +220,19 @@ if (app.Environment.IsDevelopment())
 app.UseExceptionHandler();
 app.UseHttpsRedirection();
 app.UseCors("Frontend");
+// Diagnóstico de latência em produção, sem registrar payloads nem cookies.
+app.Use(async (context, next) =>
+{
+    var inicio = System.Diagnostics.Stopwatch.GetTimestamp();
+    await next(context);
+    var ms = System.Diagnostics.Stopwatch.GetElapsedTime(inicio).TotalMilliseconds;
+    if (context.Request.Path.StartsWithSegments("/api/dashboard") || ms >= 1500)
+    {
+        app.Logger.LogInformation("API performance {Method} {Path} {Status} {ElapsedMs}ms",
+            context.Request.Method, context.Request.Path.Value, context.Response.StatusCode,
+            Math.Round(ms, 1));
+    }
+});
 app.UseAuthentication();
 app.UseAuthorization();
 
