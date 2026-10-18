@@ -128,7 +128,7 @@ public sealed class HistoricoCotacoesService
                     duplicatasRemovidas += duplicatasAtivo;
                     _db.ChangeTracker.Clear();
                     totalPersistido += await _db.CotacoesAtivos.AsNoTracking()
-                        .CountAsync(c => c.AtivoId == ativo.Id && c.DataReferencia >= Inicio && c.DataReferencia < fim.AddDays(1), ct);
+                        .CountAsync(c => c.AtivoId == ativo.Id && c.DataReferencia >= inicio && c.DataReferencia < fim.AddDays(1), ct);
                 }
                 catch (OperationCanceledException) when (ct.IsCancellationRequested) { throw; }
                 catch (Exception ex)
