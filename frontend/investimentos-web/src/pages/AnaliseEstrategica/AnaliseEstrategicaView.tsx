@@ -1,11 +1,35 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { obterOperacoes } from '../../api/dashboardApi'
+import type { OperacaoCarteira } from '../../types/dashboard'
 import type { Dashboard, PosicaoAtivo } from '../../types/dashboard'
 
 const brl = (n: number) => n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
 const pct = (n: number) => n.toLocaleString('pt-BR', { maximumFractionDigits: 1 }) + '%'
 const isAcao = (p: PosicaoAtivo) => /^(ACAO|AÇÃO|ACOES|AÇÕES)$/i.test(p.tipoAtivoCodigo) || /^[A-Z]{4}[3-6]$/.test(p.ticker)
 
-export function AnaliseEstrategicaView({ dashboard }: { dashboard: Dashboard | null }) {
+export function AnaliseEstrategicaView({ dashboard, investidoresIds }: { dashboard: Dashboard | null; investidoresIds: string[] }) {
+  const [historico, setHistorico] = useState<OperacaoCarteira[]>([])
+  const [carregandoHistorico, setCarregandoHistorico] = useState(true)
+  const [erroHistorico, setErroHistorico] = useState<string | null>(null)
+  const idsChave = [...investidoresIds].sort().join(',')
+  useEffect(() => {
+    let ativo = true
+    setCarregandoHistorico(true)
+    setErroHistorico(null)
+    Promise.all(idsChave.split(',').filter(Boolean).map(id => obterOperacoes(id)))
+      .then(grupos => { if (ativo) setHistorico(Array.from(new Map(grupos.flat().map(op => [op.id, op])).values()).sort((a,b) => a.data.localeCompare(b.data) || a.sequencia - b.sequencia)) })
+      .catch(error => { if (ativo) { setHistorico([]); setErroHistorico(error instanceof Error ? error.message : 'Falha ao carregar operações') } })
+      .finally(() => { if (ativo) setCarregandoHistorico(false) })
+    return () => { ativo = false }
+  }, [idsChave])
+  const porAtivo = useMemo(() => {
+    const mapa = new Map<string, OperacaoCarteira[]>()
+    for (const op of historico) {
+      const chave = op.ticker.toUpperCase()
+      mapa.set(chave, [...(mapa.get(chave) ?? []), op])
+    }
+    return mapa
+  }, [historico])
   const [desconto, setDesconto] = useState(10)
   const [busca, setBusca] = useState('')
   const [selecionado, setSelecionado] = useState<string | null>(null)
@@ -16,9 +40,10 @@ export function AnaliseEstrategicaView({ dashboard }: { dashboard: Dashboard | n
       ...p,
       peso: total > 0 ? p.valorAtual / total * 100 : 0,
       distanciaPm: p.precoAtual && p.precoMedio > 0 ? (p.precoAtual / p.precoMedio - 1) * 100 : null,
+      operacoes: porAtivo.get(p.ticker.toUpperCase()) ?? [],
       puts: dashboard.opcoes.filter(o => o.tickerAtivo?.toUpperCase() === p.ticker.toUpperCase() && o.tipoOpcao?.toUpperCase() === 'PUT'),
     })).sort((a, b) => (a.distanciaPm ?? 999) - (b.distanciaPm ?? 999))
-  }, [dashboard])
+  }, [dashboard, porAtivo])
   const filtradas = posicoes.filter(p => (p.ticker + ' ' + p.nome).toLowerCase().includes(busca.toLowerCase()))
   const atual = posicoes.find(p => p.ticker === selecionado)
   return (
@@ -42,6 +67,8 @@ export function AnaliseEstrategicaView({ dashboard }: { dashboard: Dashboard | n
           <input value={busca} onChange={e => setBusca(e.target.value)} placeholder="Ticker ou empresa" style={{ display: 'block', padding: 9 }} />
         </label>
       </div>
+      <p><strong>Histórico integral de operações:</strong> {carregandoHistorico ? 'Carregando...' : erroHistorico ? 'Indisponível' : `${historico.length} registros de ${investidoresIds.length} investidores, desde ${historico.length ? new Date(historico[0].data).toLocaleDateString('pt-BR') : 'sem registros'}.`} Inclui posições já encerradas no histórico global, embora o ranking de compras se restrinja às posições atuais.</p>
+      {erroHistorico && <p role="alert">Não foi possível carregar todo o histórico: {erroHistorico}. A análise histórica não está completa.</p>}
       {!dashboard ? <p>Carregando carteira consolidada ou dados indisponíveis.</p> : filtradas.length === 0 ? <p>Nenhuma ação encontrada na carteira consolidada.</p> :
       <div style={{ overflowX: 'auto' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
@@ -60,6 +87,8 @@ export function AnaliseEstrategicaView({ dashboard }: { dashboard: Dashboard | n
         <h2>{atual.ticker} — estudo de entrada</h2>
         <p><strong>Compra a mercado:</strong> {atual.precoAtual != null && atual.precoAtual > 0 ? brl(atual.precoAtual) : 'Cotação indisponível'}. Compare o preço com o PM consolidado ({brl(atual.precoMedio)}) e o peso atual ({pct(atual.peso)}). Estar abaixo do PM não significa necessariamente estar barato.</p>
         <p><strong>PUT (simulação):</strong> {atual.precoAtual != null && atual.precoAtual > 0 ? brl(atual.precoAtual * (1 - desconto / 100)) : 'Sem cotação'} com desconto de {desconto}%. Se exercida, o custo por ação será strike menos prêmio efetivamente recebido, antes de custos e impostos.</p>
+        <p><strong>Operações de ações registradas:</strong> {atual.operacoes.length}, incluindo compras e vendas desde o início. Compras: {atual.operacoes.filter(o => /COMPRA/i.test(o.tipoOperacao)).length}; vendas: {atual.operacoes.filter(o => /VENDA/i.test(o.tipoOperacao)).length}. Valores históricos não substituem a cotação atual.</p>
+        {atual.operacoes.length > 0 && <div style={{ overflowX: 'auto', maxHeight: 300, overflowY: 'auto' }}><table style={{ width: '100%', textAlign: 'left' }}><thead><tr><th>Data</th><th>Operação</th><th>Quantidade</th><th>Preço</th><th>Taxas</th></tr></thead><tbody>{[...atual.operacoes].reverse().map(o => <tr key={o.id}><td>{new Date(o.data).toLocaleDateString('pt-BR')}</td><td>{o.tipoOperacao}</td><td>{o.quantidade}</td><td>{brl(o.precoUnitario)}</td><td>{brl(o.taxas)}</td></tr>)}</tbody></table></div>}
         <p><strong>Histórico de PUTs:</strong> {atual.puts.length} operações registradas. {atual.puts.filter(o => o.estaAtiva).length} indicadas como ativas. Não representa ofertas disponíveis no mercado.</p>
         {atual.puts.length > 0 && <div style={{ overflowX: 'auto' }}><table style={{ width: '100%', textAlign: 'left' }}><thead><tr><th>Opção</th><th>Strike histórico</th><th>Prêmio</th><th>Vencimento</th><th>Situação</th></tr></thead><tbody>{[...atual.puts].sort((a,b) => b.dataOperacao.localeCompare(a.dataOperacao)).slice(0, 8).map(o => <tr key={o.id}><td>{o.tickerOpcao}</td><td>{brl(o.strike)}</td><td>{brl(o.premioUnitario)}</td><td>{new Date(o.vencimento).toLocaleDateString('pt-BR')}</td><td>{o.situacao}</td></tr>)}</tbody></table></div>}
         <p style={{ opacity: .75 }}>Antes de operar: conferir valuation, tendência de resultados, dividendos, concentração, garantias, liquidez, spread, delta e risco de exercício. A análise não envia ordens.</p>
