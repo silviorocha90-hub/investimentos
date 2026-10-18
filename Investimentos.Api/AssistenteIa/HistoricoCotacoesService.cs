@@ -55,21 +55,24 @@ public sealed class HistoricoCotacoesService
                 try
                 {
                     // Endpoint brapi documentado: startDate/endDate + interval=1d.
-                    var url = "https://brapi.dev/api/quote/" + Uri.EscapeDataString(ticker) +
-                        "?startDate=" + Inicio.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) +
+                    var url = "https://brapi.dev/api/v2/stocks/historical?symbols=" + Uri.EscapeDataString(ticker) +
+                        "&startDate=" + Inicio.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) +
                         "&endDate=" + fim.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) +
                         "&interval=1d";
                     using var response = await client.GetAsync(url, ct);
                     if (!response.IsSuccessStatusCode)
                     {
-                        falhas.Add(ticker + ": HTTP " + (int)response.StatusCode);
+                        var corpoErro = await response.Content.ReadAsStringAsync(ct);
+                        falhas.Add(ticker + ": HTTP " + (int)response.StatusCode + " - " +
+                            corpoErro[..Math.Min(180, corpoErro.Length)]);
                         continue;
                     }
                     await using var stream = await response.Content.ReadAsStreamAsync(ct);
                     using var doc = await JsonDocument.ParseAsync(stream, cancellationToken: ct);
                     if (!doc.RootElement.TryGetProperty("results", out var results) ||
                         results.ValueKind != JsonValueKind.Array || results.GetArrayLength() == 0 ||
-                        !results[0].TryGetProperty("historicalDataPrice", out var pontos) ||
+                        !results[0].TryGetProperty("data", out var serie) ||
+                        !serie.TryGetProperty("historicalDataPrice", out var pontos) ||
                         pontos.ValueKind != JsonValueKind.Array)
                     {
                         falhas.Add(ticker + ": historico nao retornado");
@@ -86,6 +89,8 @@ public sealed class HistoricoCotacoesService
                             !fechamento.TryGetDecimal(out var preco) || preco <= 0) continue;
                         novos[dia] = preco;
                     }
+                    // O ativo foi carregado AsNoTracking: anexá-lo como existente evita INSERT de Ativo.
+                    _db.Ativos.Attach(ativo);
                     var existentes = await _db.CotacoesAtivos
                         .Where(c => c.AtivoId == ativo.Id && c.DataReferencia >= Inicio &&
                             c.DataReferencia < fim.AddDays(1))
@@ -138,7 +143,11 @@ public sealed class HistoricoCotacoesService
                 catch (Exception ex)
                 {
                     _db.ChangeTracker.Clear();
-                    falhas.Add(ticker + ": " + ex.GetType().Name);
+                    var detalhe = ex is DbUpdateException dbEx
+                        ? dbEx.InnerException?.Message ?? dbEx.Message
+                        : ex.Message;
+                    falhas.Add(ticker + ": " + ex.GetType().Name + " - " +
+                        detalhe[..Math.Min(220, detalhe.Length)]);
                     _logger.LogWarning(ex, "Falha ao importar historico de {Ticker}", ticker);
                 }
             }
