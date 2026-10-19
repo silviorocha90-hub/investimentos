@@ -86,10 +86,22 @@ public sealed class AssistenteIaWorker : BackgroundService
         CancellationToken cancellationToken)
     {
         var agora = ObterAgoraSaoPaulo();
-        // Precos: uma atualizacao diaria a partir das 10h.
-        // Relatorio: sexta apos as 19h; recuperacao sabado/domingo apos as 10h.
-        // Os ciclos de 15 minutos so reprocessam destinatarios ainda pendentes.
-        if (agora.Hour < 10)
+        // Cotacoes: somente dias uteis a partir das 17h (America/Sao_Paulo).
+        // Regra entra em vigor em 20/10/2026; nunca atualizar automaticamente em 19/10.
+        // O ciclo de 15 minutos apenas verifica pendencias e permite tentar novamente
+        // em caso de falha; o log persistente evita repetir dias concluidos.
+        // Relatorio semanal permanece independente: sexta apos 19h,
+        // recuperacao sabado/domingo apos 10h.
+        var diaUtil = agora.DayOfWeek is >= DayOfWeek.Monday and <= DayOfWeek.Friday;
+        var janelaCotacoes = agora.Date >= new DateTime(2026, 10, 20) &&
+            diaUtil && agora.Hour >= 17;
+        var janelaRelatorioSemanal = agora.DayOfWeek switch
+        {
+            DayOfWeek.Friday => agora.Hour >= 19,
+            DayOfWeek.Saturday or DayOfWeek.Sunday => agora.Hour >= 10,
+            _ => false
+        };
+        if (!janelaCotacoes && !janelaRelatorioSemanal)
             return;
 
         using var scope = _scopeFactory.CreateScope();
@@ -98,27 +110,29 @@ public sealed class AssistenteIaWorker : BackgroundService
 
         // A falha nas cotacoes nao pode impedir o relatorio semanal.
         AtualizacaoMercadoResultado? mercado = null;
-        try
+        if (janelaCotacoes)
         {
-            mercado = await service.AtualizarMercadoUmaVezAoDiaAsync(
-                agora, "automatica", cancellationToken);
-        }
-        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
-        {
-            throw;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex,
-                "Falha na atualizacao automatica de cotacoes; relatorio semanal sera tentado independentemente.");
-            await RegistrarErroSemInterromperWorkerAsync(
-                "Atualizacao cotacoes", ex, cancellationToken);
-            // Evita nova consulta ao SQL/Brapi durante a geracao do relatorio.
-            mercado = new AtualizacaoMercadoResultado(
-                new Dictionary<string, CotacaoAtivoMercado>(
-                    StringComparer.OrdinalIgnoreCase),
-                new Dictionary<string, CotacaoOpcaoMercado>(
-                    StringComparer.OrdinalIgnoreCase));
+            try
+            {
+                mercado = await service.AtualizarMercadoUmaVezAoDiaAsync(
+                    agora, "automatica", cancellationToken);
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex,
+                    "Falha na atualizacao automatica de cotacoes; relatorio semanal sera tentado independentemente.");
+                await RegistrarErroSemInterromperWorkerAsync(
+                    "Atualizacao cotacoes", ex, cancellationToken);
+                mercado = new AtualizacaoMercadoResultado(
+                    new Dictionary<string, CotacaoAtivoMercado>(
+                        StringComparer.OrdinalIgnoreCase),
+                    new Dictionary<string, CotacaoOpcaoMercado>(
+                        StringComparer.OrdinalIgnoreCase));
+            }
         }
 
         // Envio principal sexta apos as 19h; recuperacao sabado e domingo apos as 10h.
