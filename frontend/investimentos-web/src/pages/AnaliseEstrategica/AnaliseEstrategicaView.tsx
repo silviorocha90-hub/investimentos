@@ -11,6 +11,11 @@ type ResumoCotacoes = { ticker: string; registrosCotacoes: number; diasCotados: 
 
 const ehFii = (codigo?: string | null, nome?: string | null) => /^(FII|FIIS|FUNDO_IMOBILIARIO|FUNDOS_IMOBILIARIOS)$/i.test((codigo ?? '').replace(/[\s-]+/g, '_')) || /FUNDO(S)?\s+(DE\s+INVESTIMENTO(S)?\s+)?IMOBILI[AÁ]RIO(S)?/i.test(nome ?? '')
 
+const ehEtf = (codigo?: string | null, nome?: string | null) => {
+  const classificacao = `${codigo ?? ''} ${nome ?? ''}`
+  return /\bETF(S)?\b|EXCHANGE[ -]TRADED[ -]FUND|FUNDO(S)?\s+DE\s+[IÍ]NDICE(S)?/i.test(classificacao)
+}
+
 const ehPrevidencia = (codigo?: string | null, nome?: string | null) => /PREVID[EÊ]NCIA|PREVIDENCIA|PREV[_ -]?PRIVADA|PGBL|VGBL/i.test(`${codigo ?? ''} ${nome ?? ''}`)
 
 const moeda = (n: number) => n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
@@ -73,7 +78,10 @@ export function AnaliseEstrategicaView({ dashboard, investidoresIds }: { dashboa
         !ehPrevidencia(posicao?.tipoAtivoCodigo, posicao?.tipoAtivoNome) &&
         !ehFii(cadastro?.tipoAtivoCodigo, cadastro?.tipoAtivoNome) &&
         !ehFii(cadastro?.classeAtivoCodigo, cadastro?.classeAtivoNome) &&
-        !ehFii(posicao?.tipoAtivoCodigo, posicao?.tipoAtivoNome)
+        !ehFii(posicao?.tipoAtivoCodigo, posicao?.tipoAtivoNome) &&
+        !ehEtf(cadastro?.tipoAtivoCodigo, cadastro?.tipoAtivoNome) &&
+        !ehEtf(cadastro?.classeAtivoCodigo, cadastro?.classeAtivoNome) &&
+        !ehEtf(posicao?.tipoAtivoCodigo, posicao?.tipoAtivoNome)
     }
     const porTicker = new Map<string, PosicaoAtivo>()
     const ativosPorTicker = new Map(ativos.map(a => [a.ticker.toUpperCase(), a]))
