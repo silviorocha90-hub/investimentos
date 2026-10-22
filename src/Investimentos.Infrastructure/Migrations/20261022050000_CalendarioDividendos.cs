@@ -25,8 +25,8 @@ public partial class CalendarioDividendos : Migration
             constraints: table =>
             {
                 table.PrimaryKey("PK_CalendariosDividendos", x => new { x.InvestidorId, x.Ticker });
-                table.ForeignKey("FK_CalendariosDividendos_Investidores_InvestidorId",
-                    x => x.InvestidorId, "Investidores", "Id", onDelete: ReferentialAction.Cascade);
+                table.ForeignKey("FK_CalendariosDividendos_Investidor_InvestidorId",
+                    x => x.InvestidorId, "Investidor", "Id", onDelete: ReferentialAction.Cascade);
             });
     }
     protected override void Down(MigrationBuilder migrationBuilder) =>
