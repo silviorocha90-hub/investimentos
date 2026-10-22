@@ -38,6 +38,8 @@ namespace Investimentos.Infrastructure.Persistence
         public DbSet<OperacaoOpcao> OperacoesOpcoes =>
             Set<OperacaoOpcao>();
 
+        public DbSet<CalendarioDividendo> CalendariosDividendos => Set<CalendarioDividendo>();
+
         public DbSet<CotacaoAtivo> CotacoesAtivos =>
             Set<CotacaoAtivo>();
 
