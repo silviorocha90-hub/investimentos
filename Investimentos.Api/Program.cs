@@ -337,6 +337,54 @@ app.MapGet(
     })
     .RequireAuthorization();
 
+// Planejamento de dividendos por investidor: dados persistidos e isolados por autorização.
+app.MapGet("/api/analise-estrategica/calendario-dividendos/{investidorId:guid}",
+    async (Guid investidorId, ClaimsPrincipal principal, InvestimentosDbContext db, CancellationToken ct) =>
+    {
+        if (!Guid.TryParse(principal.FindFirstValue(ClaimTypes.NameIdentifier), out var usuarioId))
+            return Results.Unauthorized();
+        if (!principal.IsInRole("Admin") &&
+            !await db.UsuariosInvestidores.AsNoTracking()
+                .AnyAsync(x => x.UsuarioId == usuarioId && x.InvestidorId == investidorId, ct))
+            return Results.Forbid();
+        var registros = await db.CalendariosDividendos.AsNoTracking()
+            .Where(x => x.InvestidorId == investidorId)
+            .Select(x => new { x.Ticker, x.Meses })
+            .ToListAsync(ct);
+        return Results.Ok(registros.ToDictionary(x => x.Ticker,
+            x => System.Text.Json.JsonSerializer.Deserialize<int[]>(x.Meses) ?? Array.Empty<int>()));
+    }).RequireAuthorization();
+
+app.MapPut("/api/analise-estrategica/calendario-dividendos/{investidorId:guid}/{ticker}",
+    async (Guid investidorId, string ticker, CalendarioDividendosRequest request,
+        ClaimsPrincipal principal, InvestimentosDbContext db, CancellationToken ct) =>
+    {
+        if (!Guid.TryParse(principal.FindFirstValue(ClaimTypes.NameIdentifier), out var usuarioId))
+            return Results.Unauthorized();
+        if (!principal.IsInRole("Admin") &&
+            !await db.UsuariosInvestidores.AsNoTracking()
+                .AnyAsync(x => x.UsuarioId == usuarioId && x.InvestidorId == investidorId, ct))
+            return Results.Forbid();
+        ticker = ticker.Trim().ToUpperInvariant();
+        if (ticker.Length is < 3 or > 24 ||
+            !ticker.All(c => char.IsAsciiLetterOrDigit(c) || c == '-' || c == '.'))
+            return Results.BadRequest("Ticker inválido.");
+        if (request.Meses is null || request.Meses.Any(m => m < 0 || m > 11))
+            return Results.BadRequest("Meses devem estar entre 0 e 11.");
+        var meses = request.Meses.Distinct().Order().ToArray();
+        var registro = await db.CalendariosDividendos.FindAsync(
+            new object[] { investidorId, ticker }, ct);
+        if (registro is null)
+        {
+            registro = new CalendarioDividendo { InvestidorId = investidorId, Ticker = ticker };
+            db.CalendariosDividendos.Add(registro);
+        }
+        registro.Meses = System.Text.Json.JsonSerializer.Serialize(meses);
+        registro.AtualizadoEmUtc = DateTime.UtcNow;
+        await db.SaveChangesAsync(ct);
+        return Results.Ok(new { ticker, meses });
+    }).RequireAuthorization();
+
 // Resumo de TODAS as linhas de CotacaoAtivo, sem limite de 90 dias.
 // A série diária usa a última observação do dia para não superponderar snapshots.
 app.MapGet(
@@ -2035,3 +2083,5 @@ public record AtualizarMovimentacaoFinanceiraRequest(
     string Tipo,
     decimal Valor,
     string? Descricao);
+
+public sealed record CalendarioDividendosRequest(int[] Meses);
