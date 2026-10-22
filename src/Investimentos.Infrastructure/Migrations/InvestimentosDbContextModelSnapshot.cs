@@ -826,6 +826,16 @@ namespace Investimentos.Infrastructure.Migrations
                     b.ToTable("TokenRecuperacaoSenha", (string)null);
                 });
 
+            modelBuilder.Entity("Investimentos.Domain.Entities.CalendarioDividendo", b =>
+                {
+                    b.Property<Guid>("InvestidorId").HasColumnType("uniqueidentifier");
+                    b.Property<string>("Ticker").HasMaxLength(24).HasColumnType("nvarchar(24)");
+                    b.Property<DateTime>("AtualizadoEmUtc").HasColumnType("datetime2");
+                    b.Property<string>("Meses").IsRequired().HasMaxLength(48).HasColumnType("nvarchar(48)");
+                    b.HasKey("InvestidorId", "Ticker");
+                    b.ToTable("CalendariosDividendos");
+                });
+
             modelBuilder.Entity("Investimentos.Domain.Usuarios.Usuario", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1187,6 +1197,15 @@ namespace Investimentos.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Usuario");
+                });
+
+            modelBuilder.Entity("Investimentos.Domain.Entities.CalendarioDividendo", b =>
+                {
+                    b.HasOne("Investimentos.Domain.Entities.Investidor", null)
+                        .WithMany()
+                        .HasForeignKey("InvestidorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Investimentos.Domain.Usuarios.Usuario", b =>
