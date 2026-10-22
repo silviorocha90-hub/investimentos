@@ -1,0 +1,25 @@
+.calendario-dividendos{padding:18px;display:grid;gap:16px}
+.calendario-cabecalho{display:flex;justify-content:space-between;align-items:end;gap:16px;flex-wrap:wrap}
+.calendario-cabecalho h2{font-size:1.1rem;color:var(--text);margin:0 0 6px}
+.calendario-cabecalho p,.calendario-editor p{font-size:.75rem;color:var(--muted);margin:0;line-height:1.55}
+.calendario-controles{display:flex;gap:10px;flex-wrap:wrap}
+.calendario-controles label,.calendario-editor>label{display:grid;gap:6px;color:var(--muted);font-size:.72rem;font-weight:700}
+.calendario-controles select,.calendario-editor select{background:var(--panel-strong);color:var(--text);border:1px solid var(--border);border-radius:9px;min-height:36px;padding:6px 10px;max-width:100%}
+.calendario-meses{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.calendario-mes{border:1px solid var(--border);border-radius:13px;background:var(--panel-strong);padding:13px;min-height:128px;min-width:0}
+.calendario-mes h3{font-size:.9rem;color:var(--accent);text-transform:uppercase;margin:0 0 11px;border-bottom:1px solid var(--border);padding-bottom:8px}
+.calendario-empresas{display:flex;flex-wrap:wrap;align-items:flex-start;gap:7px}
+.calendario-empresa{border:1px solid var(--border);border-radius:9px;padding:8px 10px;background:var(--panel);color:var(--text);font:inherit;cursor:pointer;display:grid;gap:3px;text-align:left}
+.calendario-empresa strong{font-size:.76rem;color:var(--accent)}
+.calendario-empresa small{font-size:.65rem;color:var(--muted)}
+.calendario-empresa:hover,.calendario-empresa:focus-visible{border-color:var(--accent)}
+.calendario-vazio{font-size:.7rem;color:var(--muted);font-style:italic}
+.calendario-editor{border-top:1px solid var(--border);padding-top:15px;display:grid;gap:13px}
+.calendario-editor>label{max-width:400px}
+.calendario-checkboxes{display:flex;flex-wrap:wrap;gap:10px}
+.calendario-checkboxes label{display:flex;gap:6px;align-items:center;font-size:.75rem;color:var(--text);padding:8px 10px;border:1px solid var(--border);border-radius:8px}
+.calendario-checkboxes input{accent-color:var(--accent)}
+@media(max-width:1100px){.calendario-meses{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:750px){.calendario-meses{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:430px){.calendario-meses{grid-template-columns:1fr}}
+.calendario-importar{justify-self:start;max-width:100%;padding:9px 12px;border:1px solid var(--accent);border-radius:9px;background:var(--panel-strong);color:var(--accent);cursor:pointer;font-size:.75rem;font-weight:700}
