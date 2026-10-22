@@ -83,7 +83,7 @@ export function CalendarioDividendos({ dashboard, tickers, investidoresIds }: {
     for (const p of dashboard?.proventos ?? []) {
       const ticker = p.ticker.toUpperCase()
       if (!elegiveis.has(ticker)) continue
-      const data = /^\\d{4}-(\\d{2})-\\d{2}/.exec(p.dataPagamento)
+      const data = /^(\d{4})-(\d{2})-(\d{2})/.exec(p.dataPagamento)
       if (!data) continue
       const mes = Number(data[1]) - 1
       if (mes < 0 || mes > 11) continue
