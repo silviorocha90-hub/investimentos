@@ -51,6 +51,31 @@ export function CalendarioDividendos({ dashboard, tickers, investidoresIds }: {
     return porMes
   }, [dashboard, elegiveis, ano])
 
+  const mesesHistoricos = useMemo(() => {
+    const mapa = new Map<string, Set<number>>()
+    for (const p of dashboard?.proventos ?? []) {
+      const ticker = p.ticker.toUpperCase()
+      if (!elegiveis.has(ticker)) continue
+      const data = /^\\d{4}-(\\d{2})-\\d{2}/.exec(p.dataPagamento)
+      if (!data) continue
+      const mes = Number(data[1]) - 1
+      if (mes < 0 || mes > 11) continue
+      if (!mapa.has(ticker)) mapa.set(ticker, new Set())
+      mapa.get(ticker)?.add(mes)
+    }
+    return mapa
+  }, [dashboard, elegiveis])
+
+  function usarHistorico(ticker: string) {
+    const meses = [...(mesesHistoricos.get(ticker) ?? new Set<number>())].sort((a, b) => a - b)
+    if (!meses.length) return
+    const proximo = { ...planejamento, [ticker]: meses }
+    try {
+      window.localStorage.setItem(chave, JSON.stringify(proximo))
+      setPlanejamento(proximo)
+    } catch { window.alert('Não foi possível salvar o calendário neste navegador.') }
+  }
+
   const porMes = MESES.map((_, mes) => modo === 'planejado'
     ? empresas.filter(e => planejamento[e.ticker]?.includes(mes)).map(e => e.ticker)
     : [...recebimentos[mes].keys()].sort())
@@ -114,6 +139,7 @@ export function CalendarioDividendos({ dashboard, tickers, investidoresIds }: {
             {empresas.map(e => <option value={e.ticker} key={e.ticker}>{e.ticker} — {e.nome}</option>)}
           </select>
         </label>
+        {selecionado && (mesesHistoricos.get(selecionado)?.size ?? 0) > 0 && <button type="button" className="calendario-importar" onClick={() => usarHistorico(selecionado)}>Preencher com meses observados no histórico ({mesesHistoricos.get(selecionado)?.size})</button>}
         {selecionado && <div className="calendario-checkboxes">
           {MESES.map((mes, i) => <label key={mes}>
             <input type="checkbox" checked={planejamento[selecionado]?.includes(i) ?? false}
@@ -121,7 +147,7 @@ export function CalendarioDividendos({ dashboard, tickers, investidoresIds }: {
             {mes.slice(0, 3).toUpperCase()}
           </label>)}
         </div>}
-        <p>Os meses planejados são preenchidos por você e não representam anúncio de dividendos. Os pagamentos registrados usam a data de pagamento e os proventos disponíveis na carteira. O planejamento fica salvo somente neste navegador, para o conjunto de investidores selecionado.</p>
+        <p>Os meses planejados são preenchidos por você ou copiados do histórico, mediante confirmação; não representam anúncio de dividendos. Os pagamentos registrados usam a data de pagamento e os proventos disponíveis na carteira. O planejamento fica salvo somente neste navegador, para o conjunto de investidores selecionado.</p>
       </div>
     </section>
   )
