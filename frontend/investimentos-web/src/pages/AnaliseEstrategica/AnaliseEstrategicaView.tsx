@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { SectionTitle } from '../../components/SectionTitle'
+import { CalendarioDividendos } from './CalendarioDividendos'
 import './AnaliseEstrategica.css'
 import { obterOperacoes } from '../../api/dashboardApi'
 import { obterAdministracao } from '../../api/administracaoApi'
@@ -219,6 +220,10 @@ export function AnaliseEstrategicaView({ dashboard, investidoresIds }: { dashboa
           {!filtradas.length && <div className="estrategia-state">Nenhum ativo encontrado.</div>}
         </div>}
       </div>
+      {!carregando && !erro && dashboard && (
+        <CalendarioDividendos dashboard={dashboard} investidoresIds={investidoresIds}
+          tickers={analises.filter(p => p.quantidade > 0).map(p => ({ ticker: p.ticker, nome: p.nome }))} />
+      )}
       {atual && (
         <article className="estrategia-panel estrategia-details">
           <div className="estrategia-details-header">
