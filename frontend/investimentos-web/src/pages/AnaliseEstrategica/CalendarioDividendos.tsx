@@ -1,29 +1,43 @@
-import { useMemo, useState } from 'react'
-import type { Dashboard } from '../../types/dashboard'
+import { useEffect, useMemo, useState } from 'react'
+import type { Dashboard, Provento } from '../../types/dashboard'\nimport { listarProventos } from '../../api/proventosApi'
 import './CalendarioDividendos.css'
 
 const MESES = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
   'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro']
 
-export function CalendarioDividendos({ dashboard }: {
+export function CalendarioDividendos({ investidoresIds }: {
   dashboard: Dashboard | null
   tickers: { ticker: string; nome: string }[]
   investidoresIds: string[]
 }) {
-  const anos = useMemo(() => [...new Set((dashboard?.proventos ?? [])
+  const [proventos, setProventos] = useState<Provento[]>([])
+  const [carregando, setCarregando] = useState(true)
+  const [erro, setErro] = useState<string | null>(null)
+  const chaveIds = [...new Set(investidoresIds)].filter(Boolean).sort().join(',')
+  useEffect(() => {
+    let ativo = true
+    setCarregando(true)
+    setErro(null)
+    Promise.all(chaveIds.split(',').filter(Boolean).map(id => listarProventos(id)))
+      .then(grupos => { if (ativo) setProventos(grupos.flat()) })
+      .catch(e => { if (ativo) { setProventos([]); setErro(e instanceof Error ? e.message : 'Erro ao consultar proventos') } })
+      .finally(() => { if (ativo) setCarregando(false) })
+    return () => { ativo = false }
+  }, [chaveIds])
+  const anos = useMemo(() => [...new Set((proventos)
     .map(p => Number(p.dataPagamento?.slice(0, 4)))
     .filter(a => Number.isInteger(a) && a >= 2000 && a <= 2100))]
-    .sort((a, b) => b - a), [dashboard])
+    .sort((a, b) => b - a), [proventos])
   const [anoEscolhido, setAnoEscolhido] = useState<number | null>(null)
   const ano = anoEscolhido !== null && anos.includes(anoEscolhido)
     ? anoEscolhido : (anos[0] ?? new Date().getFullYear())
 
   const recebimentos = useMemo(() => {
     const porMes = Array.from({ length: 12 }, () => new Map<string, number>())
-    for (const p of dashboard?.proventos ?? []) {
+    for (const p of proventos) {
       const ticker = p.ticker?.trim().toUpperCase()
       if (!ticker) continue
-      const data = /^(\\d{4})-(\\d{2})-(\\d{2})/.exec(p.dataPagamento ?? '')
+      const data = /^(\d{4})-(\d{2})-(\d{2})/.exec(p.dataPagamento ?? '')
       if (!data || Number(data[1]) !== ano) continue
       const mes = Number(data[2]) - 1
       if (mes < 0 || mes > 11) continue
@@ -32,7 +46,7 @@ export function CalendarioDividendos({ dashboard }: {
       porMes[mes].set(ticker, (porMes[mes].get(ticker) ?? 0) + valor)
     }
     return porMes
-  }, [dashboard, ano])
+  }, [proventos, ano])
 
   const totalAno = recebimentos.reduce((total, mes) =>
     total + [...mes.values()].reduce((soma, valor) => soma + valor, 0), 0)
@@ -54,6 +68,8 @@ export function CalendarioDividendos({ dashboard }: {
           </label>
         </div>
       </div>
+      {carregando && <p role="status">Carregando pagamentos registrados...</p>}
+      {erro && <p role="alert" className="estrategia-error">Falha ao consultar pagamentos: {erro}</p>}
       <p>Total registrado no ano: <strong>{moeda(totalAno)}</strong></p>
       <div className="calendario-meses">
         {MESES.map((mes, i) => {
