@@ -37,7 +37,7 @@ export function CalendarioDividendos({ investidoresIds }: {
     for (const p of proventos) {
       const ticker = p.ticker?.trim().toUpperCase()
       if (!ticker) continue
-      const data = /^(\\d{4})-(\\d{2})-(\\d{2})/.exec(p.dataPagamento ?? '')
+      const data = /^(\d{4})-(\d{2})-(\d{2})/.exec(p.dataPagamento ?? '')
       if (!data || Number(data[1]) !== ano) continue
       const mes = Number(data[2]) - 1
       if (mes < 0 || mes > 11) continue
