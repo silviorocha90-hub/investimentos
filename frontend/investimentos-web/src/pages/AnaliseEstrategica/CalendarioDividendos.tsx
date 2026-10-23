@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
-import type { Dashboard, Provento } from '../../types/dashboard'\nimport { listarProventos } from '../../api/proventosApi'
+import type { Dashboard, Provento } from '../../types/dashboard'
+import { listarProventos } from '../../api/proventosApi'
 import './CalendarioDividendos.css'
 
 const MESES = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
