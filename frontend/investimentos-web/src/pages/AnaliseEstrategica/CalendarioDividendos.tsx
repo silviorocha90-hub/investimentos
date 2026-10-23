@@ -51,6 +51,10 @@ export function CalendarioDividendos({ investidoresIds }: {
 
   const totalAno = recebimentos.reduce((total, mes) =>
     total + [...mes.values()].reduce((soma, valor) => soma + valor, 0), 0)
+  const totalCarteira = proventos.reduce((total, p) => {
+    const valor = Number(p.valorLiquido)
+    return total + (Number.isFinite(valor) ? valor : 0)
+  }, 0)
   const moeda = (valor: number) => valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
 
   return (
@@ -71,7 +75,10 @@ export function CalendarioDividendos({ investidoresIds }: {
       </div>
       {carregando && <p role="status">Carregando pagamentos registrados...</p>}
       {erro && <p role="alert" className="estrategia-error">Falha ao consultar pagamentos: {erro}</p>}
-      <p>Total registrado no ano: <strong>{moeda(totalAno)}</strong></p>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px 32px', alignItems: 'center' }}>
+        <p>Total registrado no ano: <strong>{moeda(totalAno)}</strong></p>
+        <p>Total registrado da carteira: <strong>{moeda(totalCarteira)}</strong></p>
+      </div>
       <div className="calendario-meses">
         {MESES.map((mes, i) => {
           const empresas = [...recebimentos[i].entries()].sort(([a], [b]) => a.localeCompare(b))
