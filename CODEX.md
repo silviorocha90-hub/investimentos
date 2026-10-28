@@ -1701,3 +1701,39 @@ Antes de continuar a publicação:
 4. corrigir primeiro o deploy da API;
 5. validar uma etapa por vez antes de avançar para banco, secrets, CORS e domínio.
 
+
+## Estimativa de IR por investidor — 28/10/2026
+
+Administração > Estimativa de IR oferece consolidado anual e analítico por operação.
+Acesso backend exige role Admin. O ano-calendário vigente é o de São Paulo; a
+consulta do ano vigente calcula e salva uma versão no banco. Anos anteriores
+abrem a versão mais recente salva, com atualização explícita. Cada atualização
+preserva o JSON e versão do cálculo em HistoricoEstimativaIr (sem sobrescrita).
+RetencaoDefinitivaIr mantém confirmações/correções por operação com autor e data.
+Não há desconto automático do saldo nem lançamento de DARF.
+
+Regras v1: compras formam custo médio com taxas desde todo o histórico;
+isenção de ações usa vendas mensais de TODAS as carteiras do CPF; perdas são
+compensadas por carteira e grupo, inclusive entre anos, para rateio gerencial.
+Comum 15%, FII e opções day trade 20%. Operações intradia de ações, exercícios,
+custo insuficiente e categorias não reconhecidas ficam pendentes, sem imposto
+inventado. ETF genérico não é presumido como ETF de ações ou renda fixa.
+Retenção definitiva confirmada substitui estimativa da operação, evitando soma
+dupla. IRRF antecipado e DARF pago não são abatidos neste demonstrativo.
+O rateio por carteira não reproduz compensação cruzada de perdas no CPF e não
+substitui a apuração mensal oficial. É controle interno para acerto financeiro.
+
+A confirmação inicial da Simone foi corrigida pelo titular para R$ 62,28.
+Migration de dados vincula somente se houver exatamente uma venda de 499 LLFT11
+para Simone em outubro até 28/10/2026; se ausente/ambígua, exige vinculação manual
+na nova aba. Não atribuir débito agregado automaticamente a outras operações.
+
+Fontes: Receita Federal, Bolsa de Valores, Cálculo e Pagamento / Retenções /
+Demonstrativo de Apuração de Ganhos; CVM, Fundos de Índice (ETFs); regulamento
+e material oficial da gestora BTG para LLFT11. A declaração anual informa a
+apuração mensal, não gera novamente imposto sobre ganhos já tributados.
+
+EstimativaIrWorker mantém versões automaticamente a cada 15 minutos para todos
+os anos cadastrados até o vigente, inclusive sem acesso à tela. Somente grava
+quando conteúdo ou versão do cálculo mudam (desconsidera timestamp no comparativo).
+Falhas não encerram o serviço; são registradas e tentadas no próximo ciclo.

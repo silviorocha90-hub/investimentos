@@ -108,6 +108,8 @@ builder.Services
                 };
         });
 
+builder.Services.AddScoped<EstimativaIrRepository>();
+builder.Services.AddHostedService<Investimentos.Api.Startup.EstimativaIrWorker>();
 builder.Services.AddAuthorization();
 builder.Services.AddHttpClient();
 builder.Services.AddScoped<AssistenteIaService>();
@@ -1890,6 +1892,7 @@ app.MapDelete(
 
 app.MapAdministracaoInvestidoresEndpoints();
 
+app.MapEstimativaIrEndpoints();
 app.MapAuthEndpoints();
 app.MapUsuariosEndpoints();
 
