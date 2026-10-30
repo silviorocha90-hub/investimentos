@@ -792,6 +792,26 @@ public sealed class AssistenteIaService
                 new Dictionary<string, CotacaoAtivoMercado>(StringComparer.OrdinalIgnoreCase),
                 new Dictionary<string, CotacaoOpcaoMercado>(StringComparer.OrdinalIgnoreCase));
 
+        // A atualizacao diaria pode ja ter sido executada pelo worker. Nesse caso,
+        // recuperar as cotacoes persistidas em vez de enviar valores nulos para a IA.
+        var inicioJanela = data.AddDays(-7);
+        var cotacoesPersistidas = await _context.CotacoesAtivos.AsNoTracking()
+            .Where(c => c.DataReferencia >= inicioJanela && c.DataReferencia < data.AddDays(1))
+            .Select(c => new { Ticker = c.Ativo.Ticker.Codigo, c.Preco, c.DataReferencia })
+            .ToListAsync(cancellationToken);
+        var cotacoesPorTicker = cotacoesPersistidas
+            .Where(c => c.Preco > 0)
+            .GroupBy(c => c.Ticker, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(g => g.Key, g => g.OrderByDescending(c => c.DataReferencia).First(),
+                StringComparer.OrdinalIgnoreCase);
+
+        var proventosRegistrados = await _context.Proventos.AsNoTracking()
+            .Where(p => p.DataPagamento >= data.AddDays(-6) && p.DataPagamento < data.AddDays(1) &&
+                        (!investidorId.HasValue || p.InvestidorId == investidorId.Value))
+            .Select(p => new { p.InvestidorId, Ticker = p.Ativo.Ticker.Codigo,
+                p.Tipo, p.DataPagamento, p.ValorRecebido })
+            .ToListAsync(cancellationToken);
+
         var carteiras = new List<object>();
 
         foreach (var investidor in investidores)
@@ -821,7 +841,16 @@ public sealed class AssistenteIaService
                                 x.Ticker,
                                 out var cotacaoAtivo)
                                 ? cotacaoAtivo.Preco
-                                : (decimal?)null,
+                                : cotacoesPorTicker.TryGetValue(x.Ticker, out var historica)
+                                    ? historica.Preco : (decimal?)null,
+                        DataCotacao = mercado.Ativos.ContainsKey(x.Ticker)
+                            ? data.ToString("yyyy-MM-dd")
+                            : cotacoesPorTicker.TryGetValue(x.Ticker, out var historicaData)
+                                ? historicaData.DataReferencia.ToString("yyyy-MM-dd") : null,
+                        FonteCotacao = mercado.Ativos.ContainsKey(x.Ticker)
+                            ? "brapi - consulta da execução"
+                            : cotacoesPorTicker.ContainsKey(x.Ticker)
+                                ? "histórico persistido Aportiva" : "não disponível",
                         VariacaoDiaPercentual =
                             mercado.Ativos.TryGetValue(
                                 x.Ticker,
@@ -895,7 +924,7 @@ public sealed class AssistenteIaService
         }
 
         var dados = JsonSerializer.Serialize(
-            carteiras,
+            new { Carteiras = carteiras, ProventosRegistradosUltimosSeteDias = proventosRegistrados },
             new JsonSerializerOptions { WriteIndented = true });
 
         var instructions = escopo == "TODOS"
@@ -1079,6 +1108,8 @@ risco de exercício ou atribuição e captura de prêmio quando houver dados.
 
 ## Proventos e eventos
 Destaque dividendos, JCP, resultados, fatos relevantes e eventos pertinentes.
+Utilize ProventosRegistradosUltimosSeteDias como registros internos efetivamente pagos;
+se a lista estiver vazia, diga apenas que não houve registros de pagamento nessa janela.
 Não declare que não existem proventos internos: se não forem incluídos no payload,
 escreva que os registros de proventos não foram disponibilizados a esta execução.
 Não confunda ausência no payload com inexistência no banco de dados.
