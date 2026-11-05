@@ -75,6 +75,9 @@ builder.Services
             options.Cookie.HttpOnly =
                 true;
 
+            // O cookie pertence exclusivamente ao host da API.
+            options.Cookie.Path = "/";
+
             options.Cookie.SecurePolicy =
                 CookieSecurePolicy.Always;
 
