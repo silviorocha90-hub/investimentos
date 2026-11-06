@@ -1,0 +1,25 @@
+.estimativa-ir { color: #173348; padding: 20px; background: #fff; border-radius: 14px; }
+.estimativa-ir header { display: flex; align-items: center; justify-content: space-between; gap: 18px; flex-wrap: wrap; }
+.estimativa-ir h2 { margin: 0 0 8px; }
+.estimativa-ir p, .estimativa-ir li { line-height: 1.55; }
+.estimativa-ir button { cursor: pointer; padding: 10px 15px; border: 1px solid #c8d7e1; border-radius: 7px; color: #123c56; background: #eef5f9; }
+.estimativa-ir button:disabled { opacity: .55; cursor: wait; }
+.ir-filtros { display: flex; flex-wrap: wrap; gap: 16px; margin: 22px 0; }
+.estimativa-ir label { display: flex; flex-direction: column; gap: 7px; font-size: 14px; }
+.estimativa-ir select, .estimativa-ir input, .estimativa-ir textarea { padding: 10px; border: 1px solid #b7c8d3; border-radius: 6px; color: #173348; background: white; }
+.ir-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 14px; margin: 22px 0; }
+.ir-cards > div { padding: 20px; border: 1px solid #d9e5ec; border-radius: 10px; background: #f5f9fb; }
+.ir-cards span { display: block; font-size: 14px; margin-bottom: 12px; }
+.ir-cards strong { font-size: 26px; }
+.ir-tabela { overflow-x: auto; margin: 18px 0; }
+.ir-tabela table { width: 100%; border-collapse: collapse; min-width: 760px; font-size: 14px; }
+.ir-tabela th, .ir-tabela td { text-align: left; padding: 14px 10px; border-bottom: 1px solid #dde7ed; vertical-align: top; line-height: 1.6; }
+.ir-tabela th { background: #edf4f8; }
+.ir-tabela td:last-child { max-width: 330px; }
+.ir-tabela td button { display: block; margin-top: 8px; font-size: 12px; }
+.estimativa-ir details { margin: 24px 0; }
+.estimativa-ir summary { cursor: pointer; font-weight: 600; padding: 10px 0; }
+.ir-pendente, .ir-erro { color: #9a3600; }
+.ir-modal { position: fixed; inset: 0; z-index: 1000; background: #102536aa; display: flex; align-items: center; justify-content: center; padding: 20px; }
+.ir-modal form { background: white; padding: 26px; border-radius: 12px; width: min(520px, 100%); max-height: 90vh; overflow: auto; }
+.ir-modal label { margin: 14px 0; }

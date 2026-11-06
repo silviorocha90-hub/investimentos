@@ -35,6 +35,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.Cookies;
 
 var builder = WebApplication.CreateBuilder(args);
+ExecucaoLocal.Configurar(builder, args);
 
 builder.Services.AddInfrastructure(
     builder.Configuration);
@@ -72,6 +73,8 @@ builder.Services
             options.Cookie.Name =
                 "investimentos.auth";
 
+            options.Cookie.Path = "/";
+
             options.Cookie.HttpOnly =
                 true;
 
@@ -108,6 +111,8 @@ builder.Services
                 };
         });
 
+builder.Services.AddScoped<EstimativaIrRepository>();
+builder.Services.AddHostedService<Investimentos.Api.Startup.EstimativaIrWorker>();
 builder.Services.AddAuthorization();
 builder.Services.AddHttpClient();
 builder.Services.AddScoped<AssistenteIaService>();
@@ -1890,6 +1895,7 @@ app.MapDelete(
 
 app.MapAdministracaoInvestidoresEndpoints();
 
+app.MapEstimativaIrEndpoints();
 app.MapAuthEndpoints();
 app.MapUsuariosEndpoints();
 

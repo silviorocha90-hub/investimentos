@@ -48,3 +48,8 @@ node_modules/
 dist/
 .env
 .env.local
+# Local database exports and credentials
+*.bacpac
+*.bak
+.env.*.local
+Investimentos.Api/appsettings.Local.private.json

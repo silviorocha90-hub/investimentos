@@ -2,9 +2,9 @@ name: Assistente IA CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, develop]
   pull_request:
-    branches: [main]
+    branches: [main, develop]
   workflow_dispatch:
 
 jobs:
@@ -37,3 +37,6 @@ jobs:
 
       - name: Application tests
         run: dotnet test Investimentos.Application.Tests/Investimentos.Application.Tests.csproj
+
+      - name: Local execution policy tests
+        run: dotnet test tests/Investimentos.Api.Tests/Investimentos.Api.Tests.csproj

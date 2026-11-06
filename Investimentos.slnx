@@ -29,6 +29,7 @@
     <Project Path="src/Investimentos.Infrastructure/Investimentos.Infrastructure.csproj" Id="358f6763-c58c-449d-a8b2-622cd8d489e6" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/Investimentos.Api.Tests/Investimentos.Api.Tests.csproj" />
     <Project Path="Investimentos.Application.Tests/Investimentos.Application.Tests.csproj" Id="38d43083-ca1b-4263-b8f5-a29e2d6dd50b" />
     <Project Path="Investimentos.IntegrationTests/Investimentos.IntegrationTests.csproj" Id="bc0a1d6e-1515-4a7d-b59c-8ebb0f9c8c3e" />
     <Project Path="tests/Investimentos.Domain.Tests/Investimentos.Domain.Tests.csproj" Id="7f339098-a14f-4b85-b364-540c0627fad4" />

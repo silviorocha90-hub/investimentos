@@ -162,8 +162,9 @@ public sealed class AssistenteIaWorker : BackgroundService
         IConfiguration configuration,
         IHostEnvironment environment)
     {
-        // Desenvolvimento nunca executa chamadas pagas, mesmo com flags herdadas.
-        return environment.IsProduction() &&
+        // O perfil Local é uma execução real, escolhida explicitamente no launcher.
+        // Development e testes continuam sem geração automática paga.
+        return (environment.IsProduction() || environment.IsEnvironment(Investimentos.Api.Startup.ExecucaoLocal.Ambiente)) &&
             bool.TryParse(configuration["ASSISTENTE_IA_ATIVO"], out var ativo) &&
             ativo;
     }
