@@ -95,6 +95,8 @@ Exemplo para instância SQL Express (somente se for a sua instância):
 ```
 
 O perfil bloqueia conexões remotas/Azure herdadas antes de aplicar migrations.
+O launcher define ambos DOTNET_ENVIRONMENT e ASPNETCORE_ENVIRONMENT como Local
+para não herdar Production da máquina e permite as origens locais do frontend.
 Variáveis do processo e argumentos de linha de comando têm prioridade sobre User
 Secrets; corrigir também qualquer ConnectionStrings__InvestimentosDb herdada.
 
