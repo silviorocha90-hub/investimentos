@@ -7,11 +7,16 @@ import './Analises.css'
 interface Props { investidores: readonly Investidor[]; carteiras: ReadonlyArray<{ nome:string; dashboard:Dashboard }> }
 const pct=(v:number)=>`${v.toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1})}%`
 export function AnalisesView({investidores,carteiras}:Props){
- const [investidor,setInvestidor]=useState(investidores[0]?.nome??'')
- const dashboard=carteiras.find(x=>x.nome===investidor)?.dashboard??null
+ const investidoresComCarteira=useMemo(()=>investidores.filter(investidor=>
+  carteiras.some(carteira=>carteira.nome===investidor.nome&&
+   (carteira.dashboard.posicoes??[]).some(posicao=>posicao.quantidade>0))),[investidores,carteiras])
+ const [investidorSelecionado,setInvestidor]=useState('')
+ const investidor=investidoresComCarteira.some(item=>item.nome===investidorSelecionado)
+  ?investidorSelecionado:investidoresComCarteira[0]?.nome??''
+ const dashboard=investidor?carteiras.find(x=>x.nome===investidor)?.dashboard??null:null
  const dados=useMemo(()=>{if(!dashboard)return null;const pos=[...(dashboard.posicoes??[])].filter(x=>x.valorAtual>0).sort((a,b)=>b.valorAtual-a.valorAtual);return{pos,total:pos.reduce((s,x)=>s+x.valorAtual,0),max:Math.max(...pos.map(x=>x.valorAtual),1),proventos:[...pos].filter(x=>(x.proventos??0)>0).sort((a,b)=>(b.proventos??0)-(a.proventos??0)).slice(0,8)}},[dashboard])
- return <section className="portfolio-view analises-page"><PageHeader titulo="Análises" investidores={investidores} selectedInvestor={investidor} onSelectInvestor={setInvestidor} incluirTodos={false}/>
- {!dashboard||!dados?<div className="analises-empty">Selecione um investidor com carteira disponível.</div>:<><div className="analises-kpis">
+ return <section className="portfolio-view analises-page"><PageHeader titulo="Análises" investidores={investidoresComCarteira} selectedInvestor={investidor} onSelectInvestor={setInvestidor} incluirTodos={false}/>
+ {!dashboard||!dados?<div className="analises-empty">Nenhum investidor com posições em carteira para análise.</div>:<><div className="analises-kpis">
  <article><span>Patrimônio investido</span><strong>{formatarMoeda(dados.total)}</strong></article><article><span>Resultado da carteira</span><strong className={dashboard.resultadoCarteira>=0?'positive':'negative'}>{formatarMoeda(dashboard.resultadoCarteira)}</strong></article><article><span>Rentabilidade no ano</span><strong className={(dashboard.rentabilidadeAno??0)>=0?'positive':'negative'}>{pct(dashboard.rentabilidadeAno??0)}</strong></article><article><span>Proventos recebidos</span><strong>{formatarMoeda(dashboard.totalProventos)}</strong></article></div>
  <div className="analises-grid"><article className="analises-card"><header><strong>Concentração por ativo</strong><span>Peso das maiores posições</span></header><div className="analises-bars">{dados.pos.slice(0,10).map(x=><div className="analises-bar" key={x.ticker}><div><b>{x.ticker}</b><span>{pct(dados.total>0?x.valorAtual/dados.total*100:0)}</span></div><i><em style={{width:`${x.valorAtual/dados.max*100}%`}}/></i><small>{formatarMoeda(x.valorAtual)}</small></div>)}</div></article>
  <article className="analises-card"><header><strong>Alocação por classe</strong><span>Diversificação da carteira</span></header><div className="analises-allocation">{(dashboard.distribuicaoPorTipo??[]).filter(x=>x.valor>0).sort((a,b)=>b.valor-a.valor).map(x=><div key={x.codigo}><span><b>{x.nome}</b><small>{formatarMoeda(x.valor)}</small></span><strong>{pct(x.percentual)}</strong></div>)}</div></article>
