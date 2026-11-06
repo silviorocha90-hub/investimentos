@@ -68,6 +68,7 @@ jobs:
           --name aportiva-api
           --resource-group rg-aportiva-prod
           --image aportivacr.azurecr.io/aportiva-api:${{ github.sha }}
+          --set-env-vars ASSISTENTE_IA_ATIVO=true
 
       - name: Ensure single API replica for cookie sessions
         run: >

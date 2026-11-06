@@ -80,6 +80,8 @@ import {
 
 import { LogsAplicacaoTab } from './components/LogsAplicacaoTab'
 
+import { EstimativaIrTab } from './components/EstimativaIrTab'
+
 import './Administracao.css'
 
 type AbaAdministracao =
@@ -94,6 +96,7 @@ type AbaAdministracao =
   | 'usuarios'
   | 'integridade'
   | 'logs'
+  | 'estimativa-ir'
 
 type ModoModalAtivo =
   | 'novo'
@@ -899,6 +902,7 @@ export function AdministracaoView({
       </header>
 
       <nav className="admin-main-tabs">
+        <button type="button" className={aba === 'estimativa-ir' ? 'active' : ''} onClick={() => trocarAba('estimativa-ir')}>Estimativa de IR</button>
         <button
           type="button"
           className={
@@ -1076,6 +1080,7 @@ export function AdministracaoView({
       </nav>
 
       {aba === 'logs' ? <LogsAplicacaoTab /> : null}
+      {aba === 'estimativa-ir' ? <EstimativaIrTab /> : null}
 
       {aba ===
       'ativos' ? (

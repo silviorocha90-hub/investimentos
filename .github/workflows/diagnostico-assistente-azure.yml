@@ -25,13 +25,14 @@ jobs:
         run: |
           az containerapp show --name aportiva-api --resource-group rg-aportiva-prod --query '{revision:properties.latestReadyRevisionName,active:properties.runningStatus,image:properties.template.containers[0].image,min:properties.template.scale.minReplicas,max:properties.template.scale.maxReplicas}' -o json
           az containerapp revision list --name aportiva-api --resource-group rg-aportiva-prod --query '[].{name:name,active:properties.active,runningState:properties.runningState,replicas:properties.replicas}' -o json
+          az containerapp show --name aportiva-api --resource-group rg-aportiva-prod --query "properties.template.containers[0].env[?name=='ASSISTENTE_IA_ATIVO' || name=='ASPNETCORE_ENVIRONMENT' || name=='DOTNET_ENVIRONMENT'].{name:name,value:value}" -o json
           echo 'Configuracao presente (apenas nomes, sem valores):'
           az containerapp show --name aportiva-api --resource-group rg-aportiva-prod --query 'properties.template.containers[0].env[].name' -o tsv | grep -E '^(ASPNETCORE_ENVIRONMENT|DOTNET_ENVIRONMENT|ASSISTENTE_IA_ATIVO|RESEND_API_KEY|EMAIL_FROM|OPENAI_API_KEY|OPENAI_MODEL|BRAPI_TOKEN|BRAPI_OPCOES_HABILITADAS)' || true
 
       - name: Logs detalhados da API
         shell: bash
         run: |
-          echo 'Capturando as ultimas 1000 linhas e mantendo contexto da chamada OpenAI.'
-          az containerapp logs show --name aportiva-api --resource-group rg-aportiva-prod --type console --tail 1000 2>&1 \
+          echo 'Capturando as ultimas 300 linhas e mantendo contexto da chamada OpenAI.'
+          az containerapp logs show --name aportiva-api --resource-group rg-aportiva-prod --type console --tail 300 2>&1 \
             | grep -E -i -B 8 -A 25 'api\.openai\.com|OpenAI|Assistente|relat[oó]rio|HttpRequestException|InvalidOperationException|DbUpdateException|Exception|fail:|error|status(code)?|response|429|400|401|403|404|500' \
             | tail -500 || true

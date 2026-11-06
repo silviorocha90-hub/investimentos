@@ -1,4 +1,4 @@
-﻿using Investimentos.Domain.Entities;
+using Investimentos.Domain.Entities;
 using Investimentos.Domain.Usuarios;
 using Microsoft.EntityFrameworkCore;
 
@@ -13,6 +13,9 @@ namespace Investimentos.Infrastructure.Persistence
             : base(options)
         {
         }
+
+        public DbSet<HistoricoEstimativaIr> HistoricosEstimativaIr => Set<HistoricoEstimativaIr>();
+        public DbSet<RetencaoDefinitivaIr> RetencoesDefinitivasIr => Set<RetencaoDefinitivaIr>();
 
         public DbSet<ClasseAtivo> ClassesAtivos =>
             Set<ClasseAtivo>();
