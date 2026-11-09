@@ -1,3 +1,4 @@
+import { invalidateRequests } from './requestCache'
 import type {
   Administracao,
   AtivoAdministracao,
@@ -447,5 +448,7 @@ export async function atualizarCotacoesMercado():
     throw new Error(await lerErro(response))
   }
 
-  return response.json()
+  const resultado: ResultadoAtualizacaoCotacoes = await response.json()
+  invalidateRequests()
+  return resultado
 }

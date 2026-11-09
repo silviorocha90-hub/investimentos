@@ -427,12 +427,16 @@ export function AdministracaoView({
 
       const resultado = await atualizarCotacoesMercado()
 
-      setMensagemCotacoes(
-        `Cotações atualizadas: ${resultado.ativosAtualizados} ativos e ${resultado.opcoesAtualizadas} opções.`,
-      )
+      if (resultado.ativosAtualizados === 0 && resultado.opcoesAtualizadas === 0) {
+        throw new Error('Nenhuma cotação foi retornada. Confira os ativos cadastrados, o BRAPI_TOKEN e os logs de cotações para identificar falhas ou limites da fonte.')
+      }
 
       await carregar()
       await onDataChanged?.()
+
+      setMensagemCotacoes(
+        `Cotações atualizadas: ${resultado.ativosAtualizados} ativos e ${resultado.opcoesAtualizadas} opções. Dados da tela recarregados.`,
+      )
     } catch (error) {
       setErro(
         error instanceof Error
