@@ -2,9 +2,9 @@ import { useEffect, useMemo, useState } from 'react'
 
 import { PageHeader } from '../../components/PageHeader'
 import { SectionTitle } from '../../components/SectionTitle'
-import { ColumnFilterHeader, TableFilterSummary } from '../../components/ColumnFilter'
-import { useColumnFilters } from '../../components/useColumnFilters'
-import type { FilterColumn } from '../../components/useColumnFilters'
+import { SortableColumnHeader } from '../../components/SortableColumnHeader'
+import { useTableSort } from '../../components/useTableSort'
+import type { SortColumn } from '../../components/useTableSort'
 
 import type { Dashboard, PosicaoAtivo } from '../../types/dashboard'
 import type { Investidor } from '../../types/investidor'
@@ -77,22 +77,21 @@ function obterCategoria(ticker: string, tipoAtivoCodigo: string) {
   return tipoAtivoCodigo
 }
 
-const percentualCarteira = (valor: number) => `${valor.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%`
-const colunasCarteira: readonly FilterColumn<PosicaoAtivo>[] = [
+const colunasCarteira: readonly SortColumn<PosicaoAtivo>[] = [
   { id: 'ativo', label: 'Ativo', value: p => p.ticker },
   { id: 'tipo', label: 'Tipo', value: p => p.tipoAtivoNome },
-  { id: 'quantidade', label: 'Quantidade', value: p => formatarNumeroInteiro(p.quantidade) },
-  { id: 'precoMedio', label: 'Preço Médio', value: p => formatarMoeda(p.precoMedio) },
-  { id: 'precoAtual', label: 'Preço Atual', value: p => p.precoAtual == null ? '-' : formatarMoeda(p.precoAtual) },
-  { id: 'custo', label: 'Custo Total', value: p => formatarMoeda(p.custoTotal) },
-  { id: 'valor', label: 'Valor Atual', value: p => formatarMoeda(p.valorAtual) },
-  { id: 'valorizacao', label: 'Valorização', value: p => formatarMoeda(p.valorizacao) },
-  { id: 'rentabilidade', label: 'Rentab.', value: p => percentualCarteira(p.rentabilidadeEconomica ?? 0) },
+  { id: 'quantidade', label: 'Quantidade', value: p => p.quantidade },
+  { id: 'precoMedio', label: 'Preço Médio', value: p => p.precoMedio },
+  { id: 'precoAtual', label: 'Preço Atual', value: p => p.precoAtual },
+  { id: 'custo', label: 'Custo Total', value: p => p.custoTotal },
+  { id: 'valor', label: 'Valor Atual', value: p => p.valorAtual },
+  { id: 'valorizacao', label: 'Valorização', value: p => p.valorizacao },
+  { id: 'rentabilidade', label: 'Rentab.', value: p => p.rentabilidadeEconomica ?? 0 },
 ]
-const colunasOutros: readonly FilterColumn<PosicaoAtivo>[] = [
+const colunasOutros: readonly SortColumn<PosicaoAtivo>[] = [
   { id: 'investimento', label: 'Investimento', value: p => p.ticker },
   { id: 'categoria', label: 'Categoria', value: p => obterCategoria(p.ticker, p.tipoAtivoCodigo) === 'Previdência' ? 'PREV' : obterCategoria(p.ticker, p.tipoAtivoCodigo) },
-  { id: 'valor', label: 'Valor Atual', value: p => formatarMoeda(p.valorAtual) },
+  { id: 'valor', label: 'Valor Atual', value: p => p.valorAtual },
 ]
 
 export function CarteiraView({
@@ -232,8 +231,8 @@ export function CarteiraView({
       maximumFractionDigits: 1,
     })}%`
 
-  const filtrosRenda = useColumnFilters(rendaVariavel, colunasCarteira, filtroInvestidor)
-  const filtrosOutros = useColumnFilters(outrosInvestimentos, colunasOutros, filtroInvestidor)
+  const ordemRenda = useTableSort(rendaVariavel, colunasCarteira, filtroInvestidor, { column: 'valor', direction: 'desc' })
+  const ordemOutros = useTableSort(outrosInvestimentos, colunasOutros, filtroInvestidor, { column: 'valor', direction: 'desc' })
 
   function selecionarInvestidor(nome: string) {
     setFiltroInvestidor(nome)
@@ -262,14 +261,13 @@ export function CarteiraView({
         <SectionTitle title="Renda Variável" subtitle="Ações e FIIs com cotação em mercado" />
         {rendaVariavel.length > 0 ? (
           <>
-          <TableFilterSummary shown={filtrosRenda.filteredRows.length} total={rendaVariavel.length} active={filtrosRenda.active} onClear={filtrosRenda.clear} />
           <div className="table-wrap compact">
             <table className="data-table carteira-positions-table">
               <thead><tr>
-                {colunasCarteira.map(coluna => <ColumnFilterHeader key={coluna.id} label={coluna.label} values={filtrosRenda.values[coluna.id]} selected={filtrosRenda.filters[coluna.id]} onChange={values => filtrosRenda.setFilter(coluna.id, values)} />)}
+                {colunasCarteira.map(coluna => <SortableColumnHeader key={coluna.id} label={coluna.label} direction={ordemRenda.sort?.column === coluna.id ? ordemRenda.sort.direction : undefined} onSort={() => ordemRenda.toggle(coluna.id)} />)}
               </tr></thead>
               <tbody>
-                {filtrosRenda.filteredRows.map((posicao) => {
+                {ordemRenda.sortedRows.map((posicao) => {
                   const rentabilidade =
                     posicao.rentabilidadeEconomica ?? 0
                   return (
@@ -286,7 +284,6 @@ export function CarteiraView({
                     </tr>
                   )
                 })}
-                {filtrosRenda.filteredRows.length === 0 && <tr><td colSpan={colunasCarteira.length} className="column-filter-no-results">Nenhuma posição corresponde aos filtros das colunas.</td></tr>}
               </tbody>
             </table>
           </div>
@@ -298,18 +295,16 @@ export function CarteiraView({
         <SectionTitle title="Outros Investimentos" subtitle="FMP, renda fixa e previdência apresentados pelo valor patrimonial" />
         {outrosInvestimentos.length > 0 ? (
           <>
-          <TableFilterSummary shown={filtrosOutros.filteredRows.length} total={outrosInvestimentos.length} active={filtrosOutros.active} onClear={filtrosOutros.clear} />
           <div className="table-wrap compact">
             <table className="data-table carteira-other-investments-table">
-              <thead><tr>{colunasOutros.map(coluna => <ColumnFilterHeader key={coluna.id} label={coluna.label} values={filtrosOutros.values[coluna.id]} selected={filtrosOutros.filters[coluna.id]} onChange={values => filtrosOutros.setFilter(coluna.id, values)} />)}</tr></thead>
-              <tbody>{filtrosOutros.filteredRows.map((posicao) => (
+              <thead><tr>{colunasOutros.map(coluna => <SortableColumnHeader key={coluna.id} label={coluna.label} direction={ordemOutros.sort?.column === coluna.id ? ordemOutros.sort.direction : undefined} onSort={() => ordemOutros.toggle(coluna.id)} />)}</tr></thead>
+              <tbody>{ordemOutros.sortedRows.map((posicao) => (
                 <tr key={posicao.ticker}>
                   <td><span className="ticker">{posicao.ticker}</span></td>
                   <td><span className="investment-category">{obterCategoria(posicao.ticker, posicao.tipoAtivoCodigo) === 'Previdência' ? 'PREV' : obterCategoria(posicao.ticker, posicao.tipoAtivoCodigo)}</span></td>
                   <td className="align-right strong">{formatarMoeda(posicao.valorAtual)}</td>
                 </tr>
               ))}
-              {filtrosOutros.filteredRows.length === 0 && <tr><td colSpan={colunasOutros.length} className="column-filter-no-results">Nenhum investimento corresponde aos filtros das colunas.</td></tr>}
               </tbody>
             </table>
           </div>

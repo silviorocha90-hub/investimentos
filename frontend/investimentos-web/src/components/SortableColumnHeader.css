@@ -1,0 +1,5 @@
+.sortable-column-trigger{display:flex;align-items:center;justify-content:space-between;gap:4px;width:100%;padding:4px 0;border:0;background:transparent;color:inherit;font:inherit;font-weight:inherit;text-align:inherit;cursor:pointer;white-space:normal}
+.sortable-column-trigger:hover,.sortable-column-trigger.is-sorted{color:#62dfc1}
+.sortable-column-trigger:focus-visible{outline:2px solid #62dfc1;outline-offset:2px}
+.sortable-column-icon{flex:none;opacity:.65;font-size:10px}
+.sortable-column-trigger.is-sorted .sortable-column-icon{opacity:1}
