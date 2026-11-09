@@ -187,7 +187,8 @@ public sealed class AssistenteIaService
             }
 
             var resultado = await AtualizarMercadoSemanalAsync(dataLocal, cancellationToken,
-                registrarNovaCotacao: string.Equals(origem, "manual", StringComparison.OrdinalIgnoreCase));
+                registrarNovaCotacao: string.Equals(origem, "manual", StringComparison.OrdinalIgnoreCase),
+                incluirAtivosCadastrados: string.Equals(origem, "manual", StringComparison.OrdinalIgnoreCase));
             _context.LogsAplicacao.Add(new LogAplicacao
             {
                 Ambiente = _configuration["ASPNETCORE_ENVIRONMENT"] ?? "Production",
@@ -209,7 +210,8 @@ public sealed class AssistenteIaService
     public async Task<AtualizacaoMercadoResultado> AtualizarMercadoSemanalAsync(
         DateTime dataLocal,
         CancellationToken cancellationToken,
-        bool registrarNovaCotacao = false)
+        bool registrarNovaCotacao = false,
+        bool incluirAtivosCadastrados = false)
     {
         var investidores = await _context.Investidores
             .AsNoTracking()
@@ -219,6 +221,19 @@ public sealed class AssistenteIaService
         var tickers = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         var opcoes = new Dictionary<string, OpcaoMercadoConsulta>(
             StringComparer.OrdinalIgnoreCase);
+
+        // O clique manual também atualiza ativos cadastrados ainda sem posição.
+        // A agenda automática continua restrita aos ativos mantidos em carteira.
+        if (incluirAtivosCadastrados)
+        {
+            var cadastrados = await _context.Ativos.AsNoTracking()
+                .Where(x => x.TipoAtivo.Codigo == "ACAO" ||
+                            x.TipoAtivo.Codigo == "FII" ||
+                            x.TipoAtivo.Codigo == "ETF")
+                .Select(x => x.Ticker)
+                .ToListAsync(cancellationToken);
+            tickers.UnionWith(cadastrados.Select(x => x.Codigo));
+        }
 
         foreach (var id in investidores)
         {
