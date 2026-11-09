@@ -35,6 +35,10 @@ jobs:
         working-directory: frontend/investimentos-web
         run: npm run build
 
+      - name: Column filter tests
+        working-directory: frontend/investimentos-web
+        run: npm run test:column-filters
+
       - name: Application tests
         run: dotnet test Investimentos.Application.Tests/Investimentos.Application.Tests.csproj
 

@@ -2,8 +2,11 @@ import { useEffect, useMemo, useState } from 'react'
 
 import { PageHeader } from '../../components/PageHeader'
 import { SectionTitle } from '../../components/SectionTitle'
+import { ColumnFilterHeader, TableFilterSummary } from '../../components/ColumnFilter'
+import { useColumnFilters } from '../../components/useColumnFilters'
+import type { FilterColumn } from '../../components/useColumnFilters'
 
-import type { Dashboard } from '../../types/dashboard'
+import type { Dashboard, PosicaoAtivo } from '../../types/dashboard'
 import type { Investidor } from '../../types/investidor'
 
 import {
@@ -73,6 +76,24 @@ function obterCategoria(ticker: string, tipoAtivoCodigo: string) {
 
   return tipoAtivoCodigo
 }
+
+const percentualCarteira = (valor: number) => `${valor.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%`
+const colunasCarteira: readonly FilterColumn<PosicaoAtivo>[] = [
+  { id: 'ativo', label: 'Ativo', value: p => p.ticker },
+  { id: 'tipo', label: 'Tipo', value: p => p.tipoAtivoNome },
+  { id: 'quantidade', label: 'Quantidade', value: p => formatarNumeroInteiro(p.quantidade) },
+  { id: 'precoMedio', label: 'Preço Médio', value: p => formatarMoeda(p.precoMedio) },
+  { id: 'precoAtual', label: 'Preço Atual', value: p => p.precoAtual == null ? '-' : formatarMoeda(p.precoAtual) },
+  { id: 'custo', label: 'Custo Total', value: p => formatarMoeda(p.custoTotal) },
+  { id: 'valor', label: 'Valor Atual', value: p => formatarMoeda(p.valorAtual) },
+  { id: 'valorizacao', label: 'Valorização', value: p => formatarMoeda(p.valorizacao) },
+  { id: 'rentabilidade', label: 'Rentab.', value: p => percentualCarteira(p.rentabilidadeEconomica ?? 0) },
+]
+const colunasOutros: readonly FilterColumn<PosicaoAtivo>[] = [
+  { id: 'investimento', label: 'Investimento', value: p => p.ticker },
+  { id: 'categoria', label: 'Categoria', value: p => obterCategoria(p.ticker, p.tipoAtivoCodigo) === 'Previdência' ? 'PREV' : obterCategoria(p.ticker, p.tipoAtivoCodigo) },
+  { id: 'valor', label: 'Valor Atual', value: p => formatarMoeda(p.valorAtual) },
+]
 
 export function CarteiraView({
   investidores,
@@ -211,6 +232,9 @@ export function CarteiraView({
       maximumFractionDigits: 1,
     })}%`
 
+  const filtrosRenda = useColumnFilters(rendaVariavel, colunasCarteira, filtroInvestidor)
+  const filtrosOutros = useColumnFilters(outrosInvestimentos, colunasOutros, filtroInvestidor)
+
   function selecionarInvestidor(nome: string) {
     setFiltroInvestidor(nome)
     if (nome !== 'TOTAL') onSelectInvestor(nome)
@@ -237,15 +261,15 @@ export function CarteiraView({
       <article className="panel portfolio-positions portfolio-variable-income carteira-panel">
         <SectionTitle title="Renda Variável" subtitle="Ações e FIIs com cotação em mercado" />
         {rendaVariavel.length > 0 ? (
+          <>
+          <TableFilterSummary shown={filtrosRenda.filteredRows.length} total={rendaVariavel.length} active={filtrosRenda.active} onClear={filtrosRenda.clear} />
           <div className="table-wrap compact">
             <table className="data-table carteira-positions-table">
               <thead><tr>
-                <th>Ativo</th><th>Tipo</th><th>Quantidade</th><th>Preço Médio</th>
-                <th>Preço Atual</th><th>Custo Total</th><th>Valor Atual</th>
-                <th>Valorização</th><th>Rentab.</th>
+                {colunasCarteira.map(coluna => <ColumnFilterHeader key={coluna.id} label={coluna.label} values={filtrosRenda.values[coluna.id]} selected={filtrosRenda.filters[coluna.id]} onChange={values => filtrosRenda.setFilter(coluna.id, values)} />)}
               </tr></thead>
               <tbody>
-                {rendaVariavel.map((posicao) => {
+                {filtrosRenda.filteredRows.map((posicao) => {
                   const rentabilidade =
                     posicao.rentabilidadeEconomica ?? 0
                   return (
@@ -262,27 +286,34 @@ export function CarteiraView({
                     </tr>
                   )
                 })}
+                {filtrosRenda.filteredRows.length === 0 && <tr><td colSpan={colunasCarteira.length} className="column-filter-no-results">Nenhuma posição corresponde aos filtros das colunas.</td></tr>}
               </tbody>
             </table>
           </div>
+          </>
         ) : <div className="empty-state"><strong>Nenhuma posição de renda variável encontrada</strong></div>}
       </article>
 
       <article className="panel portfolio-other-investments carteira-panel">
         <SectionTitle title="Outros Investimentos" subtitle="FMP, renda fixa e previdência apresentados pelo valor patrimonial" />
         {outrosInvestimentos.length > 0 ? (
+          <>
+          <TableFilterSummary shown={filtrosOutros.filteredRows.length} total={outrosInvestimentos.length} active={filtrosOutros.active} onClear={filtrosOutros.clear} />
           <div className="table-wrap compact">
             <table className="data-table carteira-other-investments-table">
-              <thead><tr><th>Investimento</th><th>Categoria</th><th>Valor Atual</th></tr></thead>
-              <tbody>{outrosInvestimentos.map((posicao) => (
+              <thead><tr>{colunasOutros.map(coluna => <ColumnFilterHeader key={coluna.id} label={coluna.label} values={filtrosOutros.values[coluna.id]} selected={filtrosOutros.filters[coluna.id]} onChange={values => filtrosOutros.setFilter(coluna.id, values)} />)}</tr></thead>
+              <tbody>{filtrosOutros.filteredRows.map((posicao) => (
                 <tr key={posicao.ticker}>
                   <td><span className="ticker">{posicao.ticker}</span></td>
                   <td><span className="investment-category">{obterCategoria(posicao.ticker, posicao.tipoAtivoCodigo) === 'Previdência' ? 'PREV' : obterCategoria(posicao.ticker, posicao.tipoAtivoCodigo)}</span></td>
                   <td className="align-right strong">{formatarMoeda(posicao.valorAtual)}</td>
                 </tr>
-              ))}</tbody>
+              ))}
+              {filtrosOutros.filteredRows.length === 0 && <tr><td colSpan={colunasOutros.length} className="column-filter-no-results">Nenhum investimento corresponde aos filtros das colunas.</td></tr>}
+              </tbody>
             </table>
           </div>
+          </>
         ) : <div className="empty-state"><strong>Nenhum outro investimento encontrado</strong></div>}
       </article>
 
