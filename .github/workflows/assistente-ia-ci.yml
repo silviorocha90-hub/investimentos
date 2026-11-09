@@ -35,9 +35,9 @@ jobs:
         working-directory: frontend/investimentos-web
         run: npm run build
 
-      - name: Column filter tests
+      - name: Table sorting tests
         working-directory: frontend/investimentos-web
-        run: npm run test:column-filters
+        run: npm run test:table-sorting
 
       - name: Application tests
         run: dotnet test Investimentos.Application.Tests/Investimentos.Application.Tests.csproj

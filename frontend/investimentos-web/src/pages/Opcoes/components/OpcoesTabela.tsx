@@ -1,6 +1,6 @@
-import { ColumnFilterHeader, TableFilterSummary } from '../../../components/ColumnFilter'
-import { useColumnFilters } from '../../../components/useColumnFilters'
-import type { FilterColumn } from '../../../components/useColumnFilters'
+import { SortableColumnHeader } from '../../../components/SortableColumnHeader'
+import { dateSortValue, useTableSort } from '../../../components/useTableSort'
+import type { SortColumn } from '../../../components/useTableSort'
 import {
   useEffect,
   useState,
@@ -47,17 +47,17 @@ function formatarPercentual(
 const dataReferencia = (opcao: OperacaoOpcao) => opcao.dataFinalizacao
   ? formatarDataCurta(opcao.dataFinalizacao)
   : opcao.situacao === 'EXECUTADA' ? formatarDataCurta(opcao.dataOperacao) : '—'
-const colunasOpcoes: readonly FilterColumn<OperacaoOpcao>[] = [
-  { id: 'referencia', label: 'Data de Referência', value: dataReferencia },
-  { id: 'vencimento', label: 'Vencimento', value: o => formatarDataCurta(o.vencimento) },
+const colunasOpcoes: readonly SortColumn<OperacaoOpcao>[] = [
+  { id: 'referencia', label: 'Data de Referência', value: o => dateSortValue(o.dataFinalizacao ?? (o.situacao === 'EXECUTADA' ? o.dataOperacao : null)) },
+  { id: 'vencimento', label: 'Vencimento', value: o => dateSortValue(o.vencimento) },
   { id: 'ticker', label: 'Ticker', value: o => o.tickerOpcao },
   { id: 'tipo', label: 'Tipo', value: o => o.tipoOpcao },
   { id: 'status', label: 'Status', value: o => o.situacao },
-  { id: 'quantidade', label: 'Qtd.', value: o => formatarNumeroInteiro(o.quantidade) },
-  { id: 'strike', label: 'Strike', value: o => formatarMoeda(o.strike) },
-  { id: 'bruto', label: 'Resultado Bruto', value: o => o.resultadoBruto == null ? '—' : formatarMoeda(o.resultadoBruto) },
-  { id: 'ir', label: 'IR', value: o => o.resultadoBruto == null ? '—' : `${formatarMoeda(o.irEstimado)} (${formatarPercentual(o.aliquotaIr)})` },
-  { id: 'liquido', label: 'Resultado Líquido', value: o => o.resultadoLiquido == null ? '—' : formatarMoeda(o.resultadoLiquido) },
+  { id: 'quantidade', label: 'Qtd.', value: o => o.quantidade },
+  { id: 'strike', label: 'Strike', value: o => o.strike },
+  { id: 'bruto', label: 'Resultado Bruto', value: o => o.resultadoBruto },
+  { id: 'ir', label: 'IR', value: o => o.resultadoBruto == null ? null : o.irEstimado },
+  { id: 'liquido', label: 'Resultado Líquido', value: o => o.resultadoLiquido },
 ]
 
 export function OpcoesTabela({
@@ -71,15 +71,15 @@ export function OpcoesTabela({
   const [pagina, setPagina] =
     useState(1)
 
-  const filtros = useColumnFilters(opcoes, colunasOpcoes)
-  const opcoesFiltradas = filtros.filteredRows
+  const ordenacao = useTableSort(opcoes, colunasOpcoes)
+  const opcoesOrdenadas = ordenacao.sortedRows
   const itensPorPagina = 10
 
   const totalPaginas =
     Math.max(
       1,
       Math.ceil(
-        opcoesFiltradas.length /
+        opcoesOrdenadas.length /
           itensPorPagina,
       ),
     )
@@ -91,7 +91,7 @@ export function OpcoesTabela({
     )
 
   const opcoesExibidas =
-    opcoesFiltradas.slice(
+    opcoesOrdenadas.slice(
       (paginaSegura - 1) *
         itensPorPagina,
       paginaSegura *
@@ -106,7 +106,7 @@ export function OpcoesTabela({
 
   useEffect(() => {
     setPagina(1)
-  }, [opcoes, filtros.filters])
+  }, [opcoes, ordenacao.sort])
 
   return (
     <article className="panel options-table-panel">
@@ -117,8 +117,8 @@ export function OpcoesTabela({
           </strong>
 
           <span className="options-count-badge">
-            {opcoesFiltradas.length}{' '}
-            {opcoesFiltradas.length === 1
+            {opcoesOrdenadas.length}{' '}
+            {opcoesOrdenadas.length === 1
               ? 'opção'
               : 'opções'}
           </span>
@@ -137,13 +137,12 @@ export function OpcoesTabela({
         ) : null}
       </div>
 
-      <TableFilterSummary shown={opcoesFiltradas.length} total={opcoes.length} active={filtros.active} onClear={() => { filtros.clear(); setPagina(1) }} />
       {opcoes.length > 0 ? (
         <div className="options-table-wrap">
           <table className="data-table options-table">
             <thead>
               <tr>
-                {colunasOpcoes.map(coluna => <ColumnFilterHeader key={coluna.id} label={coluna.label} values={filtros.values[coluna.id]} selected={filtros.filters[coluna.id]} onChange={values => { filtros.setFilter(coluna.id, values); setPagina(1) }} />)}
+                {colunasOpcoes.map(coluna => <SortableColumnHeader key={coluna.id} label={coluna.label} direction={ordenacao.sort?.column === coluna.id ? ordenacao.sort.direction : undefined} onSort={() => { ordenacao.toggle(coluna.id); setPagina(1) }} />)}
 
                 {modoAdministracao ? (
                   <th>Ações</th>
@@ -292,7 +291,6 @@ export function OpcoesTabela({
                   )
                 },
               )}
-              {opcoesFiltradas.length === 0 && <tr><td colSpan={colunasOpcoes.length + (modoAdministracao ? 1 : 0)} className="column-filter-no-results">Nenhuma opção corresponde aos filtros das colunas.</td></tr>}
             </tbody>
           </table>
         </div>
@@ -323,7 +321,7 @@ export function OpcoesTabela({
       {totalPaginas > 1 ? (
         <div className="proventos-pagination admin-table-pagination options-pagination">
           <span>
-            {opcoesFiltradas.length}{' '}
+            {opcoesOrdenadas.length}{' '}
             registros
           </span>
 
