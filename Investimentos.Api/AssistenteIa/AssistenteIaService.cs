@@ -792,6 +792,26 @@ public sealed class AssistenteIaService
                 new Dictionary<string, CotacaoAtivoMercado>(StringComparer.OrdinalIgnoreCase),
                 new Dictionary<string, CotacaoOpcaoMercado>(StringComparer.OrdinalIgnoreCase));
 
+        // A atualizacao diaria pode ja ter sido executada pelo worker. Nesse caso,
+        // recuperar as cotacoes persistidas em vez de enviar valores nulos para a IA.
+        var inicioJanela = data.AddDays(-7);
+        var cotacoesPersistidas = await _context.CotacoesAtivos.AsNoTracking()
+            .Where(c => c.DataReferencia >= inicioJanela && c.DataReferencia < data.AddDays(1))
+            .Select(c => new { Ticker = c.Ativo.Ticker.Codigo, c.Preco, c.DataReferencia })
+            .ToListAsync(cancellationToken);
+        var cotacoesPorTicker = cotacoesPersistidas
+            .Where(c => c.Preco > 0)
+            .GroupBy(c => c.Ticker, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(g => g.Key, g => g.OrderByDescending(c => c.DataReferencia).First(),
+                StringComparer.OrdinalIgnoreCase);
+
+        var proventosRegistrados = await _context.Proventos.AsNoTracking()
+            .Where(p => p.DataPagamento >= data.AddDays(-6) && p.DataPagamento < data.AddDays(1) &&
+                        (!investidorId.HasValue || p.InvestidorId == investidorId.Value))
+            .Select(p => new { p.InvestidorId, Ticker = p.Ativo.Ticker.Codigo,
+                p.Tipo, p.DataPagamento, p.ValorRecebido })
+            .ToListAsync(cancellationToken);
+
         var carteiras = new List<object>();
 
         foreach (var investidor in investidores)
@@ -814,12 +834,23 @@ public sealed class AssistenteIaService
                         x.PrecoMedio,
                         x.ValorAtual,
                         x.Valorizacao,
+                        FonteValorMercado = "Dashboard interno da Aportiva",
+                        DataReferenciaValorMercado = dataLocal.ToString("yyyy-MM-dd"),
                         CotacaoAtualizada =
                             mercado.Ativos.TryGetValue(
                                 x.Ticker,
                                 out var cotacaoAtivo)
                                 ? cotacaoAtivo.Preco
-                                : (decimal?)null,
+                                : cotacoesPorTicker.TryGetValue(x.Ticker, out var historica)
+                                    ? historica.Preco : (decimal?)null,
+                        DataCotacao = mercado.Ativos.ContainsKey(x.Ticker)
+                            ? data.ToString("yyyy-MM-dd")
+                            : cotacoesPorTicker.TryGetValue(x.Ticker, out var historicaData)
+                                ? historicaData.DataReferencia.ToString("yyyy-MM-dd") : null,
+                        FonteCotacao = mercado.Ativos.ContainsKey(x.Ticker)
+                            ? "brapi - consulta da execução"
+                            : cotacoesPorTicker.ContainsKey(x.Ticker)
+                                ? "histórico persistido Aportiva" : "não disponível",
                         VariacaoDiaPercentual =
                             mercado.Ativos.TryGetValue(
                                 x.Ticker,
@@ -875,6 +906,9 @@ public sealed class AssistenteIaService
                                 x.ValorExecucao.HasValue &&
                                 x.ValorExecucao.Value > 0,
                             x.ValorAcaoAtual,
+                            CapitalExercicioCondicional = x.TipoOpcao == "PUT" && x.Natureza == "VENDA"
+                                ? x.Strike * x.Quantidade : (decimal?)null,
+                            BaseCapitalExercicio = "Strike × quantidade cadastrada; confirmar unidade e ajustes contratuais",
                             x.DistanciaStrikePercentual,
                             x.EmRiscoExercicio,
                             CotacaoOpcao = cotacaoOpcao?.Preco,
@@ -890,7 +924,7 @@ public sealed class AssistenteIaService
         }
 
         var dados = JsonSerializer.Serialize(
-            carteiras,
+            new { Carteiras = carteiras, ProventosRegistradosUltimosSeteDias = proventosRegistrados },
             new JsonSerializerOptions { WriteIndented = true });
 
         var instructions = escopo == "TODOS"
@@ -1039,7 +1073,9 @@ ticker da opção, ativo-objeto, call/put, compra/venda, quantidade,
 strike, vencimento, prêmio recebido/pago, cotação de referência, distância
 ao strike (%), cobertura/capital necessário estimado e risco observado.
 Diferencie quantidade de contratos e quantidade efetiva de ações: não
-assuma multiplicador de contratos não fornecido. Para puts vendidas,
+assuma multiplicador de contratos não fornecido. O campo CapitalExercicioCondicional
+é apenas strike vezes quantidade cadastrada, não comprova obrigação nem cobertura.
+Para puts vendidas,
 mostre desembolso de exercício estimado apenas se a quantidade representar
 unidades do ativo. Compare liquidez por investidor, nunca usando caixa
 de terceiros para afirmar cobertura.
@@ -1072,6 +1108,11 @@ risco de exercício ou atribuição e captura de prêmio quando houver dados.
 
 ## Proventos e eventos
 Destaque dividendos, JCP, resultados, fatos relevantes e eventos pertinentes.
+Utilize ProventosRegistradosUltimosSeteDias como registros internos efetivamente pagos;
+se a lista estiver vazia, diga apenas que não houve registros de pagamento nessa janela.
+Não declare que não existem proventos internos: se não forem incluídos no payload,
+escreva que os registros de proventos não foram disponibilizados a esta execução.
+Não confunda ausência no payload com inexistência no banco de dados.
 
 ## Alocação, concentração e riscos
 Mostre exposições e concentrações relevantes e as limitações dos dados.
@@ -1212,9 +1253,9 @@ Quando não houver novidade relevante, diga explicitamente.
         }
 
         var html = new StringBuilder();
-        html.Append("<!doctype html><html lang=\"pt-BR\"><body style=\"margin:0;background:#f3f6fb;padding:24px;font-family:Arial,sans-serif;color:#172b4d\">");
+        html.Append("<!doctype html><html lang=\"pt-BR\"><body style=\"margin:0;background:#f3f6fb;padding:24px;font-family:Arial,sans-serif;color:#172b4d;font-size:14px;line-height:1.5\">");
         html.Append("<main style=\"max-width:840px;margin:auto;background:#fff;padding:24px;border-radius:12px\">");
-        html.Append("<h1 style=\"color:#114d90;font-size:24px\">Aportiva | Resumo semanal</h1>");
+        html.Append("<h1 style=\"color:#114d90;font-size:20px;line-height:1.3\">Aportiva | Resumo semanal</h1>");
         html.Append("<p>Olá, ").Append(Escapar(nome)).Append(".</p>");
         html.Append("<p>Referência: ").Append(dataReferencia.ToString("dd/MM/yyyy")).Append("</p>");
 
@@ -1235,7 +1276,7 @@ Quando não houver novidade relevante, diga explicitamente.
 
                 if (!tabelaAberta)
                 {
-                    html.Append("<div style=\"overflow-x:auto;margin:16px 0\"><table style=\"border-collapse:collapse;width:100%;font-size:13px\" cellspacing=\"0\" cellpadding=\"8\">");
+                    html.Append("<div style=\"overflow-x:auto;margin:16px 0\"><table style=\"border-collapse:collapse;width:100%;font-size:14px\" cellspacing=\"0\" cellpadding=\"8\">");
                     tabelaAberta = true;
                     indice = 0;
                 }
@@ -1268,7 +1309,7 @@ Quando não houver novidade relevante, diga explicitamente.
             if (nivel is >= 1 and <= 4 && linha.Length > nivel && linha[nivel] == ' ')
             {
                 var tag = nivel == 1 ? "h2" : "h3";
-                html.Append('<').Append(tag).Append(" style=\"margin-top:24px;color:#114d90\">")
+                html.Append('<').Append(tag).Append(" style=\"margin-top:24px;color:#114d90;font-size:16px;line-height:1.4\">")
                     .Append(Inline(linha[(nivel + 1)..]))
                     .Append("</").Append(tag).Append('>');
             }
@@ -1281,7 +1322,7 @@ Quando não houver novidade relevante, diga explicitamente.
         if (tabelaAberta)
             html.Append("</table></div>");
 
-        html.Append("<p style=\"border-top:1px solid #e5e7eb;padding-top:18px;font-size:12px;color:#64748b\">");
+        html.Append("<p style=\"border-top:1px solid #e5e7eb;padding-top:18px;font-size:14px;color:#64748b\">");
         html.Append("Informações estimadas, sujeitas à atualização de cotações. Aportiva.</p></main></body></html>");
         return html.ToString();
     }
