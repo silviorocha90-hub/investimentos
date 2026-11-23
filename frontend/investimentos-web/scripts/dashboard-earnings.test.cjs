@@ -53,9 +53,28 @@ test('o painel exibe os dois rendimentos da API e sinaliza prejuízos', () => {
   assert.doesNotMatch(html, /Entradas|Saídas|Capital aportado|Capital retirado/)
 })
 
-test('o painel sem dados apresenta zero e mantém a evolução patrimonial disponível', () => {
+test('o painel sem dados não confunde indicador indisponível com rendimento zero', () => {
   const html = render(null)
   assert.match(html, /Rendimento de opções/)
   assert.match(html, /Rendimento de ações \+ FIIs/)
+  assert.match(html, /Indisponível/)
+  assert.match(html, /portfolio-earnings-pending/)
   assert.doesNotMatch(html, /NaN|Infinity|Entradas|Saídas/)
+})
+
+
+test('uma API anterior preserva o rendimento de opções e não inventa zero para ações e FIIs', () => {
+  const html = render({ premioLiquidoOpcoes: 123.45,
+    posicoes: [], proventos: [], opcoes: [], distribuicaoPorTipo: [] })
+  assert.match(html, /R\$[^<]*123,45/)
+  assert.match(html, /Indisponível/)
+  assert.match(html, /Atualize a aplicação para carregar este indicador/)
+})
+
+test('zero explícito da API é preservado e os campos novos têm prioridade', () => {
+  const html = render({ rendimentoOpcoes: 0, premioLiquidoOpcoes: 123.45, rendimentoAcoesFiis: 0,
+    posicoes: [], proventos: [], opcoes: [], distribuicaoPorTipo: [] })
+  const indicadores = html.split('<div class="portfolio-earnings-grid">')[1].split('</article>')[0]
+  assert.doesNotMatch(indicadores, /Indisponível|123,45|portfolio-earnings-pending/)
+  assert.match(html, /R\$[^<]*0,00/)
 })
