@@ -40,6 +40,7 @@ namespace Investimentos.Infrastructure.Persistence.Repositories
                             x.Data,
                             x.Sequencia)
                         {
+                            InvestidorId = x.InvestidorId,
                             TipoAtivoCodigo =
                                 x.Ativo.TipoAtivo.Codigo,
 

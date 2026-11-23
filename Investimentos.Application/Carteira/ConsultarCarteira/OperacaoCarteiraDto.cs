@@ -12,6 +12,8 @@
         DateTime Data,
         int Sequencia)
     {
+        public Guid? InvestidorId { get; init; }
+
         public string TipoAtivoCodigo { get; init; } = string.Empty;
 
         public string TipoAtivoNome { get; init; } = string.Empty;

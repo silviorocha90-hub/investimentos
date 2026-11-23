@@ -54,7 +54,7 @@ function nodes(node) {
 const investidores = [{ id: 'origem', nome: 'Origem' }, { id: 'destino', nome: 'Destino' }]
 const operacao = { id: 'antiga', investidorId: 'origem', ativoId: 'ativo', ticker: 'ITUB4', nome: 'Itaú', tipoOperacao: 'COMPRA', quantidade: 100, precoUnitario: 10, taxas: 0, data: '2025-08-01T00:00:00', sequencia: 1 }
 function editar(runner, View, onSaveOperation) {
-  const props = { investidores, selectedInvestor: 'Origem', onSelectInvestor() {}, operacoes: [operacao], onSaveOperation }
+  const props = { investidores, selectedInvestor: 'TOTAL', onSelectInvestor() {}, operacoes: [{ ...operacao, investidorId: 'ORIGEM' }], onSaveOperation }
   let tree = runner.render(() => View(props))
   nodes(tree).find(node => node.type === 'button' && node.props.children === 'Editar').props.onClick()
   tree = runner.render(() => View(props))
