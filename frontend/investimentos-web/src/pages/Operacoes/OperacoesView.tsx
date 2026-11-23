@@ -599,6 +599,10 @@ export function OperacoesView({
                       operacaoEmEdicao ===
                       operacao.id
 
+                    const titular = investidores.find(item =>
+                      item.id.toLowerCase() === operacao.investidorId?.trim().toLowerCase(),
+                    ) ?? (operacao.investidorId ? undefined : investidores.find(item => item.nome === selectedInvestor))
+
                     return (
                       <tr
                         key={
@@ -622,7 +626,8 @@ export function OperacoesView({
 
                             <td>
                               <select name="investidorId" aria-label="Investidor da operação"
-                                defaultValue={operacao.investidorId ?? investidores.find(item => item.nome === selectedInvestor)?.id ?? ''}
+                                key={titular?.id ?? 'sem-titular'}
+                                defaultValue={titular?.id ?? ''}
                                 disabled={salvandoOperacao} required>
                                 <option value="" disabled>Selecione</option>
                                 {investidores.map(investidor => <option key={investidor.id} value={investidor.id}>{investidor.nome}</option>)}
@@ -796,7 +801,7 @@ export function OperacoesView({
                               )}
                             </td>
 
-                            <td>{investidores.find(item => item.id === operacao.investidorId)?.nome ?? (selectedInvestor === 'TOTAL' ? 'Não informado' : selectedInvestor)}</td>
+                            <td>{titular?.nome ?? 'Não informado'}</td>
                             <td>
                               <span className="ticker">
                                 {

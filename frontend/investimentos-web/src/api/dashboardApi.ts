@@ -111,7 +111,7 @@ export async function obterOperacoes(
     }
 
     const operacoes: OperacaoCarteira[] = await response.json()
-    return operacoes.map(operacao => ({ ...operacao, investidorId }))
+    return operacoes.map(operacao => ({ ...operacao, investidorId: operacao.investidorId ?? investidorId }))
 }
 
 export async function atualizarOperacao(
