@@ -8,7 +8,8 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "test:table-sorting": "node --test scripts/table-sorting.test.cjs"
+    "test:table-sorting": "node --test scripts/table-sorting.test.cjs",
+    "test:operation-investor": "node --test scripts/operation-investor.test.cjs"
   },
   "dependencies": {
     "react": "^19.2.8",

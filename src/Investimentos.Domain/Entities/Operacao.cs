@@ -96,7 +96,9 @@
             DateTime data,
             decimal quantidade,
             decimal precoUnitario,
-            decimal taxas)
+            decimal taxas,
+            Investidor? investidor = null,
+            int? sequencia = null)
         {
             if (quantidade <= 0)
             {
@@ -115,6 +117,16 @@
                 throw new ArgumentException(
                     "As taxas não podem ser negativas.");
             }
+
+            if (sequencia.HasValue && sequencia.Value <= 0)
+                throw new ArgumentException("A sequência deve ser maior que zero.");
+
+            if (investidor is not null)
+            {
+                Investidor = investidor;
+                InvestidorId = investidor.Id;
+            }
+            if (sequencia.HasValue) Sequencia = sequencia.Value;
 
             Data = data;
             Quantidade = quantidade;

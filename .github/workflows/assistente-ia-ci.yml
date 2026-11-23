@@ -39,6 +39,10 @@ jobs:
         working-directory: frontend/investimentos-web
         run: npm run test:table-sorting
 
+      - name: Operation investor editing tests
+        working-directory: frontend/investimentos-web
+        run: npm run test:operation-investor
+
       - name: Application tests
         run: dotnet test Investimentos.Application.Tests/Investimentos.Application.Tests.csproj
 

@@ -5,5 +5,6 @@ namespace Investimentos.Application.Operacoes.AtualizarOperacao
         DateTime Data,
         decimal Quantidade,
         decimal PrecoUnitario,
-        decimal Taxas);
+        decimal Taxas,
+        Guid? InvestidorId = null);
 }
