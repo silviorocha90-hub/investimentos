@@ -1776,6 +1776,21 @@ O Painel substitui os indicadores de fluxos por resultados acumulados:
   Inclui vendas/proventos de ativos zerados. O consolidado soma os indicadores
   individuais antes de excluir posições zeradas da lista visual.
 
-Esse novo indicador de ações + FIIs inclui vendas realizadas; a rentabilidade
-principal mantém sua fórmula econômica existente, que exclui esse componente.
 Os indicadores são acumulados e não representam apuração anual nem imposto devido.
+
+
+## Rentabilidade acumulada com vendas — 23/11/2026
+
+A regra central de resultado passa a incluir resultado realizado das vendas:
+valorização atual + proventos líquidos + opções finalizadas + lucros/prejuízos das
+vendas. O parâmetro de vendas é obrigatório para evitar omissões nos chamadores.
+Dashboard individual, consolidado e resultado econômico das posições usam a mesma
+regra. O total inclui vendas de posições zeradas, obtidas do histórico completo;
+resultado de opções não é somado novamente a partir das posições.
+
+A porcentagem continua sendo uma estimativa acumulada: resultado / (patrimônio
+atual - resultado) * 100. Sem um livro de fluxos externos, não representa retorno
+temporal ajustado a aportes/retiradas nem retorno de um intervalo selecionado.
+Painel e Análises identificam o indicador como acumulado e estimado. Não se espera
+igualdade com percentuais de outro serviço sem conciliar período, investidor,
+ativos, cotações e metodologia. Nenhuma migration ou alteração em lançamentos.

@@ -11,16 +11,18 @@ namespace Investimentos.Application.Tests.Dashboard
 {
     public class ConsultarDashboardConsolidadoCalculosTests
     {
-        [Fact]
-        public async Task ConservaRendimentoDeAtivoZeradoAoConsolidarInvestidores()
+        [Theory]
+        [InlineData(15, 50)]
+        [InlineData(5, -50)]
+        public async Task ConservaRendimentoDeAtivoZeradoAoConsolidarInvestidores(decimal precoVenda, decimal resultadoEsperado)
         {
             var primeiro = new Investidor("Primeiro");
             var segundo = new Investidor("Segundo");
             var ativo = CriarAtivo();
-            // O fake devolve a mesma carteira para cada investidor: lucro 50 para cada um.
+            // O fake devolve a mesma carteira para cada investidor, incluindo posição zerada.
             var carteira = new FakeCarteiraRepository(new[] {
                 new OperacaoCarteiraDto(Guid.NewGuid(), ativo.Id, "ITUB4", "Itaú", "COMPRA", 10, 10, 0, new DateTime(2026, 1, 1), 1),
-                new OperacaoCarteiraDto(Guid.NewGuid(), ativo.Id, "ITUB4", "Itaú", "VENDA", 10, 15, 0, new DateTime(2026, 2, 1), 1)
+                new OperacaoCarteiraDto(Guid.NewGuid(), ativo.Id, "ITUB4", "Itaú", "VENDA", 10, precoVenda, 0, new DateTime(2026, 2, 1), 1)
             });
             var opcoes = new FakeOperacaoOpcaoRepository(primeiro, ativo);
             var proventos = new FakeProventoRepository(primeiro, ativo, Array.Empty<Provento>());
@@ -33,10 +35,13 @@ namespace Investimentos.Application.Tests.Dashboard
                 new FakeInvestidorRepository(new[] { primeiro, segundo }), individual, saldos, cotacoes,
                 new FakeDescontoFiscalRepository(0));
 
-            Assert.Equal(50m, (await individual.HandleAsync(primeiro.Id)).RendimentoAcoesFiis);
+            var individualAtual = await individual.HandleAsync(primeiro.Id);
+            Assert.Equal(resultadoEsperado, individualAtual.RendimentoAcoesFiis);
+            Assert.Equal(resultadoEsperado, individualAtual.ResultadoCarteira);
             var resultado = await consolidado.HandleAsync();
             Assert.Empty(resultado.Posicoes);
-            Assert.Equal(100m, resultado.RendimentoAcoesFiis);
+            Assert.Equal(2 * resultadoEsperado, resultado.RendimentoAcoesFiis);
+            Assert.Equal(2 * resultadoEsperado, resultado.ResultadoCarteira);
         }
 
         [Fact]
@@ -259,20 +264,12 @@ namespace Investimentos.Application.Tests.Dashboard
                 0m,
                 resultado.PremioLiquidoOpcoes);
 
-            /*
-             * Resultado econômico da carteira:
-             *
-             * 100 valorização
-             * + 50 provento
-             * + 0 opções
-             * = 150
-             *
-             * O lucro realizado de 250 na venda de ações
-             * permanece separado e não compõe este indicador.
-             */
+            // 100 valorização + 50 proventos + 0 opções + 250 venda = 400.
             Assert.Equal(
-                150.00m,
+                400.00m,
                 resultado.ResultadoCarteira);
+
+            Assert.Equal(400m / 2700m * 100m, resultado.RentabilidadeAno);
 
             Assert.Equal(
                 resultado.ResultadoCarteira,
@@ -287,7 +284,7 @@ namespace Investimentos.Application.Tests.Dashboard
                 resultado.Posicoes.Single().Proventos);
 
             Assert.Equal(
-                150.00m,
+                400.00m,
                 resultado.Posicoes.Single().ResultadoEconomico);
 
             Assert.Equal(

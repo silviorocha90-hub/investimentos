@@ -78,3 +78,16 @@ test('zero explícito da API é preservado e os campos novos têm prioridade', (
   assert.doesNotMatch(indicadores, /Indisponível|123,45|portfolio-earnings-pending/)
   assert.match(html, /R\$[^<]*0,00/)
 })
+
+
+test('o percentual e o resultado são os recebidos do backend e identificados como acumulados', () => {
+  const html = render({ resultadoCarteira: 400, rentabilidadeAno: 14.8148148148,
+    rendimentoOpcoes: 0, rendimentoAcoesFiis: 400,
+    posicoes: [], proventos: [], opcoes: [], distribuicaoPorTipo: [] })
+  assert.match(html, /Rentabilidade acumulada/)
+  assert.match(html, /Estimada/)
+  assert.match(html, /Valorização, vendas, proventos e opções finalizadas/)
+  assert.match(html, /14,81%/)
+  assert.match(html, /R\$[^<]*400,00/)
+  assert.doesNotMatch(html, /Rentabilidade no ano/)
+})
