@@ -54,7 +54,7 @@ function PortfolioReturnBars({
     }) + '%'
 
   return (
-    <div className="portfolio-return-card">
+    <div className="portfolio-return-card" title="Estimativa sobre o capital base: patrimônio atual menos resultado acumulado. Não ajusta o momento dos aportes e retiradas.">
       <div className="portfolio-return-feature">
         <strong
           className={
@@ -1197,8 +1197,9 @@ export function DashboardView({
       <section className="dashboard-grid">
         <article className="panel compact-metrics">
           <SectionTitle
-            title="Rentabilidade"
-            badge="Carteira"
+            title="Rentabilidade acumulada"
+            subtitle="Valorização, vendas, proventos e opções finalizadas"
+            badge="Estimada"
           />
 
           <PortfolioReturnBars

@@ -213,20 +213,16 @@ namespace Investimentos.Application.Tests.Dashboard
             Assert.Single(
                 resultado.Opcoes);
 
-            /*
-             * A venda realizada de ações não entra no
-             * resultado econômico padrão. Como a cotação
-             * atual é igual ao PM da posição restante,
-             * valorização = 0 e o resultado é somente
-             * o provento líquido de R$ 50,00.
-             */
+            // Valorização 0 + proventos 50 + opções 0 + venda realizada 250.
             Assert.Equal(
-                50.00m,
+                300.00m,
                 resultado.ResultadoCarteira);
 
             Assert.Equal(
                 250.00m,
                 resultado.ResultadoRealizadoAcoes);
+
+            Assert.Equal(300m / 2700m * 100m, resultado.RentabilidadeAno);
 
             var posicao =
                 Assert.Single(
@@ -241,7 +237,7 @@ namespace Investimentos.Application.Tests.Dashboard
                 posicao.ResultadoOpcoes);
 
             Assert.Equal(
-                50.00m,
+                300.00m,
                 posicao.ResultadoEconomico);
 
             Assert.Equal(

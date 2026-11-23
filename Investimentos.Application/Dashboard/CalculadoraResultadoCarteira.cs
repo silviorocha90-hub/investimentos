@@ -6,22 +6,22 @@ namespace Investimentos.Application.Dashboard
     /// Resultado da carteira =
     /// valorização atual dos ativos
     /// + proventos/dividendos líquidos
-    /// + resultado líquido de opções.
-    ///
-    /// Resultado realizado em vendas de ações permanece separado e
-    /// não compõe este indicador.
+    /// + resultado líquido de opções
+    /// + lucros/prejuízos realizados nas vendas, inclusive de posições zeradas.
     /// </summary>
     public static class CalculadoraResultadoCarteira
     {
         public static decimal CalcularResultado(
             decimal valorizacaoAtivos,
             decimal totalProventos,
-            decimal premioLiquidoOpcoes)
+            decimal premioLiquidoOpcoes,
+            decimal resultadoRealizadoVendas)
         {
             return
                 valorizacaoAtivos +
                 totalProventos +
-                premioLiquidoOpcoes;
+                premioLiquidoOpcoes +
+                resultadoRealizadoVendas;
         }
 
         public static decimal CalcularCapitalBase(

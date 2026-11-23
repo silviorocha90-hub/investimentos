@@ -12,6 +12,7 @@ namespace Investimentos.Application.Tests.Dashboard
                 CalculadoraResultadoCarteira.CalcularResultado(
                     -52.90m,
                     85.20m,
+                    0m,
                     0m);
 
             Assert.Equal(
@@ -19,18 +20,23 @@ namespace Investimentos.Application.Tests.Dashboard
                 resultado);
         }
 
-        [Fact]
-        public void NaoDeveIncluirResultadoRealizadoDeAcoes()
+        [Theory]
+        [InlineData(100, 35)]
+        [InlineData(-40, -105)]
+        [InlineData(0, -65)]
+        public void IncluiLucrosEPrejuizosRealizadosUmaUnicaVez(decimal vendas, decimal esperado)
         {
-            var resultado =
-                CalculadoraResultadoCarteira.CalcularResultado(
-                    -100m,
-                    25m,
-                    10m);
+            Assert.Equal(esperado,
+                CalculadoraResultadoCarteira.CalcularResultado(-100m, 25m, 10m, vendas));
+        }
 
-            Assert.Equal(
-                -65m,
-                resultado);
+        [Fact]
+        public void AtualizaResultadoECapitalBaseComOMesmoResultadoDasVendas()
+        {
+            var resultado = CalculadoraResultadoCarteira.CalcularResultado(50m, 20m, 30m, -20m);
+            Assert.Equal(80m, resultado);
+            Assert.Equal(1000m, CalculadoraResultadoCarteira.CalcularCapitalBase(1080m, resultado));
+            Assert.Equal(8m, CalculadoraResultadoCarteira.CalcularRentabilidade(1080m, resultado));
         }
 
         [Fact]
@@ -75,7 +81,8 @@ namespace Investimentos.Application.Tests.Dashboard
                 CalculadoraResultadoCarteira.CalcularResultado(
                     -250m,
                     40m,
-                    60m);
+                    60m,
+                    0m);
 
             Assert.Equal(
                 -150m,
@@ -89,7 +96,8 @@ namespace Investimentos.Application.Tests.Dashboard
                 CalculadoraResultadoCarteira.CalcularResultado(
                     100m,
                     20m,
-                    -50m);
+                    -50m,
+                    0m);
 
             Assert.Equal(
                 70m,
@@ -102,6 +110,7 @@ namespace Investimentos.Application.Tests.Dashboard
             Assert.Equal(
                 0m,
                 CalculadoraResultadoCarteira.CalcularResultado(
+                    0m,
                     0m,
                     0m,
                     0m));

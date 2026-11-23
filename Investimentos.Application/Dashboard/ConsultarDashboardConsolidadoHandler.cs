@@ -172,7 +172,8 @@ namespace Investimentos.Application.Dashboard
                             CalculadoraResultadoCarteira.CalcularResultado(
                                 posicao.Valorizacao,
                                 proventosAtivo,
-                                resultadoOpcoesAtivo);
+                                resultadoOpcoesAtivo,
+                                posicao.ResultadoRealizado);
 
                         // Na tabela de posições, rentabilidade mede a posição
                         // atual: (valor atual - custo) / custo. Proventos e
@@ -406,13 +407,15 @@ namespace Investimentos.Application.Dashboard
              * Mesma regra do dashboard individual:
              * valorização dos ativos em carteira
              * + proventos/dividendos líquidos recebidos
-             * + prêmio líquido (ganho) de opções.
+             * + prêmio líquido (ganho) de opções
+             * + resultado realizado das vendas (inclusive posições zeradas).
              */
             var resultadoCarteira =
                 CalculadoraResultadoCarteira.CalcularResultado(
                     valorizacaoAtivos,
                     totalProventos,
-                    premioLiquidoOpcoes);
+                    premioLiquidoOpcoes,
+                    resultadoRealizadoAcoes);
 
             var rentabilidadeAno =
                 CalculadoraResultadoCarteira.CalcularRentabilidade(
