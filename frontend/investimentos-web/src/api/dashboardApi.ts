@@ -110,14 +110,15 @@ export async function obterOperacoes(
         )
     }
 
-    return response.json()
+    const operacoes: OperacaoCarteira[] = await response.json()
+    return operacoes.map(operacao => ({ ...operacao, investidorId }))
 }
 
 export async function atualizarOperacao(
     id: string,
     operacao: Pick<
         OperacaoCarteira,
-        'data' | 'quantidade' | 'precoUnitario' | 'taxas'
+        'data' | 'quantidade' | 'precoUnitario' | 'taxas' | 'investidorId'
     >,
 ): Promise<void> {
     const response = await fetch(
@@ -128,6 +129,7 @@ export async function atualizarOperacao(
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 data: operacao.data,
+                investidorId: operacao.investidorId,
                 quantidade: operacao.quantidade,
                 precoUnitario: operacao.precoUnitario,
                 taxas: operacao.taxas,

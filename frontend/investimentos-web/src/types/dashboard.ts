@@ -133,6 +133,7 @@ export interface EvolucaoInvestidor {
 
 export interface OperacaoCarteira {
   id: string
+  investidorId?: string
   ativoId: string
   ticker: string
   nome: string

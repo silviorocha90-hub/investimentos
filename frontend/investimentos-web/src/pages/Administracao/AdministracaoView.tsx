@@ -151,6 +151,7 @@ interface AdministracaoViewProps {
         | 'quantidade'
         | 'precoUnitario'
         | 'taxas'
+        | 'investidorId'
       >,
     ) => Promise<void>
 
@@ -1166,9 +1167,15 @@ export function AdministracaoView({
                     item.nome === investidorAdministracao,
                 )?.operacoes ?? []
           }
-          onSaveOperation={
-            onSaveOperation
-          }
+          onSaveOperation={async operacao => {
+            await onSaveOperation(operacao)
+            const listas = await Promise.all(investidores.map(async investidor => ({
+              nome: investidor.nome,
+              operacoes: await obterOperacoes(investidor.id),
+            })))
+            setOperacoesAdministracao(listas)
+            await carregar()
+          }}
           onOperationCreated={
             onOperationCreated
           }

@@ -2,6 +2,7 @@
 using Investimentos.Domain.Entities;
 using Investimentos.Domain.ValueObjects;
 using Microsoft.EntityFrameworkCore;
+using System.Data;
 
 namespace Investimentos.Infrastructure.Persistence.Repositories
 {
@@ -32,6 +33,7 @@ namespace Investimentos.Infrastructure.Persistence.Repositories
             CancellationToken cancellationToken = default)
         {
             return await _context.Operacoes
+                .Include(x => x.TipoOperacao)
                 .FirstOrDefaultAsync(
                     x => x.Id == id,
                     cancellationToken);
@@ -43,11 +45,83 @@ namespace Investimentos.Infrastructure.Persistence.Repositories
             _context.Operacoes.Remove(operacao);
         }
 
-        public Task SalvarAsync(
+        public async Task SalvarAsync(
             CancellationToken cancellationToken = default)
         {
-            return _context.SaveChangesAsync(
-                cancellationToken);
+            _context.ChangeTracker.DetectChanges();
+            var transferencias = _context.ChangeTracker.Entries<Operacao>()
+                .Where(x => x.State == EntityState.Modified &&
+                    x.Property(o => o.InvestidorId).OriginalValue != x.Entity.InvestidorId)
+                .ToList();
+
+            if (transferencias.Count == 0)
+            {
+                await _context.SaveChangesAsync(cancellationToken);
+                return;
+            }
+
+            // Inclui a transação na estratégia de repetição configurada para SQL Server.
+            var estrategia = _context.Database.CreateExecutionStrategy();
+            await estrategia.ExecuteAsync(async () =>
+            {
+                await using var transacao = _context.Database.IsRelational()
+                    ? await _context.Database.BeginTransactionAsync(IsolationLevel.Serializable, cancellationToken)
+                    : null;
+
+                foreach (var entrada in transferencias)
+                {
+                    var operacao = entrada.Entity;
+                    var sequencia = await ObterProximaSequenciaAsync(
+                        operacao.InvestidorId, operacao.Data, cancellationToken);
+                    operacao.Atualizar(operacao.Data, operacao.Quantidade,
+                        operacao.PrecoUnitario, operacao.Taxas, sequencia: sequencia);
+                    await ValidarTransferenciaAsync(operacao,
+                        entrada.Property(o => o.InvestidorId).OriginalValue, cancellationToken);
+                }
+
+                // Só aceita os novos valores após confirmar a transação.
+                await _context.SaveChangesAsync(acceptAllChangesOnSuccess: false, cancellationToken);
+                if (transacao is not null) await transacao.CommitAsync(cancellationToken);
+            });
+            _context.ChangeTracker.AcceptAllChanges();
+        }
+
+        private async Task ValidarTransferenciaAsync(
+            Operacao operacao, Guid investidorOrigemId, CancellationToken cancellationToken)
+        {
+            var investidores = new[] { investidorOrigemId, operacao.InvestidorId };
+            var historico = await _context.Operacoes.AsNoTracking()
+                .Where(x => x.Id != operacao.Id && x.AtivoId == operacao.AtivoId &&
+                    investidores.Contains(x.InvestidorId))
+                .Select(x => new
+                {
+                    x.InvestidorId, x.Data, x.Sequencia,
+                    TipoOperacao = x.TipoOperacao.Codigo, x.Quantidade
+                })
+                .ToListAsync(cancellationToken);
+            historico.Add(new
+            {
+                operacao.InvestidorId, operacao.Data, operacao.Sequencia,
+                TipoOperacao = operacao.TipoOperacao.Codigo, operacao.Quantidade
+            });
+
+            foreach (var investidorId in investidores.Distinct())
+            {
+                decimal quantidade = 0;
+                foreach (var item in historico.Where(x => x.InvestidorId == investidorId)
+                    .OrderBy(x => x.Data).ThenBy(x => x.Sequencia))
+                {
+                    if (item.TipoOperacao == "COMPRA") quantidade += item.Quantidade;
+                    else if (item.TipoOperacao == "VENDA") quantidade -= item.Quantidade;
+                    if (quantidade < 0)
+                    {
+                        var carteira = investidorId == investidorOrigemId ? "origem" : "destino";
+                        throw new InvalidOperationException(
+                            $"A troca de investidor deixaria uma venda sem quantidade suficiente na carteira de {carteira}. " +
+                            "Ajuste as operações relacionadas antes de transferir este lançamento.");
+                    }
+                }
+            }
         }
 
         public async Task<Investidor?> ObterInvestidorPorIdAsync(

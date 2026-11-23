@@ -1076,6 +1076,7 @@ function App() {
       | 'quantidade'
       | 'precoUnitario'
       | 'taxas'
+      | 'investidorId'
     >,
   ) {
     if (

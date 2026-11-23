@@ -728,11 +728,13 @@ app.MapPut(
                 request.Data,
                 request.Quantidade,
                 request.PrecoUnitario,
-                request.Taxas),
+                request.Taxas,
+                request.InvestidorId),
             cancellationToken);
 
         return Results.NoContent();
-    });
+    })
+    .RequireAuthorization(policy => policy.RequireRole("Admin"));
 
 app.MapDelete(
     "/api/operacoes/{id:guid}",
@@ -1985,7 +1987,8 @@ public record AtualizarOperacaoRequest(
     DateTime Data,
     decimal Quantidade,
     decimal PrecoUnitario,
-    decimal Taxas);
+    decimal Taxas,
+    Guid? InvestidorId = null);
 
 public record CadastrarProventoRequest(
     Guid InvestidorId,

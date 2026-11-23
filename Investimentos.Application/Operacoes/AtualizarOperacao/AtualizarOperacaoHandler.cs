@@ -32,11 +32,23 @@ namespace Investimentos.Application.Operacoes.AtualizarOperacao
                     "Operação não encontrada.");
             }
 
+            Investimentos.Domain.Entities.Investidor? investidor = null;
+            if (command.InvestidorId.HasValue)
+            {
+                if (command.InvestidorId.Value == Guid.Empty)
+                    throw new ArgumentException("Selecione um investidor válido.");
+
+                investidor = await _repository.ObterInvestidorPorIdAsync(
+                    command.InvestidorId.Value, cancellationToken)
+                    ?? throw new ArgumentException("Investidor não encontrado.");
+            }
+
             operacao.Atualizar(
                 command.Data,
                 command.Quantidade,
                 command.PrecoUnitario,
-                command.Taxas);
+                command.Taxas,
+                investidor);
 
             await _repository.SalvarAsync(cancellationToken);
         }

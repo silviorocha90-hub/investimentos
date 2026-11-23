@@ -53,6 +53,7 @@ interface OperacoesViewProps {
       | 'quantidade'
       | 'precoUnitario'
       | 'taxas'
+      | 'investidorId'
     >,
   ) => Promise<void>
 
@@ -474,6 +475,8 @@ export function OperacoesView({
         incluirTodos
       />
 
+      {erroOperacao && !adicionandoOperacao && <div role="alert" className="operations-modal-error">{erroOperacao}</div>}
+
       <article className="panel portfolio-operations">
         <div className="operations-table-header">
           <SectionTitle
@@ -567,6 +570,7 @@ export function OperacoesView({
               <thead>
                 <tr>
                   <th>Data</th>
+                  <th>Investidor</th>
 
                   <th>Ativo</th>
 
@@ -614,6 +618,15 @@ export function OperacoesView({
                                   )
                                 }
                               />
+                            </td>
+
+                            <td>
+                              <select name="investidorId" aria-label="Investidor da operação"
+                                defaultValue={operacao.investidorId ?? investidores.find(item => item.nome === selectedInvestor)?.id ?? ''}
+                                disabled={salvandoOperacao} required>
+                                <option value="" disabled>Selecione</option>
+                                {investidores.map(investidor => <option key={investidor.id} value={investidor.id}>{investidor.nome}</option>)}
+                              </select>
                             </td>
 
                             <td>
@@ -687,8 +700,8 @@ export function OperacoesView({
                                     new FormData()
 
                                   row
-                                    ?.querySelectorAll<HTMLInputElement>(
-                                      'input',
+                                    ?.querySelectorAll<HTMLInputElement | HTMLSelectElement>(
+                                      'input, select',
                                     )
                                     .forEach(
                                       (
@@ -705,10 +718,14 @@ export function OperacoesView({
                                   )
 
                                   try {
+                                    setErroOperacao(null)
+                                    const investidorId = String(formData.get('investidorId') ?? '')
+                                    if (!investidores.some(item => item.id === investidorId)) throw new Error('Selecione um investidor válido.')
                                     await onSaveOperation(
                                       {
                                         id:
                                           operacao.id,
+                                        investidorId,
 
                                         data:
                                           String(
@@ -743,6 +760,8 @@ export function OperacoesView({
                                     setOperacaoEmEdicao(
                                       null,
                                     )
+                                  } catch (error) {
+                                    setErroOperacao(error instanceof Error ? error.message : 'Não foi possível salvar a operação.')
                                   } finally {
                                     setSalvandoOperacao(
                                       false,
@@ -777,6 +796,7 @@ export function OperacoesView({
                               )}
                             </td>
 
+                            <td>{investidores.find(item => item.id === operacao.investidorId)?.nome ?? (selectedInvestor === 'TOTAL' ? 'Não informado' : selectedInvestor)}</td>
                             <td>
                               <span className="ticker">
                                 {
