@@ -40,8 +40,8 @@ function PortfolioReturnBars({
   resultado,
 }: {
   rentabilidade: number
-  rendimentoOpcoes: number
-  rendimentoAcoesFiis: number
+  rendimentoOpcoes: number | null
+  rendimentoAcoesFiis: number | null
   resultado: number
 }) {
   const rentabilidadeWidth =
@@ -104,14 +104,14 @@ function PortfolioReturnBars({
             descricao: 'Valorização, vendas e proventos líquidos · acumulado' },
         ].map(item => (
           <div key={item.label}
-            className={`portfolio-earnings-card portfolio-earnings-${item.valor >= 0 ? 'positive' : 'negative'}`}>
+            className={`portfolio-earnings-card portfolio-earnings-${item.valor === null ? 'pending' : item.valor >= 0 ? 'positive' : 'negative'}`}>
             <span className="portfolio-earnings-icon" aria-hidden="true">
-              {item.valor >= 0 ? '↗' : '↘'}
+              {item.valor === null ? '—' : item.valor >= 0 ? '↗' : '↘'}
             </span>
             <div>
               <span>{item.label}</span>
-              <strong>{formatarMoeda(item.valor)}</strong>
-              <small>{item.descricao}</small>
+              <strong>{item.valor === null ? 'Indisponível' : formatarMoeda(item.valor)}</strong>
+              <small>{item.valor === null ? 'Atualize a aplicação para carregar este indicador' : item.descricao}</small>
             </div>
           </div>
         ))}
@@ -797,8 +797,8 @@ export function DashboardView({
     0
 
   // Resultados acumulados, calculados no backend a partir das operações.
-  const rendimentoOpcoes = dashboard?.rendimentoOpcoes ?? 0
-  const rendimentoAcoesFiis = dashboard?.rendimentoAcoesFiis ?? 0
+  const rendimentoOpcoes = dashboard?.rendimentoOpcoes ?? dashboard?.premioLiquidoOpcoes ?? null
+  const rendimentoAcoesFiis = dashboard?.rendimentoAcoesFiis ?? null
 
   // Rentabilidade econômica acumulada, calculada pelo backend.
   const rentabilidade =
