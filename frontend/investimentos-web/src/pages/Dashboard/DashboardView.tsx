@@ -54,7 +54,7 @@ function PortfolioReturnBars({
     }) + '%'
 
   return (
-    <div className="portfolio-return-card" title="Estimativa sobre o capital base: patrimônio atual menos resultado acumulado. Não ajusta o momento dos aportes e retiradas.">
+    <div className="portfolio-return-card">
       <div className="portfolio-return-feature">
         <strong
           className={
@@ -98,10 +98,8 @@ function PortfolioReturnBars({
 
       <div className="portfolio-earnings-grid">
         {[
-          { label: 'Rendimento de opções', valor: rendimentoOpcoes,
-            descricao: 'Operações finalizadas · acumulado' },
-          { label: 'Rendimento de ações + FIIs', valor: rendimentoAcoesFiis,
-            descricao: 'Valorização, vendas e proventos líquidos · acumulado' },
+          { label: 'Rendimento de opções', valor: rendimentoOpcoes },
+          { label: 'Rendimento de ações + FIIs', valor: rendimentoAcoesFiis },
         ].map(item => (
           <div key={item.label}
             className={`portfolio-earnings-card portfolio-earnings-${item.valor === null ? 'pending' : item.valor >= 0 ? 'positive' : 'negative'}`}>
@@ -111,7 +109,6 @@ function PortfolioReturnBars({
             <div>
               <span>{item.label}</span>
               <strong>{item.valor === null ? 'Indisponível' : formatarMoeda(item.valor)}</strong>
-              <small>{item.valor === null ? 'Atualize a aplicação para carregar este indicador' : item.descricao}</small>
             </div>
           </div>
         ))}
@@ -1198,7 +1195,6 @@ export function DashboardView({
         <article className="panel compact-metrics">
           <SectionTitle
             title="Rentabilidade acumulada"
-            subtitle="Valorização, vendas, proventos e opções finalizadas"
             badge="Estimada"
           />
 

@@ -68,7 +68,7 @@ test('uma API anterior preserva o rendimento de opções e não inventa zero par
     posicoes: [], proventos: [], opcoes: [], distribuicaoPorTipo: [] })
   assert.match(html, /R\$[^<]*123,45/)
   assert.match(html, /Indisponível/)
-  assert.match(html, /Atualize a aplicação para carregar este indicador/)
+  assert.doesNotMatch(html, /Atualize a aplicação para carregar este indicador/)
 })
 
 test('zero explícito da API é preservado e os campos novos têm prioridade', () => {
@@ -86,7 +86,7 @@ test('o percentual e o resultado são os recebidos do backend e identificados co
     posicoes: [], proventos: [], opcoes: [], distribuicaoPorTipo: [] })
   assert.match(html, /Rentabilidade acumulada/)
   assert.match(html, /Estimada/)
-  assert.match(html, /Valorização, vendas, proventos e opções finalizadas/)
+  assert.doesNotMatch(html, /Valorização, vendas|Operações finalizadas|Estimativa sobre o capital base/)
   assert.match(html, /14,81%/)
   assert.match(html, /R\$[^<]*400,00/)
   assert.doesNotMatch(html, /Rentabilidade no ano/)
