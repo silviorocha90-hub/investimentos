@@ -1,4 +1,4 @@
-import type { Dashboard, EvolucaoInvestidor, OperacaoCarteira, PerformanceCarteira } from '../types/dashboard'
+import type { Dashboard, EvolucaoInvestidor, OperacaoCarteira } from '../types/dashboard'
 
 import { cachedRequest, invalidateRequests } from './requestCache'
 
@@ -204,26 +204,4 @@ export async function excluirOperacao(id: string): Promise<void> {
         )
     }
     invalidateRequests()
-}
-export async function obterPerformance(
-    investidorId?: string,
-): Promise<PerformanceCarteira> {
-    const query = investidorId
-        ? `?investidorId=${encodeURIComponent(investidorId)}`
-        : ''
-
-    return cachedRequest(`performance:${investidorId ?? 'all'}`, async () => {
-    const response = await fetch(
-        `${API_URL}/api/performance${query}`,
-        { cache: 'no-store', credentials: 'include' },
-    )
-
-    if (!response.ok) {
-        throw new Error(
-            `Erro ao consultar a performance temporal. ${await obterMensagemErro(response)}`,
-        )
-    }
-
-    return response.json()
-    })
 }

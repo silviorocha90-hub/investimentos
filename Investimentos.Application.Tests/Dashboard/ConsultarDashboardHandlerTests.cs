@@ -1,4 +1,4 @@
-﻿using Investimentos.Application.Carteira.ConsultarCarteira;
+using Investimentos.Application.Carteira.ConsultarCarteira;
 using Investimentos.Application.Dashboard;
 using Investimentos.Application.Interfaces;
 using Investimentos.Application.Opcoes.ConsultarOpcoes;
@@ -145,12 +145,14 @@ namespace Investimentos.Application.Tests.Dashboard
                     proventosHandler,
                     opcoesHandler,
                     cotacaoRepository,
-                    saldoRepository,
-                    new FakeMovimentacaoFinanceiraRepository());
+                    saldoRepository);
 
             var resultado =
                 await handler.HandleAsync(
                     investidor.Id);
+
+            Assert.Equal(300m, resultado.RendimentoAcoesFiis);
+            Assert.Equal(resultado.PremioLiquidoOpcoes, resultado.RendimentoOpcoes);
 
             /*
              * 50 ações restantes x R$ 40,00
@@ -281,7 +283,7 @@ namespace Investimentos.Application.Tests.Dashboard
                 IReadOnlyList<OperacaoCarteiraDto>
                     operacoes)
             {
-                _operacoes = operacoes;
+                _operacoes = operacoes.Select(x => x with { TipoAtivoCodigo = "ACAO", TipoAtivoNome = "Ação" }).ToList();
             }
 
             public Task<
@@ -430,8 +432,7 @@ namespace Investimentos.Application.Tests.Dashboard
                 _ativo =
                     ativo;
 
-                _operacoes =
-                    operacoes;
+                _operacoes = operacoes;
             }
 
             public Task AdicionarAsync(
@@ -504,33 +505,6 @@ namespace Investimentos.Application.Tests.Dashboard
             {
                 return Task.FromResult(
                     _cotacoes);
-            }
-        }
-
-        private class FakeMovimentacaoFinanceiraRepository
-            : IMovimentacaoFinanceiraRepository
-        {
-            public Task<IReadOnlyList<MovimentacaoFinanceira>>
-                ListarAsync(
-                    Guid? investidorId = null,
-                    CancellationToken cancellationToken = default)
-            {
-                IReadOnlyList<MovimentacaoFinanceira> resultado =
-                    Array.Empty<MovimentacaoFinanceira>();
-
-                return Task.FromResult(resultado);
-            }
-
-            public Task<IReadOnlyList<MovimentacaoFinanceira>>
-                ListarAnoAsync(
-                    Guid investidorId,
-                    int ano,
-                    CancellationToken cancellationToken = default)
-            {
-                IReadOnlyList<MovimentacaoFinanceira> resultado =
-                    Array.Empty<MovimentacaoFinanceira>();
-
-                return Task.FromResult(resultado);
             }
         }
 

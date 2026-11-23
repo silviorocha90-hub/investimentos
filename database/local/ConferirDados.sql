@@ -6,7 +6,6 @@ SELECT i.Id, i.Nome,
     (SELECT MAX(o.Data) FROM Operacao o WHERE o.InvestidorId = i.Id) AS UltimaOperacao,
     (SELECT COUNT_BIG(*) FROM OperacaoOpcao o WHERE o.InvestidorId = i.Id) AS Opcoes,
     (SELECT COUNT_BIG(*) FROM Provento p WHERE p.InvestidorId = i.Id) AS Proventos,
-    (SELECT COUNT_BIG(*) FROM MovimentacaoFinanceira m WHERE m.InvestidorId = i.Id) AS Movimentacoes,
     (SELECT COUNT_BIG(*) FROM HistoricoPatrimonio h WHERE h.InvestidorId = i.Id) AS HistoricosPatrimonio
 FROM Investidor i
 ORDER BY i.Nome;

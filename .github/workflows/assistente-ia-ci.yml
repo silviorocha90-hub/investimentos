@@ -43,6 +43,10 @@ jobs:
         working-directory: frontend/investimentos-web
         run: npm run test:operation-investor
 
+      - name: Dashboard earnings tests
+        working-directory: frontend/investimentos-web
+        run: npm run test:dashboard-earnings
+
       - name: Application tests
         run: dotnet test Investimentos.Application.Tests/Investimentos.Application.Tests.csproj
 

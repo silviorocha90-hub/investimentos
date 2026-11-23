@@ -9,7 +9,8 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "test:table-sorting": "node --test scripts/table-sorting.test.cjs",
-    "test:operation-investor": "node --test scripts/operation-investor.test.cjs"
+    "test:operation-investor": "node --test scripts/operation-investor.test.cjs",
+    "test:dashboard-earnings": "node --test scripts/dashboard-earnings.test.cjs"
   },
   "dependencies": {
     "react": "^19.2.8",

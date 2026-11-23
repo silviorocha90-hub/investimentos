@@ -963,68 +963,6 @@
   gap: 4px;
 }
 
-.admin-movement-summary {
-  color: var(--muted);
-  font-size: 0.68rem;
-  font-weight: 700;
-}
-
-.admin-movement-filters {
-  grid-template-columns: minmax(180px, 280px);
-}
-
-.admin-movement-table {
-  min-width: 720px;
-}
-
-.admin-movement-table th,
-.admin-movement-table td {
-  text-align: center;
-  vertical-align: middle;
-}
-
-.admin-movement-table td:nth-child(5) {
-  text-align: left;
-}
-
-.movement-entry {
-  color: var(--accent);
-}
-
-.movement-exit {
-  color: var(--negative);
-}
-
-.admin-movement-description {
-  grid-column: 1 / -1;
-}
-
-
-/* Entradas / Saídas — ações padronizadas */
-.admin-movement-table .admin-movement-edit {
-  border-color: rgba(99, 230, 200, 0.3);
-  background: transparent;
-  color: var(--accent);
-}
-
-.admin-movement-table .admin-movement-edit:hover:not(:disabled) {
-  border-color: rgba(99, 230, 200, 0.6);
-  background: rgba(99, 230, 200, 0.08);
-  color: var(--accent);
-}
-
-.admin-movement-table .admin-movement-delete {
-  border-color: rgba(255, 88, 108, 0.3);
-  background: transparent;
-  color: var(--negative);
-}
-
-.admin-movement-table .admin-movement-delete:hover:not(:disabled) {
-  border-color: rgba(255, 88, 108, 0.55);
-  background: rgba(255, 88, 108, 0.08);
-  color: var(--negative);
-}
-
 .admin-goal-progress {
   display: flex;
   align-items: center;
@@ -1075,12 +1013,6 @@
 }
 
 
-/* =========================================================
-   ADMINISTRAÇÃO — PADRÃO DE TABELAS
-   Operações, Opções e Entradas / Saídas seguem a mesma
-   densidade visual do histórico de Proventos.
-   ========================================================= */
-
 .admin-standard-history {
   min-width: 0;
 }
@@ -1094,21 +1026,17 @@
 .admin-page .admin-standard-history .operations-table th,
 .admin-page .admin-standard-history .operations-table td,
 .admin-page .admin-standard-history .options-table th,
-.admin-page .admin-standard-history .options-table td,
-.admin-page .admin-movement-table th,
-.admin-page .admin-movement-table td {
+.admin-page .admin-standard-history .options-table td {
   padding: 10px 8px !important;
 }
 
 .admin-page .admin-standard-history .operations-table th,
-.admin-page .admin-standard-history .options-table th,
-.admin-page .admin-movement-table th {
+.admin-page .admin-standard-history .options-table th {
   font-size: 0.59rem !important;
 }
 
 .admin-page .admin-standard-history .operations-table td,
-.admin-page .admin-standard-history .options-table td,
-.admin-page .admin-movement-table td {
+.admin-page .admin-standard-history .options-table td {
   font-size: 0.7rem !important;
 }
 
@@ -1130,43 +1058,6 @@
   max-height: 420px;
   overflow-y: auto;
 }
-
-.admin-page .admin-table-wrap:has(.admin-movement-table) {
-  max-height: 420px;
-}
-
-.admin-page .admin-movement-table {
-  width: 100%;
-  min-width: 0;
-  table-layout: fixed;
-  border-collapse: collapse;
-}
-
-.admin-page .admin-movement-table th,
-.admin-page .admin-movement-table td {
-  overflow: hidden;
-  border-bottom: 1px solid var(--line);
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.admin-page .admin-movement-table th:nth-child(1),
-.admin-page .admin-movement-table td:nth-child(1) { width: 12%; }
-
-.admin-page .admin-movement-table th:nth-child(2),
-.admin-page .admin-movement-table td:nth-child(2) { width: 17%; }
-
-.admin-page .admin-movement-table th:nth-child(3),
-.admin-page .admin-movement-table td:nth-child(3) { width: 13%; }
-
-.admin-page .admin-movement-table th:nth-child(4),
-.admin-page .admin-movement-table td:nth-child(4) { width: 15%; }
-
-.admin-page .admin-movement-table th:nth-child(5),
-.admin-page .admin-movement-table td:nth-child(5) { width: 25%; }
-
-.admin-page .admin-movement-table th:nth-child(6),
-.admin-page .admin-movement-table td:nth-child(6) { width: 18%; }
 
 
 /* Administração: tabelas com a mesma escala visual de Proventos.
@@ -1202,8 +1093,7 @@
 }
 
 .admin-page .admin-standard-history .operations-table,
-.admin-page .admin-standard-history .options-table,
-.admin-page .admin-movement-table {
+.admin-page .admin-standard-history .options-table {
   width: 100% !important;
   min-width: 0 !important;
   table-layout: fixed !important;
@@ -1219,23 +1109,19 @@
 .admin-page .admin-standard-history .operations-table th,
 .admin-page .admin-standard-history .operations-table td,
 .admin-page .admin-standard-history .options-table th,
-.admin-page .admin-standard-history .options-table td,
-.admin-page .admin-movement-table th,
-.admin-page .admin-movement-table td {
+.admin-page .admin-standard-history .options-table td {
   height: auto !important;
   padding: 10px 8px !important;
 }
 
 .admin-page .admin-standard-history .operations-table th,
-.admin-page .admin-standard-history .options-table th,
-.admin-page .admin-movement-table th {
+.admin-page .admin-standard-history .options-table th {
   font-size: 0.59rem !important;
   text-transform: uppercase;
 }
 
 .admin-page .admin-standard-history .operations-table td,
-.admin-page .admin-standard-history .options-table td,
-.admin-page .admin-movement-table td {
+.admin-page .admin-standard-history .options-table td {
   font-size: 0.7rem !important;
 }
 
@@ -1258,17 +1144,6 @@
   max-height: 420px;
   overflow-x: hidden;
   overflow-y: auto;
-}
-
-.admin-page .admin-movement-table {
-  font-size: 0.7rem !important;
-}
-
-.admin-page .admin-movement-table thead {
-  position: sticky;
-  top: 0;
-  z-index: 4;
-  background: var(--panel);
 }
 
 
@@ -1349,13 +1224,8 @@
   }
 }
 
-
-/* Operações, Opções e Entradas/Saídas: replica explicitamente a escala
-   da tabela de Proventos, inclusive conteúdos internos que tinham fontes
-   próprias menores nos CSS de cada módulo. */
 .admin-page .admin-standard-history .operations-table th,
-.admin-page .admin-standard-history .options-table th,
-.admin-page .admin-movement-table th {
+.admin-page .admin-standard-history .options-table th {
   height: 40px !important;
   padding: 10px 8px !important;
   font-size: 0.59rem !important;
@@ -1363,8 +1233,7 @@
 }
 
 .admin-page .admin-standard-history .operations-table td,
-.admin-page .admin-standard-history .options-table td,
-.admin-page .admin-movement-table td {
+.admin-page .admin-standard-history .options-table td {
   height: 40px !important;
   padding: 10px 8px !important;
   font-size: 0.7rem !important;
@@ -1372,21 +1241,18 @@
 }
 
 .admin-page .admin-standard-history .operations-table td *,
-.admin-page .admin-standard-history .options-table td *,
-.admin-page .admin-movement-table td * {
+.admin-page .admin-standard-history .options-table td * {
   font-size: inherit !important;
 }
 
 .admin-page .admin-standard-history .portfolio-operations,
-.admin-page .admin-standard-history .options-table-panel,
-.admin-page .admin-panel:has(.admin-movement-table) {
+.admin-page .admin-standard-history .options-table-panel {
   width: 100% !important;
   min-width: 0 !important;
 }
 
 .admin-page .admin-standard-history .operations-table-wrap,
-.admin-page .admin-standard-history .options-table-wrap,
-.admin-page .admin-table-wrap:has(.admin-movement-table) {
+.admin-page .admin-standard-history .options-table-wrap {
   width: 100% !important;
   max-height: none !important;
   overflow-x: hidden !important;
@@ -1395,7 +1261,7 @@
 
 
 /* =========================================================
-   ADMINISTRAÇÃO — OPÇÕES / ENTRADAS E SAÍDAS
+   ADMINISTRAÇÃO — OPÇÕES
    Ajustes finais sobre os estilos específicos dos módulos.
    ========================================================= */
 
@@ -1434,137 +1300,6 @@
   min-height: 28px !important;
   padding: 0 9px !important;
   font-size: 0.65rem !important;
-}
-
-/* Entradas/Saídas: mesmo layout, tipografia, hover e linguagem de cores
-   adotados nas demais tabelas administrativas. */
-.admin-page .admin-movement-table th {
-  color: var(--muted) !important;
-  text-align: left !important;
-}
-
-.admin-page .admin-movement-table td {
-  color: var(--text);
-  text-align: left !important;
-}
-
-.admin-page .admin-movement-table th:nth-child(4),
-.admin-page .admin-movement-table td:nth-child(4) {
-  text-align: right !important;
-}
-
-.admin-page .admin-movement-table th:last-child,
-.admin-page .admin-movement-table td:last-child {
-  text-align: right !important;
-}
-
-.admin-page .admin-movement-table tbody tr:hover {
-  background: rgba(99, 230, 200, 0.035) !important;
-}
-
-.admin-page .admin-movement-table .movement-entry {
-  display: inline-flex;
-  align-items: center;
-  min-height: 24px;
-  padding: 0 8px;
-  border-radius: 999px;
-  background: rgba(99, 230, 200, 0.12);
-  color: var(--accent) !important;
-  font-weight: 700;
-}
-
-.admin-page .admin-movement-table .movement-exit {
-  display: inline-flex;
-  align-items: center;
-  min-height: 24px;
-  padding: 0 8px;
-  border-radius: 999px;
-  background: rgba(255, 88, 108, 0.10);
-  color: var(--negative) !important;
-  font-weight: 700;
-}
-
-.admin-page .admin-movement-table td:nth-child(4) strong {
-  font-weight: 700;
-}
-
-.admin-page .admin-movement-table td:nth-child(4) .movement-entry {
-  background: transparent;
-  padding: 0;
-}
-
-.admin-page .admin-movement-table .admin-movement-edit {
-  border-color: rgba(64, 157, 255, 0.5) !important;
-  background: transparent !important;
-  color: #62adff !important;
-}
-
-.admin-page .admin-movement-table .admin-movement-edit:hover:not(:disabled) {
-  border-color: rgba(64, 157, 255, 0.85) !important;
-  background: rgba(64, 157, 255, 0.09) !important;
-}
-
-
-/* Entradas/Saídas — mesma paleta visual do Histórico de Proventos */
-.admin-page .admin-panel:has(.admin-movement-table) {
-  background: linear-gradient(145deg, rgba(255,255,255,.035), rgba(255,255,255,.012)) !important;
-  border-color: rgba(70, 211, 178, 0.28) !important;
-}
-
-.admin-page .admin-table-wrap:has(.admin-movement-table) {
-  background: transparent !important;
-}
-
-.admin-page .admin-movement-table thead {
-  background: var(--panel-strong) !important;
-}
-
-.admin-page .admin-movement-table th {
-  color: var(--muted) !important;
-  border-bottom-color: var(--line) !important;
-}
-
-.admin-page .admin-movement-table td {
-  color: var(--text) !important;
-  border-bottom-color: var(--line) !important;
-}
-
-.admin-page .admin-movement-table tbody tr:hover {
-  background: rgba(99,230,200,.035) !important;
-}
-
-.admin-page .admin-movement-table .movement-entry {
-  color: var(--accent) !important;
-  background: rgba(99,230,200,.12) !important;
-}
-
-.admin-page .admin-movement-table .movement-exit {
-  color: #ff8585 !important;
-  background: rgba(255,133,133,.10) !important;
-}
-
-.admin-page .admin-movement-table .admin-movement-edit {
-  color: #67b7ff !important;
-  border-color: rgba(103,183,255,.5) !important;
-  background: transparent !important;
-}
-
-.admin-page .admin-movement-table .admin-movement-edit:hover:not(:disabled) {
-  color: #67b7ff !important;
-  border-color: rgba(103,183,255,.85) !important;
-  background: rgba(103,183,255,.08) !important;
-}
-
-.admin-page .admin-movement-table .admin-movement-delete {
-  color: #ff8585 !important;
-  border-color: rgba(255,133,133,.5) !important;
-  background: transparent !important;
-}
-
-.admin-page .admin-movement-table .admin-movement-delete:hover:not(:disabled) {
-  color: #ff8585 !important;
-  border-color: rgba(255,133,133,.85) !important;
-  background: rgba(255,133,133,.08) !important;
 }
 
 
@@ -1856,9 +1591,7 @@
 .admin-page table .operations-edit-button,
 .admin-page table .operations-delete-button,
 .admin-page table .options-edit-button,
-.admin-page table .options-delete-button,
-.admin-page table .admin-movement-edit,
-.admin-page table .admin-movement-delete {
+.admin-page table .options-delete-button {
   min-height: 27px !important;
   padding: 0 8px !important;
   font-size: 0.61rem !important;
@@ -1867,8 +1600,6 @@
 
 .admin-page table .option-type-chip,
 .admin-page table .option-status-chip,
-.admin-page table .movement-entry,
-.admin-page table .movement-exit,
 .admin-page table [class*="status"],
 .admin-page table [class*="chip"] {
   min-height: 25px !important;
@@ -1877,11 +1608,9 @@
   line-height: 25px !important;
 }
 
-/* Mantém a regra mais específica de Opções alinhada ao padrão global. */
 .admin-page .admin-standard-history .options-page-admin .options-table,
 .admin-page .admin-standard-history .operations-table,
 .admin-page .admin-standard-history .options-table,
-.admin-page .admin-movement-table,
 .admin-page .proventos-table,
 .admin-page .fiscal-participation-table {
   font-size: 0.70rem !important;
@@ -1891,8 +1620,6 @@
 .admin-page .admin-standard-history .operations-table td,
 .admin-page .admin-standard-history .options-table th,
 .admin-page .admin-standard-history .options-table td,
-.admin-page .admin-movement-table th,
-.admin-page .admin-movement-table td,
 .admin-page .proventos-table th,
 .admin-page .proventos-table td,
 .admin-page .fiscal-participation-table th,
@@ -1903,7 +1630,6 @@
 
 .admin-page .admin-standard-history .operations-table th,
 .admin-page .admin-standard-history .options-table th,
-.admin-page .admin-movement-table th,
 .admin-page .proventos-table th,
 .admin-page .fiscal-participation-table th {
   height: 42px !important;
@@ -1913,7 +1639,6 @@
 
 .admin-page .admin-standard-history .operations-table td,
 .admin-page .admin-standard-history .options-table td,
-.admin-page .admin-movement-table td,
 .admin-page .proventos-table td,
 .admin-page .fiscal-participation-table td {
   height: 42px !important;
@@ -1998,12 +1723,6 @@
 }
 
 
-/* =========================================================
-   ADMINISTRAÇÃO — 10 REGISTROS VISÍVEIS POR PÁGINA
-   Mesmo padrão aprovado em Opções para Operações,
-   Proventos e Entradas / Saídas.
-   ========================================================= */
-
 /* Operações */
 .admin-page .admin-standard-history .portfolio-operations {
   height: auto !important;
@@ -2058,35 +1777,6 @@
 
 .admin-page .proventos-table th,
 .admin-page .proventos-table td {
-  padding-top: 7px !important;
-  padding-bottom: 7px !important;
-}
-
-/* Entradas / Saídas */
-.admin-page .admin-panel:has(.admin-movement-table) {
-  height: auto !important;
-  min-height: 0 !important;
-  max-height: none !important;
-  overflow: visible !important;
-}
-
-.admin-page .admin-table-wrap:has(.admin-movement-table) {
-  height: auto !important;
-  min-height: 0 !important;
-  max-height: none !important;
-  overflow-x: hidden !important;
-  overflow-y: visible !important;
-}
-
-.admin-page .admin-movement-table thead tr,
-.admin-page .admin-movement-table th,
-.admin-page .admin-movement-table tbody tr,
-.admin-page .admin-movement-table td {
-  height: 38px !important;
-}
-
-.admin-page .admin-movement-table th,
-.admin-page .admin-movement-table td {
   padding-top: 7px !important;
   padding-bottom: 7px !important;
 }

@@ -3,7 +3,6 @@ import { SectionTitle } from '../../components/SectionTitle'
 import type {
   Dashboard,
   EvolucaoInvestidor,
-  PerformanceCarteira,
 } from '../../types/dashboard'
 import {
   formatarMesCurto,
@@ -29,7 +28,6 @@ interface DashboardViewProps {
   }>
 
   evolucao: readonly EvolucaoInvestidor[]
-  performance: PerformanceCarteira | null
   apiDisponivel: boolean
   erro: string | null
   somenteEvolucao?: boolean
@@ -37,13 +35,13 @@ interface DashboardViewProps {
 
 function PortfolioReturnBars({
   rentabilidade,
-  entradas,
-  saidas,
+  rendimentoOpcoes,
+  rendimentoAcoesFiis,
   resultado,
 }: {
   rentabilidade: number
-  entradas: number
-  saidas: number
+  rendimentoOpcoes: number
+  rendimentoAcoesFiis: number
   resultado: number
 }) {
   const rentabilidadeWidth =
@@ -98,24 +96,25 @@ function PortfolioReturnBars({
         </div>
       </div>
 
-      <div className="portfolio-flow-grid">
-        <div className="portfolio-flow-card portfolio-flow-entry">
-          <span className="portfolio-flow-icon" aria-hidden="true">↓</span>
-          <div>
-            <span>Entradas</span>
-            <strong>{formatarMoeda(entradas)}</strong>
-            <small>Capital aportado</small>
+      <div className="portfolio-earnings-grid">
+        {[
+          { label: 'Rendimento de opções', valor: rendimentoOpcoes,
+            descricao: 'Operações finalizadas · acumulado' },
+          { label: 'Rendimento de ações + FIIs', valor: rendimentoAcoesFiis,
+            descricao: 'Valorização, vendas e proventos líquidos · acumulado' },
+        ].map(item => (
+          <div key={item.label}
+            className={`portfolio-earnings-card portfolio-earnings-${item.valor >= 0 ? 'positive' : 'negative'}`}>
+            <span className="portfolio-earnings-icon" aria-hidden="true">
+              {item.valor >= 0 ? '↗' : '↘'}
+            </span>
+            <div>
+              <span>{item.label}</span>
+              <strong>{formatarMoeda(item.valor)}</strong>
+              <small>{item.descricao}</small>
+            </div>
           </div>
-        </div>
-
-        <div className="portfolio-flow-card portfolio-flow-exit">
-          <span className="portfolio-flow-icon" aria-hidden="true">↑</span>
-          <div>
-            <span>Saídas</span>
-            <strong>{formatarMoeda(saidas)}</strong>
-            <small>Capital retirado</small>
-          </div>
-        </div>
+        ))}
       </div>
     </div>
   )
@@ -797,23 +796,11 @@ export function DashboardView({
     dashboard?.premioLiquidoOpcoes ??
     0
 
-  /*
-   * Indicadores sempre referentes ao ano atual.
-   * O backend filtra as operações pelo ano corrente.
-   */
-  // Entradas e saídas do card representam os fluxos do ano atual.
-  const entradas =
-    dashboard?.entradasAno ?? 0
+  // Resultados acumulados, calculados no backend a partir das operações.
+  const rendimentoOpcoes = dashboard?.rendimentoOpcoes ?? 0
+  const rendimentoAcoesFiis = dashboard?.rendimentoAcoesFiis ?? 0
 
-  const saidas =
-    dashboard?.saidasAno ?? 0
-
-  /*
-   * RentabilidadeAno é um nome legado do contrato.
-   * Conforme a regra econômica do projeto, representa o crescimento
-   * acumulado da carteira e não deve ser substituído pela performance
-   * temporal Modified Dietz dos snapshots.
-   */
+  // Rentabilidade econômica acumulada, calculada pelo backend.
   const rentabilidade =
     dashboard?.rentabilidadeAno ?? 0
 
@@ -1216,8 +1203,8 @@ export function DashboardView({
 
           <PortfolioReturnBars
             rentabilidade={rentabilidade}
-            entradas={entradas}
-            saidas={saidas}
+            rendimentoOpcoes={rendimentoOpcoes}
+            rendimentoAcoesFiis={rendimentoAcoesFiis}
             resultado={resultadoRealizado}
           />
         </article>
