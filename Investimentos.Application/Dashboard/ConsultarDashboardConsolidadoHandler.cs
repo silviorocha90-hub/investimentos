@@ -414,14 +414,6 @@ namespace Investimentos.Application.Dashboard
                     totalProventos,
                     premioLiquidoOpcoes);
 
-            var entradasAno =
-                dashboards.Sum(x =>
-                    x.EntradasAno);
-
-            var saidasAno =
-                dashboards.Sum(x =>
-                    x.SaidasAno);
-
             var rentabilidadeAno =
                 CalculadoraResultadoCarteira.CalcularRentabilidade(
                     patrimonioEstimado,
@@ -453,8 +445,7 @@ namespace Investimentos.Application.Dashboard
                 irEstimadoOpcoes,
                 resultadoRealizadoAcoes,
                 rentabilidadeAno,
-                entradasAno,
-                saidasAno);
+                dashboards.Sum(x => x.RendimentoAcoesFiis));
         }
 
         private static bool EhAtivoSemMarcacaoPorCotacao(

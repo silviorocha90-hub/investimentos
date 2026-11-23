@@ -1,4 +1,4 @@
-﻿namespace Investimentos.Application.Carteira.ConsultarCarteira
+namespace Investimentos.Application.Carteira.ConsultarCarteira
 {
     public class CalcularCarteiraService
     {
@@ -18,7 +18,7 @@
                 .Sum(x => x.ResultadoRealizado);
         }
 
-        private static IReadOnlyList<PosicaoAtivoDto> CalcularTodas(
+        public static IReadOnlyList<PosicaoAtivoDto> CalcularTodas(
             IEnumerable<OperacaoCarteiraDto> operacoes)
         {
             if (operacoes is null)

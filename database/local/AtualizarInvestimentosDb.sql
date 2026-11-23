@@ -1,5 +1,5 @@
 -- Aportiva: atualizacao idempotente da estrutura local. Gerado pelo EF Core 10.0.11.
--- Origem: migrations de main incorporadas em develop em 06/11/2026.
+-- Atualizado em 23/11/2026: inclui a remoção definitiva do livro de Entradas/Saídas.
 -- No SSMS: conectar ao SQL Server LOCAL e selecionar InvestimentosDb. Fazer backup antes.
 -- Cada lote e protegido; o script NAO copia dados do Azure nem recria operacoes.
 
@@ -1842,3 +1842,29 @@ END;
 
 COMMIT;
 GO
+
+-- Remove somente o livro de Entradas/Saídas e seus registros.
+IF DB_NAME() <> N'InvestimentosDb' OR CONVERT(int, SERVERPROPERTY(N'EngineEdition')) IN (5, 8)
+    THROW 51000, N'Execute este script somente em InvestimentosDb no SQL Server LOCAL. Azure SQL e outros bancos foram bloqueados.', 1;
+
+BEGIN TRANSACTION;
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261123152640_RemoverEntradasSaidas'
+)
+BEGIN
+    DROP TABLE [MovimentacaoFinanceira];
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261123152640_RemoverEntradasSaidas'
+)
+BEGIN
+    INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+    VALUES (N'20261123152640_RemoverEntradasSaidas', N'10.0.11');
+END;
+
+COMMIT;
+GO
+

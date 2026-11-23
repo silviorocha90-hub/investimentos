@@ -14,7 +14,6 @@ using Investimentos.Application.Interfaces;
 using Investimentos.Application.Fiscal;
 using Investimentos.Application.Investidores.CadastrarInvestidor;
 using Investimentos.Application.Investidores.ListarInvestidores;
-using Investimentos.Application.Performance;
 using Investimentos.Application.Opcoes.AtualizarOperacaoOpcao;
 using Investimentos.Application.Opcoes.CadastrarOperacaoOpcao;
 using Investimentos.Application.Opcoes.ConsultarOpcoes;
@@ -144,11 +143,8 @@ builder.Services.AddScoped<
     IOperacaoOpcaoCrudRepository,
     OperacaoOpcaoCrudRepository>();
 
-builder.Services.AddScoped<IMovimentacaoFinanceiraRepository, MovimentacaoFinanceiraRepository>();
-
 builder.Services.AddScoped<ConsultarDashboardHandler>();
 builder.Services.AddScoped<ConsultarDashboardConsolidadoHandler>();
-builder.Services.AddScoped<ConsultarPerformanceCarteiraService>();
 builder.Services.AddScoped<IFiscalRepository, FiscalRepository>();
 
 builder.Services.AddScoped<AdministrarUsuariosService>();
@@ -515,138 +511,6 @@ app.MapGet(
                 cancellationToken);
 
         return Results.Ok(resultado);
-    });
-
-app.MapGet(
-    "/api/movimentacoes-financeiras",
-    async (
-        InvestimentosDbContext context,
-        int? ano,
-        Guid? investidorId,
-        CancellationToken cancellationToken) =>
-    {
-        var anoConsulta = ano ?? DateTime.Today.Year;
-        var inicio = new DateTime(anoConsulta, 1, 1);
-        var fim = inicio.AddYears(1);
-
-        var query = context.MovimentacoesFinanceiras
-            .AsNoTracking()
-            .Include(x => x.Investidor)
-            .Where(x => x.Data >= inicio && x.Data < fim);
-
-        if (investidorId.HasValue)
-            query = query.Where(x => x.InvestidorId == investidorId.Value);
-
-        var itens = await query
-            .OrderByDescending(x => x.Data)
-            .Select(x => new
-            {
-                x.Id,
-                x.InvestidorId,
-                Investidor = x.Investidor.Nome,
-                x.Data,
-                x.Tipo,
-                x.Valor,
-                x.Descricao
-            })
-            .ToListAsync(cancellationToken);
-
-        return Results.Ok(itens);
-    });
-
-app.MapPost(
-    "/api/movimentacoes-financeiras",
-    async (
-        CriarMovimentacaoFinanceiraRequest request,
-        InvestimentosDbContext context,
-        CancellationToken cancellationToken) =>
-    {
-        var investidor = await context.Investidores
-            .FirstOrDefaultAsync(
-                x => x.Id == request.InvestidorId,
-                cancellationToken);
-
-        if (investidor is null)
-            return Results.NotFound(new { detail = "Investidor não encontrado." });
-
-        try
-        {
-            var movimentacao = new MovimentacaoFinanceira(
-                investidor,
-                request.Data,
-                request.Tipo.Trim().ToUpperInvariant(),
-                request.Valor,
-                request.Descricao);
-
-            context.MovimentacoesFinanceiras.Add(movimentacao);
-            await context.SaveChangesAsync(cancellationToken);
-
-            return Results.Created(
-                $"/api/movimentacoes-financeiras/{movimentacao.Id}",
-                new { movimentacao.Id });
-        }
-        catch (ArgumentException ex)
-        {
-            return Results.BadRequest(new { detail = ex.Message });
-        }
-    });
-
-app.MapPut(
-    "/api/movimentacoes-financeiras/{id:guid}",
-    async (
-        Guid id,
-        AtualizarMovimentacaoFinanceiraRequest request,
-        InvestimentosDbContext context,
-        CancellationToken cancellationToken) =>
-    {
-        var movimentacao = await context.MovimentacoesFinanceiras
-            .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
-
-        if (movimentacao is null)
-            return Results.NotFound(new { detail = "Movimentação não encontrada." });
-
-        var investidor = await context.Investidores
-            .FirstOrDefaultAsync(
-                x => x.Id == request.InvestidorId,
-                cancellationToken);
-
-        if (investidor is null)
-            return Results.NotFound(new { detail = "Investidor não encontrado." });
-
-        try
-        {
-            movimentacao.Atualizar(
-                investidor,
-                request.Data,
-                request.Tipo,
-                request.Valor,
-                request.Descricao);
-
-            await context.SaveChangesAsync(cancellationToken);
-            return Results.NoContent();
-        }
-        catch (ArgumentException ex)
-        {
-            return Results.BadRequest(new { detail = ex.Message });
-        }
-    });
-
-app.MapDelete(
-    "/api/movimentacoes-financeiras/{id:guid}",
-    async (
-        Guid id,
-        InvestimentosDbContext context,
-        CancellationToken cancellationToken) =>
-    {
-        var movimentacao = await context.MovimentacoesFinanceiras
-            .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
-
-        if (movimentacao is null)
-            return Results.NotFound();
-
-        context.MovimentacoesFinanceiras.Remove(movimentacao);
-        await context.SaveChangesAsync(cancellationToken);
-        return Results.NoContent();
     });
 
 app.MapPost(
@@ -1391,20 +1255,6 @@ app.MapGet(
     });
 
 app.MapGet(
-    "/api/performance",
-    async (
-        Guid? investidorId,
-        ConsultarPerformanceCarteiraService service,
-        CancellationToken cancellationToken) =>
-    {
-        var resultado = await service.ConsultarAsync(
-            investidorId,
-            cancellationToken);
-
-        return Results.Ok(resultado);
-    });
-
-app.MapGet(
     "/api/dashboard",
     async (
         ConsultarDashboardConsolidadoHandler handler,
@@ -2078,19 +1928,5 @@ public record AtualizarTipoAtivoParametroRequest(
     int ClasseAtivoId,
     bool Ativo);
 
-
-public record CriarMovimentacaoFinanceiraRequest(
-    Guid InvestidorId,
-    DateTime Data,
-    string Tipo,
-    decimal Valor,
-    string? Descricao);
-
-public record AtualizarMovimentacaoFinanceiraRequest(
-    Guid InvestidorId,
-    DateTime Data,
-    string Tipo,
-    decimal Valor,
-    string? Descricao);
 
 public sealed record CalendarioDividendosRequest(int[] Meses);

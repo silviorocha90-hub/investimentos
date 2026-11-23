@@ -1,4 +1,4 @@
-﻿using Investimentos.Application.Carteira.ConsultarCarteira;
+using Investimentos.Application.Carteira.ConsultarCarteira;
 using Investimentos.Application.Dashboard;
 using Investimentos.Application.Interfaces;
 using Investimentos.Application.Opcoes.ConsultarOpcoes;
@@ -11,6 +11,34 @@ namespace Investimentos.Application.Tests.Dashboard
 {
     public class ConsultarDashboardConsolidadoCalculosTests
     {
+        [Fact]
+        public async Task ConservaRendimentoDeAtivoZeradoAoConsolidarInvestidores()
+        {
+            var primeiro = new Investidor("Primeiro");
+            var segundo = new Investidor("Segundo");
+            var ativo = CriarAtivo();
+            // O fake devolve a mesma carteira para cada investidor: lucro 50 para cada um.
+            var carteira = new FakeCarteiraRepository(new[] {
+                new OperacaoCarteiraDto(Guid.NewGuid(), ativo.Id, "ITUB4", "Itaú", "COMPRA", 10, 10, 0, new DateTime(2026, 1, 1), 1),
+                new OperacaoCarteiraDto(Guid.NewGuid(), ativo.Id, "ITUB4", "Itaú", "VENDA", 10, 15, 0, new DateTime(2026, 2, 1), 1)
+            });
+            var opcoes = new FakeOperacaoOpcaoRepository(primeiro, ativo);
+            var proventos = new FakeProventoRepository(primeiro, ativo, Array.Empty<Provento>());
+            var cotacoes = new FakeCotacaoAtivoRepository(new Dictionary<string, decimal> { ["ITUB4"] = 15 });
+            var saldos = new FakeSaldoDisponivelRepository(primeiro, 0);
+            var individual = new ConsultarDashboardHandler(
+                new ConsultarCarteiraHandler(carteira, opcoes, new CalcularCarteiraService()),
+                new ConsultarProventosHandler(proventos), new ConsultarOpcoesHandler(opcoes), cotacoes, saldos);
+            var consolidado = new ConsultarDashboardConsolidadoHandler(
+                new FakeInvestidorRepository(new[] { primeiro, segundo }), individual, saldos, cotacoes,
+                new FakeDescontoFiscalRepository(0));
+
+            Assert.Equal(50m, (await individual.HandleAsync(primeiro.Id)).RendimentoAcoesFiis);
+            var resultado = await consolidado.HandleAsync();
+            Assert.Empty(resultado.Posicoes);
+            Assert.Equal(100m, resultado.RendimentoAcoesFiis);
+        }
+
         [Fact]
         public async Task DeveConsolidarResultadoSemDescontarIrEstimadoDuasVezes()
         {
@@ -156,8 +184,7 @@ namespace Investimentos.Application.Tests.Dashboard
                     proventosHandler,
                     opcoesHandler,
                     cotacaoRepository,
-                    saldoRepository,
-                    new FakeMovimentacaoFinanceiraRepository());
+                    saldoRepository);
 
             var investidorRepository =
                 new FakeInvestidorRepository(
@@ -180,6 +207,9 @@ namespace Investimentos.Application.Tests.Dashboard
 
             var resultado =
                 await handler.HandleAsync();
+
+            Assert.Equal(400m, resultado.RendimentoAcoesFiis);
+            Assert.Equal(resultado.PremioLiquidoOpcoes, resultado.RendimentoOpcoes);
 
             /*
              * Valor atual:
@@ -339,8 +369,7 @@ namespace Investimentos.Application.Tests.Dashboard
                 IReadOnlyList<OperacaoCarteiraDto>
                     operacoes)
             {
-                _operacoes =
-                    operacoes;
+                _operacoes = operacoes.Select(x => x with { TipoAtivoCodigo = "ACAO", TipoAtivoNome = "Ação" }).ToList();
             }
 
             public Task<IReadOnlyList<OperacaoCarteiraDto>>
@@ -521,33 +550,6 @@ namespace Investimentos.Application.Tests.Dashboard
             {
                 return Task.FromResult(
                     _cotacoes);
-            }
-        }
-
-        private class FakeMovimentacaoFinanceiraRepository
-            : IMovimentacaoFinanceiraRepository
-        {
-            public Task<IReadOnlyList<MovimentacaoFinanceira>>
-                ListarAsync(
-                    Guid? investidorId = null,
-                    CancellationToken cancellationToken = default)
-            {
-                IReadOnlyList<MovimentacaoFinanceira> resultado =
-                    Array.Empty<MovimentacaoFinanceira>();
-
-                return Task.FromResult(resultado);
-            }
-
-            public Task<IReadOnlyList<MovimentacaoFinanceira>>
-                ListarAnoAsync(
-                    Guid investidorId,
-                    int ano,
-                    CancellationToken cancellationToken = default)
-            {
-                IReadOnlyList<MovimentacaoFinanceira> resultado =
-                    Array.Empty<MovimentacaoFinanceira>();
-
-                return Task.FromResult(resultado);
             }
         }
 

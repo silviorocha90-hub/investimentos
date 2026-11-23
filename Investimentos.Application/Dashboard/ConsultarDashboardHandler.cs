@@ -1,4 +1,4 @@
-﻿using Investimentos.Application.Carteira.ConsultarCarteira;
+using Investimentos.Application.Carteira.ConsultarCarteira;
 using Investimentos.Application.Interfaces;
 using Investimentos.Application.Opcoes.ConsultarOpcoes;
 using Investimentos.Application.Proventos.ConsultarProventos;
@@ -13,7 +13,6 @@ namespace Investimentos.Application.Dashboard
         private readonly ICotacaoAtivoRepository _cotacaoRepository;
         private readonly ISaldoDisponivelRepository _saldoRepository;
         private readonly IValorPatrimonialAtivoRepository _valorPatrimonialRepository;
-        private readonly IMovimentacaoFinanceiraRepository _movimentacaoRepository;
 
         public ConsultarDashboardHandler(
             ConsultarCarteiraHandler carteiraHandler,
@@ -21,7 +20,6 @@ namespace Investimentos.Application.Dashboard
             ConsultarOpcoesHandler opcoesHandler,
             ICotacaoAtivoRepository cotacaoRepository,
             ISaldoDisponivelRepository saldoRepository,
-            IMovimentacaoFinanceiraRepository movimentacaoRepository,
             IValorPatrimonialAtivoRepository? valorPatrimonialRepository = null)
         {
             _carteiraHandler = carteiraHandler;
@@ -29,7 +27,6 @@ namespace Investimentos.Application.Dashboard
             _opcoesHandler = opcoesHandler;
             _cotacaoRepository = cotacaoRepository;
             _saldoRepository = saldoRepository;
-            _movimentacaoRepository = movimentacaoRepository;
             _valorPatrimonialRepository =
                 valorPatrimonialRepository ??
                 new ValorPatrimonialAtivoRepositoryVazio();
@@ -46,15 +43,12 @@ namespace Investimentos.Application.Dashboard
             }
 
             var posicoesOriginais =
-                await _carteiraHandler.HandleAsync(
+                await _carteiraHandler.HandleHistoricoAsync(
                     investidorId,
                     cancellationToken);
 
             var resultadoRealizadoAcoes =
-                await _carteiraHandler
-                    .HandleResultadoRealizadoAsync(
-                        investidorId,
-                        cancellationToken);
+                posicoesOriginais.Sum(x => x.ResultadoRealizado);
 
             var proventos =
                 await _proventosHandler.HandleAsync(
@@ -305,32 +299,6 @@ namespace Investimentos.Application.Dashboard
             const decimal descontosFiscais = 0;
 
             /*
-             * ENTRADAS E SAÍDAS
-             *
-             * Compra e venda de ativos são movimentações
-             * internas da carteira e NÃO representam
-             * aporte ou retirada de capital.
-             *
-             * Até existir um livro explícito de
-             * APORTE/RETIRADA, não inventamos estes valores.
-             */
-            var movimentacoesAno =
-                await _movimentacaoRepository.ListarAnoAsync(
-                    investidorId,
-                    DateTime.Today.Year,
-                    cancellationToken);
-
-            var entradasAno =
-                movimentacoesAno
-                    .Where(x => x.Tipo == "APORTE")
-                    .Sum(x => x.Valor);
-
-            var saidasAno =
-                movimentacoesAno
-                    .Where(x => x.Tipo == "RETIRADA")
-                    .Sum(x => x.Valor);
-
-            /*
              * Rentabilidade econômica da carteira.
              * O capital investido é inferido pelo patrimônio
              * menos o resultado acumulado, sem usar o giro
@@ -398,7 +366,7 @@ namespace Investimentos.Application.Dashboard
                 premioLiquidoOpcoes,
                 quantidadeAtivos,
                 quantidadeOpcoesAbertas,
-                posicoes,
+                posicoes.Where(x => x.Quantidade > 0).ToList(),
                 proventos,
                 opcoes,
                 patrimonioEstimado,
@@ -413,8 +381,7 @@ namespace Investimentos.Application.Dashboard
                 irEstimadoOpcoes,
                 resultadoRealizadoAcoes,
                 rentabilidadeAno,
-                entradasAno,
-                saidasAno);
+                CalculadoraRendimentosCarteira.CalcularAcoesFiis(posicoes));
         }
 
         private sealed class ValorPatrimonialAtivoRepositoryVazio

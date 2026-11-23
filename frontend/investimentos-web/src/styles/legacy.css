@@ -2981,7 +2981,7 @@ a {
 
 
 /* =========================================================
-   PAINEL — RENTABILIDADE / ENTRADAS / SAÍDAS
+   PAINEL — RENTABILIDADE / RENDIMENTOS
    ========================================================= */
 
 .portfolio-return-card {
@@ -3023,7 +3023,7 @@ a {
   margin-top: 2px;
 }
 
-.portfolio-flow-grid {
+.portfolio-earnings-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
@@ -3031,7 +3031,7 @@ a {
   border-top: 1px solid var(--border);
 }
 
-.portfolio-flow-card {
+.portfolio-earnings-card {
   display: grid;
   grid-template-columns: 34px minmax(0, 1fr);
   align-items: center;
@@ -3043,19 +3043,19 @@ a {
   background: var(--panel-strong);
 }
 
-.portfolio-flow-card > div {
+.portfolio-earnings-card > div {
   display: grid;
   gap: 3px;
   min-width: 0;
 }
 
-.portfolio-flow-card > div > span {
+.portfolio-earnings-card > div > span {
   color: var(--text);
   font-size: 0.72rem;
   font-weight: 800;
 }
 
-.portfolio-flow-card strong {
+.portfolio-earnings-card strong {
   overflow: hidden;
   font-size: 0.86rem;
   font-weight: 900;
@@ -3063,12 +3063,12 @@ a {
   white-space: nowrap;
 }
 
-.portfolio-flow-card small {
+.portfolio-earnings-card small {
   color: var(--muted);
   font-size: 0.61rem;
 }
 
-.portfolio-flow-icon {
+.portfolio-earnings-icon {
   display: grid;
   place-items: center;
   width: 32px;
@@ -3078,7 +3078,7 @@ a {
   font-weight: 900;
 }
 
-.portfolio-flow-entry {
+.portfolio-earnings-positive {
   border-color: rgba(99, 230, 200, 0.24);
   background:
     linear-gradient(
@@ -3088,17 +3088,17 @@ a {
     );
 }
 
-.portfolio-flow-entry strong,
-.portfolio-flow-entry .portfolio-flow-icon {
+.portfolio-earnings-positive strong,
+.portfolio-earnings-positive .portfolio-earnings-icon {
   color: var(--positive);
 }
 
-.portfolio-flow-entry .portfolio-flow-icon {
+.portfolio-earnings-positive .portfolio-earnings-icon {
   background: rgba(99, 230, 200, 0.12);
   border: 1px solid rgba(99, 230, 200, 0.16);
 }
 
-.portfolio-flow-exit {
+.portfolio-earnings-negative {
   border-color: rgba(255, 88, 108, 0.22);
   background:
     linear-gradient(
@@ -3108,63 +3108,20 @@ a {
     );
 }
 
-.portfolio-flow-exit strong,
-.portfolio-flow-exit .portfolio-flow-icon {
+.portfolio-earnings-negative strong,
+.portfolio-earnings-negative .portfolio-earnings-icon {
   color: var(--negative);
 }
 
-.portfolio-flow-exit .portfolio-flow-icon {
+.portfolio-earnings-negative .portfolio-earnings-icon {
   background: rgba(255, 88, 108, 0.12);
   border: 1px solid rgba(255, 88, 108, 0.16);
 }
 
 @media (max-width: 760px) {
-  .portfolio-flow-grid {
+  .portfolio-earnings-grid {
     grid-template-columns: 1fr;
   }
-}
-
-
-.performance-audit {
-  display: grid;
-  gap: 14px;
-}
-
-.performance-audit-summary {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px 24px;
-  font-size: 0.88rem;
-}
-
-.performance-audit-table-wrap {
-  width: 100%;
-  overflow: hidden;
-}
-
-.performance-audit-table {
-  width: 100%;
-  border-collapse: collapse;
-  table-layout: fixed;
-  font-size: 0.78rem;
-}
-
-.performance-audit-table th,
-.performance-audit-table td {
-  padding: 9px 8px;
-  border-bottom: 1px solid var(--border);
-  text-align: right;
-  white-space: nowrap;
-}
-
-.performance-audit-table th:first-child,
-.performance-audit-table td:first-child {
-  text-align: left;
-}
-
-.performance-audit-table th {
-  font-weight: 600;
-  opacity: 0.78;
 }
 
 
@@ -3241,9 +3198,9 @@ a {
   .distribution-panel { min-height: 280px !important; }
   .distribution-chart, .distribution-chart-content, .distribution-legend,
   .trend-chart, .trend-chart svg { width: 100%; min-width: 0; max-width: 100%; }
-  .portfolio-flow-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
-  .portfolio-flow-card { min-width: 0; }
-  .portfolio-flow-card strong { max-width: 100%; }
+  .portfolio-earnings-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .portfolio-earnings-card { min-width: 0; }
+  .portfolio-earnings-card strong { max-width: 100%; }
   .portfolio-metrics, .dashboard-kpis, .carteira-kpis, .ativos-kpis {
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
   }
@@ -3271,8 +3228,8 @@ a {
   .patrimonio-gauge svg { height: 54px; }
   .investor-applied-bars { grid-template-columns: repeat(4, minmax(0,1fr)); }
   .dashboard-grid .panel { padding: 13px; }
-  .portfolio-flow-grid { grid-template-columns: 1fr; }
-  .portfolio-flow-card { grid-template-columns: 32px minmax(0, 1fr); padding: 10px; }
+  .portfolio-earnings-grid { grid-template-columns: 1fr; }
+  .portfolio-earnings-card { grid-template-columns: 32px minmax(0, 1fr); padding: 10px; }
   .portfolio-return-result { flex-wrap: wrap; }
   .distribution-panel { min-height: 300px !important; }
   .dashboard-evolution-panel { overflow: hidden; }

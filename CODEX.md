@@ -1753,3 +1753,29 @@ A sincronização das branches não transfere dados nem credenciais do Azure e n
 altera recursos de cobrança. Banco local do usuário e Azure SQL não estão acessíveis
 a este ambiente de trabalho; a aplicação real da cópia/script depende do SSMS no
 computador do usuário. Não usar o importador de Excel para copiar a produção.
+
+
+## Remoção de Entradas/Saídas — 23/11/2026
+
+O livro de aportes/retiradas, sua aba administrativa, contratos e endpoints foram
+removidos. A API de performance Modified Dietz dependia desse livro e foi removida;
+não calcular rentabilidade temporal sem dados de fluxos. A evolução patrimonial,
+saldos disponíveis, operações, opções, proventos e estimativas de IR permanecem.
+
+A migration `20261123152640_RemoverEntradasSaidas`, gerada pelo EF, exclui somente
+`MovimentacaoFinanceira`, inclusive seus registros. Migrations antigas permanecem
+para atualização de bases existentes. Reverter a migration recria a estrutura,
+mas não recupera os registros removidos; restauração de dados exige backup.
+A API aplica migrations ao iniciar; no perfil Local, a conexão é validada como
+InvestimentosDb em servidor local antes de qualquer alteração.
+
+O Painel substitui os indicadores de fluxos por resultados acumulados:
+- Opções: resultado operacional de opções finalizadas, conforme PremioLiquidoOpcoes.
+- Ações + FIIs: valorização com cotação disponível + resultado realizado de vendas
+  + proventos líquidos. Exclui ETFs, renda fixa e previdência e não duplica opções.
+  Inclui vendas/proventos de ativos zerados. O consolidado soma os indicadores
+  individuais antes de excluir posições zeradas da lista visual.
+
+Esse novo indicador de ações + FIIs inclui vendas realizadas; a rentabilidade
+principal mantém sua fórmula econômica existente, que exclui esse componente.
+Os indicadores são acumulados e não representam apuração anual nem imposto devido.

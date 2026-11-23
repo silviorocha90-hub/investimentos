@@ -1,4 +1,4 @@
-﻿using Investimentos.Application.Carteira.ConsultarCarteira;
+using Investimentos.Application.Carteira.ConsultarCarteira;
 using Investimentos.Application.Opcoes.ConsultarOpcoes;
 using Investimentos.Application.Proventos.ConsultarProventos;
 
@@ -44,9 +44,11 @@ namespace Investimentos.Application.Dashboard
         decimal IrEstimadoOpcoes = 0,
         decimal ResultadoRealizadoAcoes = 0,
         decimal RentabilidadeAno = 0,
-        decimal EntradasAno = 0,
-        decimal SaidasAno = 0)
+        decimal RendimentoAcoesFiis = 0)
     {
+        // Resultado operacional das opções finalizadas, conforme o dashboard.
+        public decimal RendimentoOpcoes => PremioLiquidoOpcoes;
+
         /// <summary>
         /// Nome explícito do resultado econômico padrão da carteira.
         /// Mantém ResultadoRealizado no contrato por compatibilidade.

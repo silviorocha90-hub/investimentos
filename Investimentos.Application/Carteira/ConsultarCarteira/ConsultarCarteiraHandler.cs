@@ -1,4 +1,4 @@
-﻿using Investimentos.Application.Interfaces;
+using Investimentos.Application.Interfaces;
 
 namespace Investimentos.Application.Carteira.ConsultarCarteira
 {
@@ -31,6 +31,15 @@ namespace Investimentos.Application.Carteira.ConsultarCarteira
 
             return _calcularCarteiraService.Calcular(
                 operacoes);
+        }
+
+        // Inclui posições zeradas para preservar ganhos e proventos históricos.
+        public async Task<IReadOnlyList<PosicaoAtivoDto>> HandleHistoricoAsync(
+            Guid investidorId,
+            CancellationToken cancellationToken = default)
+        {
+            var operacoes = await ObterOperacoesAsync(investidorId, cancellationToken);
+            return CalcularCarteiraService.CalcularTodas(operacoes);
         }
 
         public async Task<decimal>
