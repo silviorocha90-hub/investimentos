@@ -1,25 +1,238 @@
-.estimativa-ir { color: #173348; padding: 20px; background: #fff; border-radius: 14px; }
-.estimativa-ir header { display: flex; align-items: center; justify-content: space-between; gap: 18px; flex-wrap: wrap; }
-.estimativa-ir h2 { margin: 0 0 8px; }
-.estimativa-ir p, .estimativa-ir li { line-height: 1.55; }
-.estimativa-ir button { cursor: pointer; padding: 10px 15px; border: 1px solid #c8d7e1; border-radius: 7px; color: #123c56; background: #eef5f9; }
-.estimativa-ir button:disabled { opacity: .55; cursor: wait; }
-.ir-filtros { display: flex; flex-wrap: wrap; gap: 16px; margin: 22px 0; }
-.estimativa-ir label { display: flex; flex-direction: column; gap: 7px; font-size: 14px; }
-.estimativa-ir select, .estimativa-ir input, .estimativa-ir textarea { padding: 10px; border: 1px solid #b7c8d3; border-radius: 6px; color: #173348; background: white; }
-.ir-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 14px; margin: 22px 0; }
-.ir-cards > div { padding: 20px; border: 1px solid #d9e5ec; border-radius: 10px; background: #f5f9fb; }
-.ir-cards span { display: block; font-size: 14px; margin-bottom: 12px; }
-.ir-cards strong { font-size: 26px; }
-.ir-tabela { overflow-x: auto; margin: 18px 0; }
-.ir-tabela table { width: 100%; border-collapse: collapse; min-width: 760px; font-size: 14px; }
-.ir-tabela th, .ir-tabela td { text-align: left; padding: 14px 10px; border-bottom: 1px solid #dde7ed; vertical-align: top; line-height: 1.6; }
-.ir-tabela th { background: #edf4f8; }
-.ir-tabela td:last-child { max-width: 330px; }
-.ir-tabela td button { display: block; margin-top: 8px; font-size: 12px; }
-.estimativa-ir details { margin: 24px 0; }
-.estimativa-ir summary { cursor: pointer; font-weight: 600; padding: 10px 0; }
-.ir-pendente, .ir-erro { color: #9a3600; }
-.ir-modal { position: fixed; inset: 0; z-index: 1000; background: #102536aa; display: flex; align-items: center; justify-content: center; padding: 20px; }
-.ir-modal form { background: white; padding: 26px; border-radius: 12px; width: min(520px, 100%); max-height: 90vh; overflow: auto; }
-.ir-modal label { margin: 14px 0; }
+.estimativa-ir {
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+  color: var(--text);
+}
+
+.estimativa-ir .ir-toolbar {
+  flex-wrap: wrap;
+}
+
+.estimativa-ir .ir-heading {
+  display: grid;
+  gap: 5px;
+}
+
+.estimativa-ir .ir-heading > span,
+.estimativa-ir .ir-meta {
+  color: var(--muted);
+  font-size: 0.68rem;
+}
+
+.estimativa-ir .ir-filtros {
+  grid-template-columns: minmax(120px, 0.7fr) minmax(160px, 1fr) minmax(200px, 1.4fr);
+}
+
+.estimativa-ir .ir-contexto {
+  display: grid;
+  gap: 6px;
+  padding: 12px 14px;
+}
+
+.estimativa-ir .ir-contexto p,
+.estimativa-ir .ir-note,
+.estimativa-ir .ir-criterios {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.7rem;
+  line-height: 1.6;
+}
+
+.estimativa-ir .ir-note {
+  padding: 12px 14px;
+}
+
+.estimativa-ir .ir-message,
+.estimativa-ir .ir-empty {
+  padding: 14px;
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.74rem;
+  line-height: 1.6;
+}
+
+.estimativa-ir .ir-message.admin-error,
+.estimativa-ir .ir-note.admin-error {
+  color: var(--negative);
+}
+
+.estimativa-ir .ir-cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.estimativa-ir .ir-card {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+  padding: 16px;
+}
+
+.estimativa-ir .ir-card > span {
+  color: var(--muted);
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.estimativa-ir .ir-card > strong {
+  color: var(--accent);
+  font-size: clamp(1.1rem, 1.8vw, 1.5rem);
+  overflow-wrap: anywhere;
+}
+
+.estimativa-ir .ir-card-total {
+  border-color: rgba(99, 230, 200, 0.3);
+  background: var(--accent-soft);
+}
+
+.estimativa-ir .ir-details > summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px;
+  color: var(--text);
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  list-style: none;
+}
+
+.estimativa-ir .ir-details > summary::-webkit-details-marker {
+  display: none;
+}
+
+.estimativa-ir .ir-details > summary::before {
+  content: '›';
+  color: var(--accent);
+  font-size: 1.1rem;
+  transition: transform 0.15s ease;
+}
+
+.estimativa-ir .ir-details[open] > summary {
+  border-bottom: 1px solid var(--border);
+}
+
+.estimativa-ir .ir-details[open] > summary::before {
+  transform: rotate(90deg);
+}
+
+.estimativa-ir .ir-details > summary .ir-meta {
+  margin-left: auto;
+  white-space: nowrap;
+  font-weight: 500;
+}
+
+.admin-page .estimativa-ir .ir-tabela {
+  border-radius: 0;
+}
+
+.admin-page .estimativa-ir .ir-tabela th {
+  white-space: normal;
+  vertical-align: middle;
+}
+
+.admin-page .estimativa-ir .ir-tabela td {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  line-height: 1.45 !important;
+}
+
+.admin-page .estimativa-ir .ir-tabela .ir-number {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.estimativa-ir .ir-resumo-table th:first-child {
+  width: 18%;
+}
+
+.estimativa-ir .ir-analitico-table th:nth-child(1) { width: 14%; }
+.estimativa-ir .ir-analitico-table th:nth-child(2) { width: 19%; }
+.estimativa-ir .ir-analitico-table th:nth-child(3) { width: 13%; }
+.estimativa-ir .ir-analitico-table th:nth-child(4) { width: 12%; }
+.estimativa-ir .ir-analitico-table th:nth-child(5) { width: 17%; }
+.estimativa-ir .ir-analitico-table th:nth-child(6) { width: 25%; }
+
+.estimativa-ir .ir-cell-stack {
+  display: grid;
+  gap: 4px;
+}
+
+.estimativa-ir .ir-cell-stack small {
+  color: var(--muted);
+  font-size: 0.65rem;
+}
+
+.estimativa-ir .ir-retencao {
+  justify-items: end;
+}
+
+.estimativa-ir .ir-retencao .admin-action {
+  white-space: normal;
+}
+
+.estimativa-ir .ir-pendente {
+  color: var(--accent-alt);
+  font-weight: 700;
+}
+
+.estimativa-ir .ir-criterios {
+  padding: 12px 20px 16px 32px;
+}
+
+.estimativa-ir .ir-criterios li + li {
+  margin-top: 6px;
+}
+
+.estimativa-ir .ir-wide {
+  grid-column: 1 / -1;
+}
+
+.estimativa-ir .admin-modal-grid textarea {
+  width: 100%;
+  min-height: 100px;
+  padding: 10px;
+  resize: vertical;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--panel-strong);
+  color: var(--text);
+  font: inherit;
+  font-size: 0.74rem;
+}
+
+.estimativa-ir .admin-modal-grid textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.estimativa-ir .ir-details > summary:focus-visible,
+.estimativa-ir button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -3px;
+}
+
+@media (max-width: 760px) {
+  .estimativa-ir .ir-filtros,
+  .estimativa-ir .ir-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .estimativa-ir .ir-toolbar .admin-primary-button {
+    width: 100%;
+  }
+
+  .admin-page .estimativa-ir .ir-tabela {
+    overflow-x: auto !important;
+  }
+
+  .admin-page .estimativa-ir .ir-tabela table {
+    min-width: 720px !important;
+  }
+
+  .estimativa-ir .ir-details > summary {
+    flex-wrap: wrap;
+  }
+}
