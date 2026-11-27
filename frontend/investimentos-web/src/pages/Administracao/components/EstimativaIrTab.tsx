@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { Modal } from '../../../components/Modal'
 import './EstimativaIr.css'
 
 interface Item {
@@ -95,49 +96,141 @@ export function EstimativaIrTab() {
   }
   const resumos = relatorio?.investidores.filter(x => !investidor || x.investidorId === investidor) ?? []
   const itens = relatorio?.operacoes.filter(x => !investidor || x.investidorId === investidor) ?? []
-  return <section className="estimativa-ir">
-    <header><div><h2>Estimativa de IR por investidor</h2><p>Acerto entre carteiras • ano-calendário {ano} • declaração {ano + 1}</p></div>
-      <button type="button" disabled={ocupado} onClick={() => void atualizar()}>Atualizar e salvar histórico</button></header>
-    <p>O valor por investidor é um controle interno para reembolso ao titular do CPF. Retenções definitivas já pagas aparecem separadas do imposto estimado.</p>
-    <div className="ir-filtros">
-      <label>Ano-calendário<select value={ano} disabled={ocupado} onChange={e => setAno(Number(e.target.value))}>
-        {[...new Set([ano, ...anos])].sort((a, b) => b - a).map(a => <option key={a}>{a}</option>)}
-      </select></label>
-      <label>Investidor<select value={investidor} onChange={e => setInvestidor(e.target.value)}><option value="">Todos</option>
-        {relatorio?.investidores.map(x => <option key={x.investidorId} value={x.investidorId}>{x.investidor}</option>)}
-      </select></label>
-      <label>Histórico salvo<select value={versao} disabled={ocupado || !historicos.length} onChange={e => void selecionarVersao(e.target.value)}>
-        {!historicos.length && <option value="">Nenhuma versão salva</option>}
-        {historicos.map(h => <option value={h.id} key={h.id}>{data(h.criadoEmUtc)}</option>)}
-      </select></label>
-    </div>
-    {erro && <p role="alert" className="ir-erro">{erro}</p>}
-    {ocupado && <p role="status">Processando…</p>}
-    {!relatorio && !ocupado && <p>Nenhuma estimativa salva para este ano. Use “Atualizar e salvar histórico” para calcular todas as operações cadastradas. O ano vigente também é atualizado e salvo ao abrir esta aba.</p>}
-    {relatorio && <>
-      <p>Base salva em {data(relatorio.calculadoEmUtc)}. O ano vigente é atualizado ao abrir esta aba; use atualizar após corrigir operações. Versões anteriores são preservadas.</p>
-      <div className="ir-cards">
-        <div><span>Estimativa a provisionar</span><strong>{moeda(resumos.reduce((s, x) => s + x.estimativa, 0))}</strong></div>
-        <div><span>IR definitivo retido</span><strong>{moeda(resumos.reduce((s, x) => s + x.retido, 0))}</strong></div>
-        <div><span>Encargo total das carteiras</span><strong>{moeda(resumos.reduce((s, x) => s + x.total, 0))}</strong></div>
-      </div>
-      <div className="ir-tabela"><table><thead><tr><th>Investidor</th><th>Resultado realizado</th><th>Estimado</th><th>Retido definitivo</th><th>Encargo total</th><th>Conferir</th></tr></thead>
-        <tbody>{resumos.map(x => <tr key={x.investidorId}><td>{x.investidor}</td><td>{moeda(x.resultado)}</td><td>{moeda(x.estimativa)}</td><td>{moeda(x.retido)}</td><td><strong>{moeda(x.total)}</strong></td><td>{x.pendencias ? `${x.pendencias} pendência(s)` : '—'}</td></tr>)}</tbody></table></div>
-      <details><summary>Ver analítico por operação ({itens.length})</summary>
-        <p>Estimativas positivas são rateadas após compensar as perdas mensais e anteriores da carteira. Compras isoladas não geram encargo. “Pendente” não equivale a isento.</p>
-        <div className="ir-tabela"><table><thead><tr><th>Data / investidor</th><th>Operação</th><th>Resultado</th><th>IR estimado</th><th>Retido</th><th>Situação / memória</th></tr></thead>
-          <tbody>{itens.map(x => <tr key={x.operacaoId}><td>{x.data.slice(0, 10).split('-').reverse().join('/')}<br />{x.investidor}</td><td><strong>{x.ticker}</strong><br />{x.tipo} • {x.quantidade.toLocaleString('pt-BR')}<br />{moeda(x.valorOperacao)}</td><td>{x.resultado === null ? 'A conferir' : moeda(x.resultado)}</td><td>{moeda(x.estimativa)}</td><td>{moeda(x.retido)}{x.tipo === 'VENDA' && !['ACAO', 'ISENTO', 'FII', 'ETF_RV', 'BDR'].includes(x.categoria) && <button type="button" disabled={ocupado || versao !== historicos[0]?.id} onClick={() => { setModal(x); setValor(String(x.retido)); setObservacao(x.situacao === 'RETIDO CONFIRMADO' ? x.observacao : '') }}>Informar retenção</button>}</td><td><span className={x.situacao === 'PENDENTE' ? 'ir-pendente' : ''}>{x.situacao}</span><br /><small>{x.observacao}</small></td></tr>)}</tbody></table></div>
-        {!itens.length && <p>Sem vendas ou opções finalizadas neste ano.</p>}
-      </details>
-      <details><summary>Critérios e limites da estimativa</summary><ul>{relatorio.avisos.map(x => <li key={x}>{x}</li>)}</ul></details>
-    </>}
-    {modal && <div className="ir-modal" role="dialog" aria-modal="true" aria-labelledby="ir-modal-titulo"><form onSubmit={e => void salvarRetencao(e)}>
-      <h3 id="ir-modal-titulo">IR definitivo retido</h3><p>{modal.investidor} • {modal.ticker} • {modal.quantidade} unidades</p>
-      <p>Informe somente o imposto definitivo desta venda, conforme a nota. Não use o IRRF de antecipação nem o débito agregado de outras operações.</p>
-      <label>Valor em reais<input required autoFocus inputMode="decimal" value={valor} onChange={e => setValor(e.target.value)} /></label>
-      <label>Fonte / observação<textarea required maxLength={1000} value={observacao} onChange={e => setObservacao(e.target.value)} /></label>
-      <p>A correção cria um novo registro e uma nova versão anual. O histórico anterior é preservado.</p>
-      <button type="button" disabled={ocupado} onClick={() => setModal(null)}>Cancelar</button> <button disabled={ocupado}>Salvar retenção</button>
-    </form></div>}
-  </section>
+  return (
+    <section className="estimativa-ir" aria-label="Estimativa de IR por investidor">
+      <article className="panel admin-panel">
+        <header className="admin-toolbar admin-assets-toolbar ir-toolbar">
+          <div className="ir-heading">
+            <strong>Estimativa de IR por investidor</strong>
+            <span>Ano-calendário {ano} · Declaração {ano + 1}</span>
+          </div>
+          <button className="admin-primary-button" type="button" disabled={ocupado} onClick={() => void atualizar()}>
+            {ocupado ? 'Processando…' : 'Atualizar e salvar histórico'}
+          </button>
+        </header>
+
+        <div className="admin-asset-filters ir-filtros">
+          <label>
+            <span>Ano-calendário</span>
+            <select value={ano} disabled={ocupado} onChange={e => setAno(Number(e.target.value))}>
+              {[...new Set([ano, ...anos])].sort((a, b) => b - a).map(a => <option key={a}>{a}</option>)}
+            </select>
+          </label>
+          <label>
+            <span>Investidor</span>
+            <select value={investidor} onChange={e => setInvestidor(e.target.value)}>
+              <option value="">Todos</option>
+              {relatorio?.investidores.map(x => <option key={x.investidorId} value={x.investidorId}>{x.investidor}</option>)}
+            </select>
+          </label>
+          <label>
+            <span>Histórico salvo</span>
+            <select value={versao} disabled={ocupado || !historicos.length} onChange={e => void selecionarVersao(e.target.value)}>
+              {!historicos.length && <option value="">Nenhuma versão salva</option>}
+              {historicos.map(h => <option value={h.id} key={h.id}>{data(h.criadoEmUtc)}</option>)}
+            </select>
+          </label>
+        </div>
+        <div className="ir-contexto">
+          <p>Controle interno de reembolso ao titular do CPF. Retenções definitivas já pagas aparecem separadas do imposto estimado.</p>
+          {relatorio && <p>Base salva em {data(relatorio.calculadoEmUtc)}. O ano vigente é atualizado ao abrir esta aba. Versões anteriores são preservadas.</p>}
+        </div>
+      </article>
+
+      {erro && !modal && <div role="alert" className="admin-error ir-message">{erro}</div>}
+      {ocupado && <div role="status" className="ir-message">Processando estimativa…</div>}
+      {!relatorio && !ocupado && <div className="panel ir-empty">Nenhuma estimativa salva para este ano. Use “Atualizar e salvar histórico” para calcular as operações cadastradas.</div>}
+
+      {relatorio && <>
+        <div className="ir-cards">
+          <article className="panel ir-card">
+            <span>Estimativa a provisionar</span>
+            <strong>{moeda(resumos.reduce((s, x) => s + x.estimativa, 0))}</strong>
+          </article>
+          <article className="panel ir-card">
+            <span>IR definitivo retido</span>
+            <strong>{moeda(resumos.reduce((s, x) => s + x.retido, 0))}</strong>
+          </article>
+          <article className="panel ir-card ir-card-total">
+            <span>Encargo total das carteiras</span>
+            <strong>{moeda(resumos.reduce((s, x) => s + x.total, 0))}</strong>
+          </article>
+        </div>
+
+        <article className="panel admin-panel">
+          <div className="admin-toolbar admin-assets-toolbar">
+            <strong>Consolidado por investidor</strong>
+            <span className="ir-meta">{resumos.length} investidor(es)</span>
+          </div>
+          <div className="admin-table-wrap ir-tabela">
+            <table className="admin-table ir-resumo-table" aria-label="Consolidado de IR por investidor">
+              <thead><tr><th scope="col">Investidor</th><th scope="col" className="ir-number">Resultado realizado</th><th scope="col" className="ir-number">Estimado</th><th scope="col" className="ir-number">Retido definitivo</th><th scope="col" className="ir-number">Encargo total</th><th scope="col">Conferir</th></tr></thead>
+              <tbody>{resumos.map(x => (
+                <tr key={x.investidorId}>
+                  <td><strong>{x.investidor}</strong></td>
+                  <td className={`ir-number ${x.resultado < 0 ? 'negative' : 'positive'}`}>{moeda(x.resultado)}</td>
+                  <td className="ir-number">{moeda(x.estimativa)}</td>
+                  <td className="ir-number">{moeda(x.retido)}</td>
+                  <td className="ir-number"><strong>{moeda(x.total)}</strong></td>
+                  <td>{x.pendencias ? <span className="ir-pendente">{x.pendencias} pendência(s)</span> : '—'}</td>
+                </tr>
+              ))}</tbody>
+            </table>
+          </div>
+          {!resumos.length && <p className="ir-empty">Nenhum investidor neste ano.</p>}
+        </article>
+
+        <details className="panel admin-panel ir-details">
+          <summary><span>Analítico por operação</span><span className="ir-meta">{itens.length} registro(s)</span></summary>
+          <p className="ir-note">Estimativas positivas são rateadas após compensar perdas mensais e anteriores da carteira. Compras isoladas não geram encargo. “Pendente” não equivale a isento.</p>
+          <div className="admin-table-wrap ir-tabela">
+            <table className="admin-table ir-analitico-table" aria-label="Analítico de IR por operação">
+              <thead><tr><th scope="col">Data / investidor</th><th scope="col">Operação</th><th scope="col" className="ir-number">Resultado</th><th scope="col" className="ir-number">IR estimado</th><th scope="col" className="ir-number">Retido</th><th scope="col">Situação / memória</th></tr></thead>
+              <tbody>{itens.map(x => (
+                <tr key={x.operacaoId}>
+                  <td><div className="ir-cell-stack"><span>{x.data.slice(0, 10).split('-').reverse().join('/')}</span><small>{x.investidor}</small></div></td>
+                  <td><div className="ir-cell-stack"><strong>{x.ticker}</strong><small>{x.tipo} · {x.quantidade.toLocaleString('pt-BR')}</small><span>{moeda(x.valorOperacao)}</span></div></td>
+                  <td className={`ir-number ${x.resultado !== null && x.resultado < 0 ? 'negative' : ''}`}>{x.resultado === null ? 'A conferir' : moeda(x.resultado)}</td>
+                  <td className="ir-number">{moeda(x.estimativa)}</td>
+                  <td className="ir-number">
+                    <div className="ir-cell-stack ir-retencao">
+                      <span>{moeda(x.retido)}</span>
+                      {x.tipo === 'VENDA' && !['ACAO', 'ISENTO', 'FII', 'ETF_RV', 'BDR'].includes(x.categoria) && (
+                        <button className="admin-action" type="button" disabled={ocupado || versao !== historicos[0]?.id} onClick={() => { setModal(x); setValor(String(x.retido)); setObservacao(x.situacao === 'RETIDO CONFIRMADO' ? x.observacao : '') }}>Informar retenção</button>
+                      )}
+                    </div>
+                  </td>
+                  <td><div className="ir-cell-stack"><span className={x.situacao === 'PENDENTE' ? 'ir-pendente' : ''}>{x.situacao}</span><small>{x.observacao}</small></div></td>
+                </tr>
+              ))}</tbody>
+            </table>
+          </div>
+          {!itens.length && <p className="ir-empty">Sem vendas ou opções finalizadas neste ano.</p>}
+        </details>
+
+        <details className="panel admin-panel ir-details">
+          <summary><span>Critérios e limites da estimativa</span></summary>
+          <ul className="ir-criterios">{relatorio.avisos.map(x => <li key={x}>{x}</li>)}</ul>
+        </details>
+      </>}
+
+      {modal && (
+        <Modal title="IR definitivo retido" subtitle={`${modal.investidor} · ${modal.ticker} · ${modal.quantidade} unidades`} onClose={() => setModal(null)} closeDisabled={ocupado} className="ir-retencao-modal">
+          <form onSubmit={e => void salvarRetencao(e)}>
+            <p className="ir-note">Informe somente o imposto definitivo desta venda, conforme a nota. Não use o IRRF de antecipação nem o débito agregado de outras operações.</p>
+            <div className="admin-modal-grid">
+              <label className="ir-wide"><span>Valor em reais</span><input required autoFocus inputMode="decimal" value={valor} onChange={e => setValor(e.target.value)} /></label>
+              <label className="ir-wide"><span>Fonte / observação</span><textarea required maxLength={1000} value={observacao} onChange={e => setObservacao(e.target.value)} /></label>
+            </div>
+            <p className="ir-note">A correção cria um novo registro e uma nova versão anual. O histórico anterior é preservado.</p>
+            {erro && <p role="alert" className="admin-error ir-note">{erro}</p>}
+            <div className="admin-modal-actions">
+              <button className="admin-clear-button" type="button" disabled={ocupado} onClick={() => setModal(null)}>Cancelar</button>
+              <button className="admin-primary-button" type="submit" disabled={ocupado}>Salvar retenção</button>
+            </div>
+          </form>
+        </Modal>
+      )}
+    </section>
+  )
 }
